@@ -1,20 +1,48 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
+import { predictCatBreedFromPublicImage } from "./api/catBreedApi";
+
+async function runPrediction(catFilePath) {
+  const result = await predictCatBreedFromPublicImage(catFilePath);
+  console.log(result);
+  if (catFilePath == "../../cat1.png") {
+  document.getElementById('breed-1').innerHTML = result;
+  }
+  else {
+    document.getElementById('breed-2').innerHTML = result;
+  }
+  
+}
 
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+    <!-- <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" /> -->
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <!-- <HelloWorld msg="You did it!" /> -->
+      
     </div>
   </header>
 
   <main>
-    <TheWelcome />
+    <!-- <TheWelcome /> -->
+     <div style="display: grid">
+      <img src="../../cat1.png" style="height: 200px; width: 200px;" alt="Cat" /> 
+     <span>Click here to check cat breed</span>
+     <button @click="runPrediction('../../cat1.png')">Run API Cat Prediction</button>
+     <span id="breed-1">Breed will be shown here</span>
+     </div>
+
+      <div style="display: grid">
+      <img src="../../cat2.png" style="height: 200px; width: 200px;" alt="Cat" /> 
+     <span>Click here to check cat breed</span>
+     <button @click="runPrediction('../../cat2.png')">Run API Cat Prediction</button>
+     <span id="breed-2">Breed will be shown here</span>
+     </div>
+      
   </main>
 </template>
 
