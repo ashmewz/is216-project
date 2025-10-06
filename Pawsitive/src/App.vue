@@ -1,7 +1,10 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
+import Navbar from './components/Navbar.vue';
 import { predictCatBreedFromPublicImage } from "./api/catBreedApi";
+import Footer from './components/BottomFooter.vue';
+import BottomFooter from './components/BottomFooter.vue';
 
 async function runPrediction(catFilePath) {
   const result = await predictCatBreedFromPublicImage(catFilePath);
@@ -20,14 +23,16 @@ async function runPrediction(catFilePath) {
 <template>
   <header>
     <!-- <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" /> -->
-
+ 
     <div class="wrapper">
+        
       <!-- <HelloWorld msg="You did it!" /> -->
       
     </div>
   </header>
 
   <main>
+     <Navbar></Navbar>
     <!-- <TheWelcome /> -->
      <div style="display: grid">
       <img src="../../cat1.png" style="height: 200px; width: 200px;" alt="Cat" /> 
@@ -42,7 +47,7 @@ async function runPrediction(catFilePath) {
      <button @click="runPrediction('../../cat2.png')">Run API Cat Prediction</button>
      <span id="breed-2">Breed will be shown here</span>
      </div>
-      
+      <BottomFooter></BottomFooter>
   </main>
 </template>
 
