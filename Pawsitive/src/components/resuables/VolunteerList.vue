@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <RouterView />
+<!-- Probably some reusable list? -->
 </template>
 
 <style scoped>
