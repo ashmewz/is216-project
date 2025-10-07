@@ -14,8 +14,6 @@
 
 <template>   
 
-    <RouterLink to="/KevanTest/">Kevan's Test</RouterLink> <br>
-
     <RouterLink to="/map/">Map</RouterLink>
     <RouterLink to="/forum/">Forum</RouterLink>
     <RouterLink to="/report/">Report</RouterLink>

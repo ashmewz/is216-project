@@ -27,10 +27,6 @@ const routes = [
         component: RouterTest
     },
     {
-        path: '/KevanTest/',
-        component: KevanTest
-    },
-    {
         path: '/map/',
         component: MapPage
     },
