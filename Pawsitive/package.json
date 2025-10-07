@@ -15,6 +15,7 @@
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
+    "firebase": "^12.3.0",
     "vue": "^3.5.18",
     "vue-router": "^4.0.13"
   },
