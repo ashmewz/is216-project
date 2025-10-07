@@ -4,12 +4,15 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
 </script>
 
 <template>
-    <Navbar></Navbar>
+    <Navbar>
+        <template v-slot:navbar-title>
+            Signup / Login
+        </template>
+    </Navbar>
     <div class="container">
         <h1>This is the WIP Signup / Login page</h1>
     </div>
     <BottomFooter></BottomFooter>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
