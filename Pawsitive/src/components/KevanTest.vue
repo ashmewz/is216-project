@@ -1,7 +1,7 @@
 <script setup>
-import Navbar from './Navbar.vue';
+import Navbar from './resuables/Navbar.vue';
 import { predictCatBreedFromPublicImage } from "@/api/catBreedApi";
-import BottomFooter from './BottomFooter.vue';
+import BottomFooter from './resuables/BottomFooter.vue';
 
 async function runPrediction(catFilePath) {
     const result = await predictCatBreedFromPublicImage(catFilePath);

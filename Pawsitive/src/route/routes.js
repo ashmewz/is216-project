@@ -5,8 +5,7 @@ import {
 
 import RouterTest from '@/components/RouterTest.vue';
 import KevanTest from "@/components/KevanTest.vue";
-import TheWelcome from "@/components/TheWelcome.vue";
-import HelloWorld from "@/components/HelloWorld.vue";
+import MapPage from "@/components/pages/MapPage.vue";
 
 const history = createWebHistory();
 const routes = [
@@ -19,12 +18,8 @@ const routes = [
         component: KevanTest
     },
     {
-        path: '/TheWelcome/',
-        component: TheWelcome
-    },
-    {
-        path: '/HelloWorld/',
-        component: HelloWorld
+        path: '/map/',
+        component: MapPage
     }
 ];
 
