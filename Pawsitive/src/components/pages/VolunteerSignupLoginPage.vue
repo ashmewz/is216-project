@@ -6,7 +6,7 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
 <template>
     <Navbar></Navbar>
     <div class="container">
-        <h1>This is the WIP Donation page</h1>
+        <h1>This is the WIP Signup / Login page</h1>
     </div>
     <BottomFooter></BottomFooter>
 </template>

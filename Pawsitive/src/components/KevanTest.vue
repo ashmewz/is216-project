@@ -22,7 +22,11 @@ async function runPrediction(catFilePath) {
     </header>
 
     <main>
-        <Navbar></Navbar>
+        <Navbar>
+            <template v-slot:navbar-title>
+                Kevan AI Test
+            </template>
+        </Navbar>
         <div style="display: grid">
             <img src="../../cat1.png" style="height: 200px; width: 200px;" alt="Cat" />
             <span>Click here to check cat breed</span>
