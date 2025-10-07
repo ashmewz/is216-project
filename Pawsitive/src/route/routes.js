@@ -5,7 +5,7 @@ import {
 
 // TODO: Remove thse two when we're done.
 import RouterTest from '@/components/RouterTest.vue';
-import KevanTest from "@/components/KevanTest.vue";
+
 // End of TODO
 
 import MapPage from "@/components/pages/MapPage.vue";
