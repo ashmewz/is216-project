@@ -3,6 +3,9 @@ import { onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 
+const MAP_DIV_ID = 'mapdiv';
+var onemap;
+
 onMounted(async () => {
     const leafletCSS = document.createElement('link')
     leafletCSS.rel = 'stylesheet'
@@ -16,20 +19,20 @@ onMounted(async () => {
 
     function initMap() {
         if (!window.L) {
-            console.error('Leaflet not loaded')
-            return
+            console.error('Leaflet not loaded');
+            return;
         }
 
         // Map bounds
-        const sw = L.latLng(1.144, 103.535)
-        const ne = L.latLng(1.494, 104.502)
-        const bounds = L.latLngBounds(sw, ne)
+        const sw = L.latLng(1.144, 103.535);
+        const ne = L.latLng(1.494, 104.502);
+        const bounds = L.latLngBounds(sw, ne);
 
-        const map = L.map('mapdiv', {
+        onemap = L.map(MAP_DIV_ID, {
             center: L.latLng(1.2868108, 103.8545349),
             zoom: 16,
         })
-        map.setMaxBounds(bounds)
+        onemap.setMaxBounds(bounds);
 
         // Base layer
         const basemap = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default/{z}/{x}/{y}.png', {
@@ -41,34 +44,67 @@ onMounted(async () => {
             //     '<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;' +
             //     '<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;' +
             //     '<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>',
-        })
+        });
 
-        basemap.addTo(map)
+        basemap.addTo(onemap);
 
-        // TEST: Add a sample marker
-        const marker = L.marker([1.2868108, 103.8545349]).addTo(map);
-        const popupContent = `
-            <div class="card" style="width: 18rem; border: none;">
-              <div class="row g-0 align-items-center">
-                <div class="col-4">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/20/View_of_MBS_from_the_gardens_%288026531707%29.jpg"
-                       class="img-fluid rounded-start" alt="Marina Bay">
-                </div>
-                <div class="col-8">
-                  <div class="card-body py-2 px-3">
-                    <h6 class="card-title mb-1">Marina Bay Sands</h6>
-                    <p class="card-text small text-muted mb-0">
-                      Iconic integrated resort fronting Marina Bay with hotel, casino, and skypark.
-                    </p>
+
+        // TODO: Call from firebase and grab data instead.
+        const TEST_PLACES = [
+            {
+                name: 'Marina Bay Sands',
+                coords: [1.2868108, 103.8545349],
+                img: 'https://upload.wikimedia.org/wikipedia/commons/2/20/View_of_MBS_from_the_gardens_%288026531707%29.jpg',
+                desc: 'Iconic integrated resort fronting Marina Bay with hotel, casino, and skypark.'
+            },
+            {
+                name: 'Gardens by the Bay',
+                coords: [1.2816, 103.8636],
+                img: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Marina_Bay_Sands_in_the_evening_-_20101120.jpg',
+                desc: 'Futuristic park featuring Supertree structures and climate-controlled domes.'
+            }
+        ];
+        updateMapDiv(TEST_PLACES);
+    }
+
+    function updateMapDiv(catMapData) {
+        if (!window.L) {
+            console.error('Leaflet not loaded')
+            return
+        }
+
+        const mapDiv = document.getElementById(MAP_DIV_ID);
+        if (!mapDiv) {
+            console.error("Map Div not found");
+            return;
+        }
+
+        catMapData.forEach(data => {
+            const popupContent = `
+                <div class="card" style="width: 18rem; border: none;">
+                  <div class="row g-0 align-items-center">
+                    <div class="col-4">
+                      <img src="${data.img}"
+                           class="img-fluid rounded-start" alt="${data.name}">
+                    </div>
+                    <div class="col-8">
+                      <div class="card-body py-2 px-3">
+                        <h6 class="card-title mb-1">${data.name}</h6>
+                        <p class="card-text small text-muted mb-0">
+                            ${data.desc}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>`
-        marker.bindPopup(popupContent, {
-            maxWidth: 250,
-            closeButton: true,
-            autoClose: false,
-        })
+                </div>`;
+            L.marker(data.coords)
+                .addTo(onemap)
+                .bindPopup(popupContent, {
+                    maxWidth: 250,
+                    closeButton: true,
+                    autoClose: false,
+                });
+        });
     }
 })
 </script>
