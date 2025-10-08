@@ -60,7 +60,7 @@ onMounted(async () => {
             {
                 name: 'Gardens by the Bay',
                 coords: [1.2816, 103.8636],
-                img: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Marina_Bay_Sands_in_the_evening_-_20101120.jpg',
+                img: 'https://imgcdn.flamingotravels.co.in/Images/PlacesOfInterest/Gardens-By-The-Bay-3.jpg',
                 desc: 'Futuristic park featuring Supertree structures and climate-controlled domes.'
             }
         ];
@@ -78,6 +78,16 @@ onMounted(async () => {
             console.error("Map Div not found");
             return;
         }
+
+        const markerIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        })
+
 
         catMapData.forEach(data => {
             const popupContent = `
@@ -97,13 +107,19 @@ onMounted(async () => {
                     </div>
                   </div>
                 </div>`;
-            L.marker(data.coords)
+            const marker = L.marker(data.coords, { icon: markerIcon })
                 .addTo(onemap)
                 .bindPopup(popupContent, {
-                    maxWidth: 250,
+                    maxWidth: 300,
                     closeButton: true,
                     autoClose: false,
                 });
+            marker.on('mouseover', function (e) {
+                this.openPopup()
+            })
+            marker.on('mouseout', function (e) {
+                this.closePopup()
+            })
         });
     }
 })
