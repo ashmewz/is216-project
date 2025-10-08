@@ -53,6 +53,8 @@ const routes = [
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
+        
+        //might need to setup something like a route guard? to prevent user to access /signup and /login routes if they are loggedin
     },
     {
         path: '/volunteer/profile/',
