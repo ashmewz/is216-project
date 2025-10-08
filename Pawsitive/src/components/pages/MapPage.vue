@@ -6,7 +6,7 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue'
 const MAP_DIV_ID = 'mapdiv';
 var onemap;
 const searchQuery = ref('');
-let allMarkers = []; // to clear old ones
+let allMarkers = []; // NOTE: Used to clear past results.
 
 const performSearch = async () => {
     const query = searchQuery.value.trim();
@@ -23,12 +23,10 @@ const performSearch = async () => {
         const result = data.results[0];
         const lat = parseFloat(result.LATITUDE);
         const lng = parseFloat(result.LONGITUDE);
+        onemap.setView([lat, lng], 17); // Recenter map
 
-        // Recenter map
-        onemap.setView([lat, lng], 17);
-
-        // Simulate loading nearby places (for demo)
-        const simulatedNearby = [
+        // TODO: Grab from firebase.
+        const SIMULATED_NEARBY = [
             {
                 name: `${result.SEARCHVAL} Place A`,
                 coords: [lat + 0.002, lng + 0.002],
@@ -42,7 +40,7 @@ const performSearch = async () => {
                 desc: 'Another nearby location.'
             }
         ];
-        updateMapDiv(simulatedNearby);
+        updateMapDiv(SIMULATED_NEARBY);
     } catch (e) {
         console.error("Search error:", e);
         alert("Failed to fetch location.");
@@ -109,7 +107,7 @@ onMounted(async () => {
     leafletScript.onload = initMap
     document.body.appendChild(leafletScript)
 
-    function initMap() {
+    async function initMap() {
         if (!window.L) {
             console.error('Leaflet not loaded');
             return;
@@ -120,9 +118,9 @@ onMounted(async () => {
         const bounds = L.latLngBounds(sw, ne);
 
         onemap = L.map(MAP_DIV_ID, {
-            center: L.latLng(1.2868108, 103.8545349),
+            center: L.latLng(1.2868108, 103.8545349), // fallback
             zoom: 16,
-        })
+        });
         onemap.setMaxBounds(bounds);
 
         const basemap = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default/{z}/{x}/{y}.png', {
@@ -132,24 +130,60 @@ onMounted(async () => {
         });
         basemap.addTo(onemap);
 
-        const TEST_PLACES = [
-            {
-                name: 'Marina Bay Sands',
-                coords: [1.2868108, 103.8545349],
-                img: 'https://upload.wikimedia.org/wikipedia/commons/2/20/View_of_MBS_from_the_gardens_%288026531707%29.jpg',
-                desc: 'Iconic integrated resort fronting Marina Bay with hotel, casino, and skypark.'
-            },
-            {
-                name: 'Gardens by the Bay',
-                coords: [1.2816, 103.8636],
-                img: 'https://imgcdn.flamingotravels.co.in/Images/PlacesOfInterest/Gardens-By-The-Bay-3.jpg',
-                desc: 'Futuristic park featuring Supertree structures and climate-controlled domes.'
-            }
-        ];
-        updateMapDiv(TEST_PLACES);
-    }
+        // If we can get the user's device location.
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude } = pos.coords;
+                    console.log('User location:', latitude, longitude);
 
-})
+                    onemap.setView([latitude, longitude], 17);
+
+                    // Add user location marker.
+                    const userMarker = L.circleMarker([latitude, longitude], {
+                        radius: 8,
+                        fillColor: '#007bff',
+                        color: '#ffffff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(onemap);
+
+                    // TODO: Need to grab from firebase.
+                    const SIMULATED_NEARBY = [
+                        {
+                            name: 'Nearby Café',
+                            coords: [latitude + 0.001, longitude + 0.001],
+                            img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Latte_and_dark_coffee.jpg/320px-Latte_and_dark_coffee.jpg',
+                            desc: 'A cozy café just a few minutes away.'
+                        },
+                        {
+                            name: 'Community Park',
+                            coords: [latitude - 0.001, longitude + 0.0015],
+                            img: 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Community_park.jpg',
+                            desc: 'A green spot nearby for walks and relaxation.'
+                        },
+                        {
+                            name: 'Local Food Centre',
+                            coords: [latitude - 0.0015, longitude - 0.001],
+                            img: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Hawker_centre_food.jpg',
+                            desc: 'A nearby hawker centre with authentic local dishes.'
+                        }
+                    ];
+                    updateMapDiv(SIMULATED_NEARBY);
+                },
+                err => {
+                    console.warn('Geolocation failed or denied:', err.message);
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            );
+        } else {
+            console.warn("Geolocation not supported by this browser.");
+        }
+    }
+});
+
+
 </script>
 
 <template>
