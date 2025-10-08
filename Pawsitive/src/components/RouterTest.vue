@@ -44,8 +44,6 @@ export default {
         <button @click="handleLogout" class="btn btn-sm btn-outline-primary">Log Out</button>
     </div>
 
-  <RouterLink to="/KevanTest/">Kevan's Test</RouterLink> <br>
-
   <RouterLink to="/map/">Map</RouterLink>
   <RouterLink to="/forum/">Forum</RouterLink>
   <RouterLink to="/report/">Report</RouterLink>

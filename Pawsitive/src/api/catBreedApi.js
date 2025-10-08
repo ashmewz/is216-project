@@ -13,3 +13,16 @@ export async function predictCatBreedFromPublicImage(imagePath) {
 
   return result.data
 }
+
+
+export async function runPrediction(catFilePath) {
+    const result = await predictCatBreedFromPublicImage(catFilePath);
+    console.log(result);
+    if (catFilePath == "../../../cat1.png") {
+        document.getElementById('breed-1').innerHTML = result;
+    }
+    else {
+        document.getElementById('breed-2').innerHTML = result;
+    }
+
+}

@@ -56,9 +56,6 @@
                             <li class="nav-item">
                                 <RouterLink class="nav-link" to="/ai/guidebook/">AI Guidebook</RouterLink>
                             </li>
-                            <li class="nav-item">
-                                <RouterLink class="nav-link" to="/KevanTest/">Kevan Test</RouterLink>
-                            </li>
                         </ul>
                     </li>
                 </ul>
