@@ -4,9 +4,14 @@ import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 
 const MAP_DIV_ID = 'mapdiv';
-var onemap;
+let onemap;
 const searchQuery = ref('');
 let allMarkers = []; // NOTE: Used to clear past results.
+let moveThrottleTimeout = null; // throttle timer
+const THROTTLE_INTERVAL = 2000;
+
+const MAX_ZOOM = 19;
+const MIN_ZOOM = 15;
 
 const performSearch = async () => {
     const query = searchQuery.value.trim();
@@ -23,29 +28,50 @@ const performSearch = async () => {
         const result = data.results[0];
         const lat = parseFloat(result.LATITUDE);
         const lng = parseFloat(result.LONGITUDE);
-        onemap.setView([lat, lng], 17); // Recenter map
+        const zoom = 17;
+        onemap.setView([lat, lng], zoom);
 
-        // TODO: Grab from firebase.
-        const SIMULATED_NEARBY = [
-            {
-                name: `${result.SEARCHVAL} Place A`,
-                coords: [lat + 0.002, lng + 0.002],
-                img: 'https://upload.wikimedia.org/wikipedia/commons/2/20/View_of_MBS_from_the_gardens_%288026531707%29.jpg',
-                desc: 'Nearby point of interest.'
-            },
-            {
-                name: `${result.SEARCHVAL} Place B`,
-                coords: [lat - 0.002, lng - 0.001],
-                img: 'https://imgcdn.flamingotravels.co.in/Images/PlacesOfInterest/Gardens-By-The-Bay-3.jpg',
-                desc: 'Another nearby location.'
-            }
-        ];
-        updateMapDiv(SIMULATED_NEARBY);
+        const simulated = generateSimulatedData(lat, lng, zoom);
+        updateMapDiv(simulated);
     } catch (e) {
         console.error("Search error:", e);
         alert("Failed to fetch location.");
     }
 };
+
+// TODO: Replace this later with firebase
+function generateSimulatedData(lat, lng, zoomLevel) {
+    const MAX_POINTS = 20;
+    const MIN_POINTS = 2;
+    const numPoints = Math.min(
+        MAX_POINTS,
+        Math.max(
+            MIN_POINTS,
+            Math.floor((MAX_ZOOM - zoomLevel) * (MAX_POINTS / (MAX_ZOOM - MIN_ZOOM)))
+        )
+    ) // More zoom results in more data given
+    console.log("numPoints generated for fake data: " + numPoints);
+
+    const markers = []
+    for (let i = 0; i < numPoints; i++) {
+        const offsetLat = (Math.random() - 0.5) * (0.25 / zoomLevel)
+        const offsetLng = (Math.random() - 0.5) * (0.25 / zoomLevel)
+        markers.push({
+            name: `Simulated Cat ${i + 1}`,
+            coords: [lat + offsetLat, lng + offsetLng],
+            image: 'https://picsum.photos/80?random=' + i,
+            img: [
+                'https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg',
+                'https://cataas.com/cat',
+                'https://cataas.com/cat/gif',
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Six_weeks_old_cat_%28aka%29.jpg/1200px-Six_weeks_old_cat_%28aka%29.jpg',
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/250px-Cat_November_2010-1a.jpg',
+            ][i % 5],
+            desc: `Zoom Level: ${zoomLevel}. Randomly generated nearby cat profile.`,
+        })
+    }
+    return markers
+}
 
 function updateMapDiv(catMapData) {
     if (!window.L) {
@@ -68,21 +94,19 @@ function updateMapDiv(catMapData) {
 
     catMapData.forEach(data => {
         const popupContent = `
-                <div class="card" style="width: 18rem; border: none;">
-                  <div class="row g-0 align-items-center">
-                    <div class="col-4">
-                      <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
-                    </div>
-                    <div class="col-8">
-                      <div class="card-body p-0">
-                        <h6 class="card-title mb-1">${data.name}</h6>
-                        <p class="card-text small text-muted m-0">
-                            ${data.desc}
-                        </p>
-                      </div>
-                    </div>
+            <div class="card" style="width: 18rem; border: none;">
+              <div class="row g-0 align-items-center">
+                <div class="col-4">
+                  <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
+                </div>
+                <div class="col-8">
+                  <div class="card-body p-0">
+                    <h6 class="card-title mb-1">${data.name}</h6>
+                    <p class="card-text small text-muted m-0">${data.desc}</p>
                   </div>
-                </div>`;
+                </div>
+              </div>
+            </div>`;
 
         const marker = L.marker(data.coords, { icon: markerIcon })
             .addTo(onemap)
@@ -93,7 +117,6 @@ function updateMapDiv(catMapData) {
         allMarkers.push(marker);
     });
 }
-
 
 onMounted(async () => {
     const leafletCSS = document.createElement('link')
@@ -117,17 +140,31 @@ onMounted(async () => {
         const bounds = L.latLngBounds(sw, ne);
 
         onemap = L.map(MAP_DIV_ID, {
-            center: L.latLng(1.2868108, 103.8545349), // fallback
+            center: L.latLng(1.2868108, 103.8545349),
             zoom: 16,
         });
         onemap.setMaxBounds(bounds);
 
         const basemap = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default/{z}/{x}/{y}.png', {
             detectRetina: true,
-            maxZoom: 19,
-            minZoom: 11,
+            maxZoom: MAX_ZOOM,
+            minZoom: MIN_ZOOM,
         });
         basemap.addTo(onemap);
+
+        // NOTE: To not spam our firebase, we need to throttle cap the updates.
+        onemap.on('moveend', () => {
+            if (moveThrottleTimeout) clearTimeout(moveThrottleTimeout);
+            moveThrottleTimeout = setTimeout(() => {
+                const center = onemap.getCenter();
+                const zoom = onemap.getZoom();
+                console.log('Map moved → center:', center, 'zoom:', zoom);
+
+                // TODO: Replace with Firebase query later
+                const simulated = generateSimulatedData(center.lat, center.lng, zoom);
+                updateMapDiv(simulated);
+            }, THROTTLE_INTERVAL);
+        });
 
         // If we can get the user's device location.
         if (navigator.geolocation) {
@@ -135,8 +172,8 @@ onMounted(async () => {
                 pos => {
                     const { latitude, longitude } = pos.coords;
                     console.log('User location:', latitude, longitude);
-
-                    onemap.setView([latitude, longitude], 17);
+                    const zoom = 17;
+                    onemap.setView([latitude, longitude], zoom);
 
                     // Add user location marker.
                     const userMarker = L.circleMarker([latitude, longitude], {
@@ -148,27 +185,7 @@ onMounted(async () => {
                         fillOpacity: 0.9
                     }).addTo(onemap);
 
-                    // TODO: Need to grab from firebase.
-                    const SIMULATED_NEARBY = [
-                        {
-                            name: 'Nearby Café',
-                            coords: [latitude + 0.001, longitude + 0.001],
-                            img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Latte_and_dark_coffee.jpg/320px-Latte_and_dark_coffee.jpg',
-                            desc: 'A cozy café just a few minutes away.'
-                        },
-                        {
-                            name: 'Community Park',
-                            coords: [latitude - 0.001, longitude + 0.0015],
-                            img: 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Community_park.jpg',
-                            desc: 'A green spot nearby for walks and relaxation.'
-                        },
-                        {
-                            name: 'Local Food Centre',
-                            coords: [latitude - 0.0015, longitude - 0.001],
-                            img: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Hawker_centre_food.jpg',
-                            desc: 'A nearby hawker centre with authentic local dishes.'
-                        }
-                    ];
+                    const SIMULATED_NEARBY = generateSimulatedData(latitude, longitude, zoom);
                     updateMapDiv(SIMULATED_NEARBY);
                 },
                 err => {
@@ -191,7 +208,6 @@ onMounted(async () => {
     </Navbar>
 
     <div class="container">
-        <!-- 🔍 Search Bar -->
         <div class="input-group my-3">
             <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." />
             <button class="btn btn-primary" @click="performSearch()">Search</button>
