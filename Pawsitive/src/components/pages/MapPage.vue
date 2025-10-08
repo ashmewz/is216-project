@@ -71,13 +71,12 @@ function updateMapDiv(catMapData) {
                 <div class="card" style="width: 18rem; border: none;">
                   <div class="row g-0 align-items-center">
                     <div class="col-4">
-                      <img src="${data.img}"
-                           class="img-fluid rounded-start" alt="${data.name}">
+                      <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
                     </div>
                     <div class="col-8">
-                      <div class="card-body py-2 px-3">
+                      <div class="card-body p-0">
                         <h6 class="card-title mb-1">${data.name}</h6>
-                        <p class="card-text small text-muted mb-0">
+                        <p class="card-text small text-muted m-0">
                             ${data.desc}
                         </p>
                       </div>
