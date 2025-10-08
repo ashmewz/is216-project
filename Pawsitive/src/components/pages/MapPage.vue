@@ -70,12 +70,9 @@ onMounted(async () => {
 a {
     display: inline-flex;
 }
-.leaflet-control-attribution {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    background-color: black;
+:deep(.leaflet-control-attribution) {
+    display: inline-flex !important;
+    align-items: center !important;
 }
 .map-container {
   width: 100%;
