@@ -48,7 +48,8 @@ export default {
             }
         },
         async handleRegister() {
-            console.log('Register:', this.registerForm);
+
+            this.errorMessage = ""; // reset previous errors
 
             try {
 
@@ -83,6 +84,7 @@ export default {
             }
         },
         toggleForm() {
+            this.errorMessage = ""; // reset previous errors
             this.isLogin = !this.isLogin;
         }
     }
