@@ -203,37 +203,59 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Navbar>
-        <template #navbar-title>Map</template>
-    </Navbar>
+    <div class="page-wrapper">
+        <Navbar>
+            <template #navbar-title>Map</template>
+        </Navbar>
 
-    <div class="container">
-        <div class="input-group my-3">
-            <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." />
-            <button class="btn btn-primary" @click="performSearch()">Search</button>
+        <div class="content">
+            <div class="map-page-container">
+                <div class="input-group p-3">
+                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." />
+                    <button class="btn btn-primary" @click="performSearch">Search</button>
+                </div>
+
+                <div id="mapdiv" class="map-container"></div>
+            </div>
         </div>
 
-        <div id="mapdiv" class="map-container"></div>
+        <BottomFooter />
     </div>
-
-    <BottomFooter />
 </template>
 
 <style scoped>
-a {
-    display: inline-flex;
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    /* Full viewport height */
+    overflow: hidden;
+    /* Prevent vertical scrolling */
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.map-page-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.map-container {
+    flex: 1;
+    /* stretch fully within given container */
+    width: 100%;
+    border: 1px solid #ccc;
 }
 
 :deep(.leaflet-control-attribution) {
     display: inline-flex !important;
     align-items: center !important;
-}
-
-.map-container {
-    width: 100%;
-    height: 600px;
-    margin: 1rem 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
 }
 </style>
