@@ -8,7 +8,7 @@ let onemap;
 const searchQuery = ref('');
 let allMarkers = []; // NOTE: Used to clear past results.
 let moveThrottleTimeout = null; // throttle timer
-const THROTTLE_INTERVAL = 2000;
+const THROTTLE_INTERVAL = 1000;
 
 const MAX_ZOOM = 19;
 const MIN_ZOOM = 15;
@@ -31,13 +31,16 @@ const performSearch = async () => {
         const zoom = 17;
         onemap.setView([lat, lng], zoom);
 
-        const simulated = generateSimulatedData(lat, lng, zoom);
-        updateMapDiv(simulated);
+        updateMapDiv(getCatData(lat, lng, zoom));
     } catch (e) {
         console.error("Search error:", e);
         alert("Failed to fetch location.");
     }
 };
+
+function getCatData(lat, lng, zoom) {
+    return generateSimulatedData(lat, lng, zoom);
+}
 
 // TODO: Replace this later with firebase
 function generateSimulatedData(lat, lng, zoomLevel) {
@@ -160,9 +163,7 @@ onMounted(async () => {
                 const zoom = onemap.getZoom();
                 console.log('Map moved → center:', center, 'zoom:', zoom);
 
-                // TODO: Replace with Firebase query later
-                const simulated = generateSimulatedData(center.lat, center.lng, zoom);
-                updateMapDiv(simulated);
+                updateMapDiv(getCatData(center.lat, center.lng, zoom));
             }, THROTTLE_INTERVAL);
         });
 
@@ -185,8 +186,7 @@ onMounted(async () => {
                         fillOpacity: 0.9
                     }).addTo(onemap);
 
-                    const SIMULATED_NEARBY = generateSimulatedData(latitude, longitude, zoom);
-                    updateMapDiv(SIMULATED_NEARBY);
+                    updateMapDiv(getCatData(latitude, longitude, zoom));
                 },
                 err => {
                     console.warn('Geolocation failed or denied:', err.message);
