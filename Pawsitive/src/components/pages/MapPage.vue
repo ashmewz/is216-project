@@ -210,7 +210,7 @@ onMounted(async () => {
 
         <div class="content">
             <div class="map-page-container">
-                <div class="input-group p-3">
+                <div class="search-overlay input-group">
                     <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." />
                     <button class="btn btn-primary" @click="performSearch">Search</button>
                 </div>
@@ -227,10 +227,10 @@ onMounted(async () => {
 .page-wrapper {
     display: flex;
     flex-direction: column;
-    height: 100vh;
     /* Full viewport height */
-    overflow: hidden;
+    height: 100vh;
     /* Prevent vertical scrolling */
+    overflow: hidden;
 }
 
 .content {
@@ -245,13 +245,29 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
 }
 
 .map-container {
     flex: 1;
     /* stretch fully within given container */
     width: 100%;
+    height: 100%;
     border: 1px solid #ccc;
+}
+
+.search-overlay {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translate(-50%);
+    width: 80%;
+    z-index: 10000;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    margin: 0rem 1.6rem;
 }
 
 :deep(.leaflet-control-attribution) {
