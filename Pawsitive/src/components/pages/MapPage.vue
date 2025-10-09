@@ -9,6 +9,8 @@ const searchQuery = ref('');
 let allMarkers = []; // NOTE: Used to clear past results.
 let moveThrottleTimeout = null; // throttle timer
 const THROTTLE_INTERVAL = 1000;
+const POLL_TOLERANCE = 0.01;
+let lastCenter = { lat: 0, lng: 0 };
 
 const MAX_ZOOM = 19;
 const DEFAULT_ZOOM = 17;
@@ -143,8 +145,10 @@ onMounted(async () => {
         const ne = L.latLng(1.494, 104.502);
         const bounds = L.latLngBounds(sw, ne);
 
+        lastCenter.lat = 1.2868108;
+        lastCenter.lng = 103.8545349;
         onemap = L.map(MAP_DIV_ID, {
-            center: L.latLng(1.2868108, 103.8545349),
+            center: L.latLng(lastCenter.lat, lastCenter.lng),
             zoom: DEFAULT_ZOOM,
         });
         onemap.setMaxBounds(bounds);
@@ -162,8 +166,12 @@ onMounted(async () => {
             moveThrottleTimeout = setTimeout(() => {
                 const center = onemap.getCenter();
                 const zoom = onemap.getZoom();
-                console.log('Map moved → center:', center, 'zoom:', zoom);
+                if (Math.abs(lastCenter.lat - center.lat) <= POLL_TOLERANCE &&
+                    Math.abs(lastCenter.lng - center.lng) <= POLL_TOLERANCE) return;
 
+                console.log('Updating Map: Map moved prev:', lastCenter, ' → new center:', center, 'zoom:', zoom);
+                lastCenter.lat = center.lat;
+                lastCenter.lng = center.lng;
                 updateMapDiv(getCatData(center.lat, center.lng, zoom));
             }, THROTTLE_INTERVAL);
         });
@@ -173,6 +181,8 @@ onMounted(async () => {
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     const { latitude, longitude } = pos.coords;
+                    lastCenter.lat = latitude;
+                    lastCenter.lng = longitude;
                     console.log('User location:', latitude, longitude);
                     const zoom = DEFAULT_ZOOM;
                     onemap.setView([latitude, longitude], zoom);
