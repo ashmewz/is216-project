@@ -65,4 +65,7 @@
 
 </template>
 
-<style scoped></style>
+<style scoped>
+.navbar {
+    z-index: 10100;
+}</style>
