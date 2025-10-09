@@ -11,6 +11,7 @@ let moveThrottleTimeout = null; // throttle timer
 const THROTTLE_INTERVAL = 1000;
 
 const MAX_ZOOM = 19;
+const DEFAULT_ZOOM = 17;
 const MIN_ZOOM = 15;
 
 const performSearch = async () => {
@@ -28,7 +29,7 @@ const performSearch = async () => {
         const result = data.results[0];
         const lat = parseFloat(result.LATITUDE);
         const lng = parseFloat(result.LONGITUDE);
-        const zoom = 17;
+        const zoom = DEFAULT_ZOOM;
         onemap.setView([lat, lng], zoom);
 
         updateMapDiv(getCatData(lat, lng, zoom));
@@ -103,7 +104,7 @@ function updateMapDiv(catMapData) {
                   <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
                 </div>
                 <div class="col-8">
-                  <div class="card-body p-0">
+                  <div class="card-body p-0 ps-2">
                     <h6 class="card-title mb-1">${data.name}</h6>
                     <p class="card-text small text-muted m-0">${data.desc}</p>
                   </div>
@@ -144,7 +145,7 @@ onMounted(async () => {
 
         onemap = L.map(MAP_DIV_ID, {
             center: L.latLng(1.2868108, 103.8545349),
-            zoom: 16,
+            zoom: DEFAULT_ZOOM,
         });
         onemap.setMaxBounds(bounds);
 
@@ -173,7 +174,7 @@ onMounted(async () => {
                 pos => {
                     const { latitude, longitude } = pos.coords;
                     console.log('User location:', latitude, longitude);
-                    const zoom = 17;
+                    const zoom = DEFAULT_ZOOM;
                     onemap.setView([latitude, longitude], zoom);
 
                     // Add user location marker.
