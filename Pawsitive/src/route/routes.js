@@ -5,7 +5,7 @@ import {
 
 // TODO: Remove thse two when we're done.
 import RouterTest from '@/components/RouterTest.vue';
-import KevanTest from "@/components/KevanTest.vue";
+
 // End of TODO
 
 import MapPage from "@/components/pages/MapPage.vue";
@@ -25,10 +25,6 @@ const routes = [
         path: '/',
         // TODO: New Landing Pagde
         component: RouterTest
-    },
-    {
-        path: '/KevanTest/',
-        component: KevanTest
     },
     {
         path: '/map/',
@@ -53,6 +49,8 @@ const routes = [
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
+        
+        //might need to setup something like a route guard? to prevent user to access /signup and /login routes if they are loggedin
     },
     {
         path: '/volunteer/profile/',
