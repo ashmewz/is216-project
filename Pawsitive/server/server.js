@@ -3,6 +3,8 @@ import Stripe from 'stripe'
 import cors from 'cors'
 import dotenv from 'dotenv'
 
+// Run 'node server/server.js' on a separate powershell to run on 2 servers
+
 dotenv.config()
 const app = express()
 app.use(cors())
