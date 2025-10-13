@@ -1,7 +1,7 @@
 <script setup>
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import { auth } from "../../firebase";
+import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase"; 

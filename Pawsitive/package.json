@@ -14,8 +14,13 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
+    "@stripe/stripe-js": "^8.0.0",
     "bootstrap": "^5.3.8",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "firebase": "^12.3.0",
+    "stripe": "^19.1.0",
     "vue": "^3.5.18",
     "vue-router": "^4.0.13"
   },

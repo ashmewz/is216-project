@@ -24,7 +24,7 @@
                         <RouterLink class="nav-link" to="/report/">Report</RouterLink>
                     </li>
                     <li class="nav-item">
-                        <RouterLink class="nav-link" to="/donations/">Donations</RouterLink>
+                        <RouterLink class="nav-link" to="/donations">Donations</RouterLink>
                     </li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" id="navbar-volunteer-dropdown" role="button" data-bs-toggle="dropdown">

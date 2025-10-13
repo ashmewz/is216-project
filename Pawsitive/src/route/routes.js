@@ -8,23 +8,24 @@ import RouterTest from '@/components/RouterTest.vue';
 
 // End of TODO
 
-import MapPage from "@/components/pages/MapPage.vue";
-import ForumPage from "@/components/pages/ForumPage.vue";
-import ReportPage from "@/components/pages/ReportPage.vue";
-import VolunteerSignupLoginPage from "@/components/pages/VolunteerSignupLoginPage.vue";
-import VolunteerProfilePage from "@/components/pages/VolunteerProfilePage.vue";
-import AdoptionListPage from "@/components/pages/AdoptionListPage.vue";
-import DonationPage from "@/components/pages/DonationPage.vue";
-import ServicesPage from "@/components/pages/ServicesPage.vue";
-import AiRecogPage from "@/components/pages/AiRecogPage.vue";
-import AiGuidebookPage from "@/components/pages/AiGuidebookPage.vue";
+import MapPage from "@/pages/MapPage.vue";
+import ForumPage from "@/pages/ForumPage.vue";
+import ReportPage from "@/pages/ReportPage.vue";
+import VolunteerSignupLoginPage from "@/pages/VolunteerSignupLoginPage.vue";
+import VolunteerProfilePage from "@/pages/VolunteerProfilePage.vue";
+import AdoptionListPage from "@/pages/AdoptionListPage.vue";
+import DonationPage from "@/pages/DonationPage.vue";
+import ServicesPage from "@/pages/ServicesPage.vue";
+import AiRecogPage from "@/pages/AiRecogPage.vue";
+import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
+import LandingPage from "@/pages/LandingPage.vue";
 
 const history = createWebHistory();
 const routes = [
     {
         path: '/',
         // TODO: New Landing Pagde
-        component: RouterTest
+        component: LandingPage
     },
     {
         path: '/map/',

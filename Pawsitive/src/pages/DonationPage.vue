@@ -1,42 +1,79 @@
 <script setup>
-import NavBar from '@/components/resuables/Navbar.vue';
-import { ref } from "vue";
-import BottomFooter from '@/components/resuables/BottomFooter.vue';
+import { ref } from 'vue'
+import NavBar from '@/components/resuables/Navbar.vue'
+import BottomFooter from '@/components/resuables/BottomFooter.vue'
+import StripePayment from '@/components/subcomponents/StripePayment.vue'
 
-// Replace this with your actual Stripe Payment Link
-const stripeLink = "https://buy.stripe.com/test_123456789ABCDEFG";
+const amount = ref(10)
+const clientSecret = ref(null)
+const loading = ref(false)
 
-const thankYou = ref("");
+async function createPaymentIntent() {
+  if (amount.value < 1) return alert("Please enter a valid amount")
 
-function goToStripe() {
-  window.location.href = stripeLink;
+  loading.value = true
+  console.log("Sending donation amount:", amount.value)
+
+  try {
+    const res = await fetch('http://localhost:4242/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amount.value }),
+    })
+    const data = await res.json()
+    console.log("Stripe response:", data)
+
+    if (data.clientSecret) {
+      clientSecret.value = data.clientSecret
+    } else {
+      alert(data.error || 'Something went wrong')
+    }
+  } catch (err) {
+    console.error(err)
+    alert('Error connecting to server')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
-    <div>
-        <NavBar \></NavBar>
-    </div>
+  <div>
+    <NavBar />
+
     <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
-    <h1 class="text-4xl font-bold mb-4 text-center">Support Our Cause ❤️</h1>
-    <p class="text-gray-600 max-w-md text-center mb-8">
-      Your contribution helps us continue our wellness and sustainability programs. Every bit counts!
-    </p>
+      <h1 class="text-4xl font-bold mb-4 text-center">Support Our Cause ❤️</h1>
+      <p class="text-gray-600 text-center max-w-md mb-6">
+        Enter an amount and donate securely with Stripe's embedded payment form.
+      </p>
 
-    <button
-      @click="goToStripe"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg shadow-md transition-all"
-    >
-      Donate Now
-    </button>
+      <div class="flex gap-3 mb-6">
+        <input
+          v-model.number="amount"
+          type="number"
+          class="border rounded-md px-4 py-2"
+          placeholder="Amount (USD)"
+        />
+        <button
+          @click="createPaymentIntent"
+          :disabled="loading"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+        >
+          {{ loading ? 'Loading...' : 'Continue' }}
+        </button>
+      </div>
 
-    <p v-if="thankYou" class="mt-6 text-green-600 text-lg">{{ thankYou }}</p>
+      <div v-if="clientSecret">
+        <StripePayment :client-secret="clientSecret" />
+      </div>
+    </div>
+
+    <BottomFooter />
   </div>
-  <BottomFooter \></BottomFooter>
 </template>
 
 <style scoped>
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 </style>
