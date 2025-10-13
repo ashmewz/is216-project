@@ -6,12 +6,16 @@ import '@/assets/base.css'
 const router = useRouter()
 
 const texts = [
-  "Welcome to Pawsitive!",
-  "We help all feline communities to live well and thrive!",
-  "Are you ready to MEOW?",
+  "ow",
+  "OW",
+  "OW OW OW",
+  "STOP POKING ME",
+  "MEOWWWWWW",
+  "MEOWWWW MEOWWWWWWWWWW",
+  "bleh :p"
 ]
 const currentTextIndex = ref(0)
-const showText = ref(true)
+const showText = ref(false)
 const buttonVisible = ref(false)
 
 onMounted(() => {
@@ -21,13 +25,12 @@ onMounted(() => {
 })
 
 function nextText() {
-  showText.value = false
-  setTimeout(() => {
-    currentTextIndex.value =
-      (currentTextIndex.value + 1) % texts.length
-    showText.value = true
-  }, 300)
+    if (!showText.value) {
+        showText.value = true
+    }
+    currentTextIndex.value = (currentTextIndex.value + 1) % texts.length
 }
+
 
 function goToMap() {
   router.push('/map')
@@ -46,14 +49,12 @@ function goToMap() {
             playsinline
             class="landing-video explode-bounce gif"
             style="border-radius: 50%;"
+            @click="nextText"
         ></video>
-
-        <!-- <img src="/src/assets/pawsitive_gif_bgnone.gif" alt=""> -->
 
         <div
         v-if="showText"
-        class="mt-8 text-center max-w-xl text-2xl font-semibold transition-opacity duration-300 cursor-pointer"
-        @click="nextText"
+        class="mt-8 text-center transition-opacity"
         >
         {{ texts[currentTextIndex] }}
         </div>
@@ -79,7 +80,7 @@ function goToMap() {
     justify-content: center;
     align-items: center;
     background-color: var(--blue);
-    gap: 20px;
+    gap: 40px;
 }
 
 .gif {
