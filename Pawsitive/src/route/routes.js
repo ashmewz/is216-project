@@ -24,7 +24,7 @@ const routes = [
     {
         path: '/',
         // TODO: New Landing Pagde
-        component: RouterTest
+        component: LandingPage
     },
     {
         path: '/map/',
