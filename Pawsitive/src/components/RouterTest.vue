@@ -47,6 +47,7 @@ export default {
   <RouterLink to="/map/">Map</RouterLink>
   <RouterLink to="/forum/">Forum</RouterLink>
   <RouterLink to="/report/">Report</RouterLink>
+  <RouterLink to="/donations/">Donations</RouterLink>
   <RouterLink to="/volunteer/signup/">Sign Up</RouterLink> 
   <RouterLink to="/volunteer/login/">Log in</RouterLink>
   <RouterLink to="/volunteer/profile/">Volunteer Profile</RouterLink>

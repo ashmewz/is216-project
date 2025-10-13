@@ -24,7 +24,7 @@ const routes = [
     {
         path: '/',
         // TODO: New Landing Pagde
-        component: LandingPage
+        component: RouterTest
     },
     {
         path: '/map/',
@@ -63,7 +63,7 @@ const routes = [
         component: AdoptionListPage
     },
     {
-        path: '/donation/',
+        path: '/donations/',
         component: DonationPage
     },
     {
