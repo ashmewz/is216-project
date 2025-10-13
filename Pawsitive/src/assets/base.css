@@ -1,4 +1,15 @@
 /* color palette from <https://github.com/vuejs/theme> */
+
+/* Colours: f8e1e1 (pink), 806E83 (purple), c1cfe6 (light blue), 99b4da (another blue), 6982B5 (dark blue), FFFDF7 (off white) */
+:root {
+  --pink: #f8e1e1;
+  --light-blue: #c1cfe6;
+  --blue: #C0CBE6;
+  --dark-blue: #6982B5; 
+  --purple: #806E83;
+  --white-off: #FFFDF7;
+}
+/* 
 :root {
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8f8f8;
@@ -19,10 +30,10 @@
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
+} */
 
 /* semantic color variables for this project */
-:root {
+/* :root {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
@@ -83,4 +94,4 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import '@/assets/base.css'
 
 const router = useRouter()
 
@@ -28,7 +29,7 @@ function nextText() {
   }, 300)
 }
 
-function goToPlaceholder() {
+function goToMap() {
   router.push('/map')
 }
 </script>
@@ -44,7 +45,10 @@ function goToPlaceholder() {
             loop
             playsinline
             class="landing-video explode-bounce gif"
+            style="border-radius: 50%;"
         ></video>
+
+        <!-- <img src="/src/assets/pawsitive_gif_bgnone.gif" alt=""> -->
 
         <div
         v-if="showText"
@@ -56,10 +60,10 @@ function goToPlaceholder() {
 
         <button
         @click="goToMap"
-        class="mt-12 bg-white text-purple-700 font-bold px-8 py-3 rounded-full shadow-lg transform transition-all duration-500"
+        class="mt-6 bg-white transform transition-all duration-500"
         :class="buttonVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'"
         >
-        Welcome
+        Access Page
         </button>
     </div>
 </template>
@@ -74,6 +78,8 @@ function goToPlaceholder() {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: var(--blue);
+    gap: 20px;
 }
 
 .gif {
