@@ -10,6 +10,8 @@ const mainContent = document.getElementById('main-content');
 const searchInput = document.getElementById('searchInput');
 const postsContainer = document.getElementById('posts-container');
 
+
+// world
 // Sidebar functions
 function openSidebar() {
   sidebar.classList.add('open');
