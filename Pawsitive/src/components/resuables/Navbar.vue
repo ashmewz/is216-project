@@ -1,7 +1,11 @@
 <script setup>
 import { useRoute } from "vue-router";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 const route = useRoute(); 
+=======
+const route = useRoute(); // used to detect active route path
+>>>>>>> Stashed changes
 =======
 const route = useRoute(); // used to detect active route path
 >>>>>>> Stashed changes
@@ -11,7 +15,11 @@ const route = useRoute(); // used to detect active route path
   <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
     <div class="container-fluid">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       <RouterLink to="/" class="navbar-brand d-flex align-items-center gap-2">
+=======
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+>>>>>>> Stashed changes
 =======
       <a class="navbar-brand d-flex align-items-center gap-2" href="#">
 >>>>>>> Stashed changes
@@ -21,8 +29,12 @@ const route = useRoute(); // used to detect active route path
           class="navbar-logo"
         />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <span class="fw-bold">Pawsitive</span>
       </RouterLink>
+=======
+      </a>
+>>>>>>> Stashed changes
 =======
       </a>
 >>>>>>> Stashed changes
@@ -33,6 +45,12 @@ const route = useRoute(); // used to detect active route path
         data-bs-toggle="collapse"
         data-bs-target="#pawsitive-navbar"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        aria-controls="pawsitive-navbar"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+>>>>>>> Stashed changes
 =======
         aria-controls="pawsitive-navbar"
         aria-expanded="false"
@@ -43,14 +61,20 @@ const route = useRoute(); // used to detect active route path
       </button>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       <div class="collapse navbar-collapse" id="pawsitive-navbar">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 =======
+=======
+>>>>>>> Stashed changes
       <!-- Nav Links -->
       <div class="collapse navbar-collapse" id="pawsitive-navbar">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
           <!-- Standard links -->
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
           <li class="nav-item">
             <RouterLink
@@ -58,13 +82,19 @@ const route = useRoute(); // used to detect active route path
               :class="{ active: route.path.startsWith('/map') }"
               to="/map/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             >Map</RouterLink>
           </li>
 =======
+=======
+>>>>>>> Stashed changes
               >Map</RouterLink
             >
           </li>
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
           <li class="nav-item">
             <RouterLink
@@ -72,19 +102,26 @@ const route = useRoute(); // used to detect active route path
               :class="{ active: route.path.startsWith('/forum') }"
               to="/forum/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             >Forum</RouterLink>
           </li>
 =======
+=======
+>>>>>>> Stashed changes
               >Forum</RouterLink
             >
           </li>
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
           <li class="nav-item">
             <RouterLink
               class="nav-link"
               :class="{ active: route.path.startsWith('/report') }"
               to="/report/"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             >Report</RouterLink>
           </li>
@@ -100,6 +137,8 @@ const route = useRoute(); // used to detect active route path
               class="nav-link dropdown-toggle"
               href="#"
 =======
+=======
+>>>>>>> Stashed changes
               >Report</RouterLink
             >
           </li>
@@ -109,6 +148,9 @@ const route = useRoute(); // used to detect active route path
             <a
               href="#"
               class="nav-link dropdown-toggle"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
               id="navbar-volunteer-dropdown"
               role="button"
@@ -123,7 +165,12 @@ const route = useRoute(); // used to detect active route path
                   :class="{ active: route.path.startsWith('/volunteer/signup') }"
                   to="/volunteer/signup/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 >Sign Up</RouterLink>
+=======
+                  >Sign Up</RouterLink
+                >
+>>>>>>> Stashed changes
 =======
                   >Sign Up</RouterLink
                 >
@@ -135,7 +182,12 @@ const route = useRoute(); // used to detect active route path
                   :class="{ active: route.path.startsWith('/volunteer/login') }"
                   to="/volunteer/login/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 >Log in</RouterLink>
+=======
+                  >Log in</RouterLink
+                >
+>>>>>>> Stashed changes
 =======
                   >Log in</RouterLink
                 >
@@ -147,16 +199,20 @@ const route = useRoute(); // used to detect active route path
                   :class="{ active: route.path.startsWith('/volunteer/profile') }"
                   to="/volunteer/profile/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 >Volunteer Profile</RouterLink>
               </li>
             </ul>
           </li>
 =======
+=======
+>>>>>>> Stashed changes
                   >Volunteer Profile</RouterLink
                 >
               </li>
             </ul>
           </li>
+<<<<<<< Updated upstream
 
 >>>>>>> Stashed changes
           <li class="nav-item">
@@ -214,6 +270,27 @@ const route = useRoute(); // used to detect active route path
             >
           </li>
 
+=======
+
+          <li class="nav-item">
+            <RouterLink
+              class="nav-link"
+              :class="{ active: route.path.startsWith('/adoption') }"
+              to="/adoption/"
+              >Adoption</RouterLink
+            >
+          </li>
+
+          <li class="nav-item">
+            <RouterLink
+              class="nav-link"
+              :class="{ active: route.path.startsWith('/services') }"
+              to="/services/"
+              >Services</RouterLink
+            >
+          </li>
+
+>>>>>>> Stashed changes
           <!-- AI Dropdown -->
           <li class="nav-item dropdown">
             <a
@@ -244,6 +321,9 @@ const route = useRoute(); // used to detect active route path
               </li>
             </ul>
           </li>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         </ul>
       </div>
@@ -257,6 +337,7 @@ const route = useRoute(); // used to detect active route path
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /* Logo size */
 .navbar-logo {
   width: 50px;
@@ -266,6 +347,8 @@ const route = useRoute(); // used to detect active route path
 
 /* Active link styling */
 =======
+=======
+>>>>>>> Stashed changes
 /* Logo placeholder */
 .navbar-logo {
   width: 54px;
@@ -273,6 +356,9 @@ const route = useRoute(); // used to detect active route path
 }
 
 /* Highlight active nav link */
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 .nav-link.active,
 .dropdown-item.active {
@@ -282,6 +368,7 @@ const route = useRoute(); // used to detect active route path
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /* Dropdown appearance */
 .dropdown-menu {
   border-radius: 0.5rem;
@@ -290,6 +377,8 @@ const route = useRoute(); // used to detect active route path
 
 /* Hover effect */
 =======
+=======
+>>>>>>> Stashed changes
 /* Improve dropdown appearance */
 .dropdown-menu {
   border-radius: 0.5rem;
@@ -297,6 +386,9 @@ const route = useRoute(); // used to detect active route path
 }
 
 /* Slight hover feedback */
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 .nav-link:hover,
 .dropdown-item:hover {
