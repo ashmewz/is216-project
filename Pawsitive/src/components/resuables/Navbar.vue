@@ -50,6 +50,16 @@ const route = useRoute();
           <li class="nav-item">
             <RouterLink
               class="nav-link"
+              :class="{ active: route.path.startsWith('/donations') }"
+              to="/donations/"
+            >
+              Donations
+            </RouterLink>
+          </li>
+
+          <li class="nav-item">
+            <RouterLink
+              class="nav-link"
               :class="{ active: route.path.startsWith('/report') }"
               to="/report/"
             >
