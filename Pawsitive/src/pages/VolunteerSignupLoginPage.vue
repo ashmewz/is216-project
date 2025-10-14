@@ -110,7 +110,7 @@ export default {
                     class="col-md-6 d-none d-md-flex flex-column justify-content-center align-items-center bg-secondary text-white p-4 rounded-start">
                     <h1>Welcome!</h1>
                     <p class="lead text-center">Join our volunteer community and make a difference.</p>
-                    <img src="../../assets/pawsitive-logo.png" alt="Graphic" class="img-fluid rounded mt-3">
+                    <img src="../assets/pawsitive-logo.png" alt="Graphic" class="img-fluid rounded mt-3">
                 </div>
 
                 <!-- Right Section (Auth Form) -->
