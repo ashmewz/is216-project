@@ -70,8 +70,8 @@ const filteredProviders = computed(() => {
 </script>
 
 <template>
+  <Navbar />
   <div class="container my-5">
-    <Navbar />
     <h2 class="fw-bold mb-4 text-center">Find a Pet Service Provider</h2>
 
     <div class="row g-3 mb-4 align-items-end">
