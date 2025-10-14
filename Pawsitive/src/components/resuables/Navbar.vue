@@ -110,6 +110,15 @@ const route = useRoute();
           <li class="nav-item">
             <RouterLink
               class="nav-link"
+              :class="{ active: route.path.startsWith('/services') }"
+              to="/services/"
+            >
+              Services
+            </RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink
+              class="nav-link"
               :class="{ active: route.path.startsWith('/adoption') }"
               to="/adoption/"
             >
