@@ -262,4 +262,12 @@ body {
   background: #806E83;
   color: #fff;
 }
+
+/* Add consistent image sizing without cropping */
+/* Make images fit naturally without cropping */
+.post img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
 </style>
