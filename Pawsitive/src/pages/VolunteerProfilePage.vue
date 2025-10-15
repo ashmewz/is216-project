@@ -156,7 +156,8 @@ onMounted(() => {
 
                     <div class="mb-3 text-start">
                         <small class="text-muted">Email</small>
-                        <p class="card-text">{{ user.email }}</p>
+                        <p class="card-text" v-if="user.displayName && user.displayName.trim() !== ''">{{ user.email }}</p>
+                        <p class="card-text text-muted fst-italic" v-else>Error displaying name</p>
                     </div>
 
                     <div class="mb-3 text-start">
