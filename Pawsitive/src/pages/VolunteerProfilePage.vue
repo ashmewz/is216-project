@@ -157,7 +157,8 @@ onMounted(() => {
 
                     <div class="mb-3 text-start">
                         <small class="text-muted">Bio</small>
-                        <p class="card-text">{{ user.bio }}</p>
+                        <p class="card-text" v-if="user.bio && user.bio.trim() !== ''">{{ user.bio }}</p>
+                        <p class="card-text text-muted fst-italic" v-else>No bio yet</p>
                     </div>
 
                     <!-- Buttons -->

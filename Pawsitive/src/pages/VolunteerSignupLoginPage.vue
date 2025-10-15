@@ -41,8 +41,7 @@ export default {
                     this.loginForm.password
                 );
 
-                // if login success go to root page
-                
+                // if login success go to profile page
                 this.$router.push("/volunteer/profile"); 
 
             } catch (error) {
@@ -76,8 +75,8 @@ export default {
                     createdAt: serverTimestamp()
                 });
 
-                //go to root page if login success
-                this.$router.push('/');
+                //go to profile if login success
+                this.$router.push("/volunteer/profile"); 
 
 
             } catch (error) {
