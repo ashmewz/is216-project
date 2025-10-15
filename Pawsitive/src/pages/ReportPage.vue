@@ -101,6 +101,17 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
   color: #555;
 }
 
+<<<<<<< Updated upstream
+=======
+/* Add space below Read More button on mobile */
+@media (max-width: 768px) {
+  .latest-news .btn,
+  .news-card .btn {
+    margin-bottom: 2rem;
+  }
+}
+
+>>>>>>> Stashed changes
 /* --- Older News Section --- */
 .news-card {
   display: flex;
@@ -143,5 +154,9 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
   .latest-news .news-title {
     margin-top: 1rem;
   }
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 }
 </style>
