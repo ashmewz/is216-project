@@ -9,6 +9,8 @@ import defaultAvatar from '../assets/profilepic2.jpg'
 
 
 const router = useRouter()
+
+//get the firebase variables needed
 const auth = getAuth()
 const db = getFirestore();
 
@@ -200,9 +202,6 @@ onMounted(() => {
 
             </div>
         </main>
-
-
-
 
         <!-- Footer -->
         <BottomFooter />
