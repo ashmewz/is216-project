@@ -151,13 +151,17 @@ onMounted(() => {
                 <div class="card-body">
                     <div class="mb-2 text-start">
                         <small class="text-muted">Display Name</small>
-                        <h5 class="card-title">{{ user.displayName }}</h5>
+                        <h5 class="card-title" v-if="user.displayName && user.displayName.trim() !== ''">{{
+                            user.displayName }}
+                        </h5>
+                        <p class="card-text text-muted fst-italic" v-else>Error displaying name</p>
+
                     </div>
 
                     <div class="mb-3 text-start">
                         <small class="text-muted">Email</small>
-                        <p class="card-text" v-if="user.displayName && user.displayName.trim() !== ''">{{ user.email }}</p>
-                        <p class="card-text text-muted fst-italic" v-else>Error displaying name</p>
+                        <p class="card-text" v-if="user.email && user.email.trim() !== ''">{{ user.email }}</p>
+                        <p class="card-text text-muted fst-italic" v-else>Error displaying email</p>
                     </div>
 
                     <div class="mb-3 text-start">
@@ -191,7 +195,7 @@ onMounted(() => {
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label class="form-label">Display Name</label>
-                                    <input type="text" class="form-control" v-model="form.displayName" required/>
+                                    <input type="text" class="form-control" v-model="form.displayName" required />
                                 </div>
 
 
