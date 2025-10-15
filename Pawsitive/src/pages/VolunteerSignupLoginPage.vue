@@ -71,6 +71,7 @@ export default {
                     uid: user.uid,
                     name: this.registerForm.name,
                     email: this.registerForm.email,
+                    bio: '',
                     role: 'user',   //potential security issue as malicous user can change this (e.g to 'admin'), might be able to fix with firestore db rules or firebase cloud functions (need billing info to access)
                     createdAt: serverTimestamp()
                 });
