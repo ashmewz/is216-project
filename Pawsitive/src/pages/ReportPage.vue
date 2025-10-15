@@ -13,11 +13,7 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
   <div class="container my-5 news-container">
     <!-- Search Bar -->
     <div class="mb-4">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Search news..."
-      />
+      <input type="text" class="form-control" placeholder="Search news..." />
     </div>
 
     <!-- Latest News Section -->
@@ -31,11 +27,7 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
         <button class="btn btn-dark">Read More</button>
       </div>
       <div class="col-md-6 text-center">
-        <img
-          src="@/assets/newscat1.jpg"
-          alt="Latest News"
-          class="img-fluid rounded shadow-sm"
-        />
+        <img src="@/assets/newscat1.jpg" alt="Latest News" class="img-fluid rounded shadow-sm" />
       </div>
     </div>
 
@@ -43,11 +35,7 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
     <div class="older-news">
       <!-- Example of one older post -->
       <div class="news-card text-start mb-5">
-        <img
-          src="@/assets/newscat2.jpg"
-          alt="News 1"
-          class="img-fluid news-image rounded shadow-sm"
-        />
+        <img src="@/assets/newscat2.jpg" alt="News 1" class="img-fluid news-image rounded shadow-sm" />
         <div class="news-text mt-3">
           <h4 class="news-title">Older News Title</h4>
           <p class="news-summary">
@@ -59,11 +47,7 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
 
       <!-- Another older post -->
       <div class="news-card text-start mb-5">
-        <img
-          src="@/assets/newscat3.jpg"
-          alt="News 2"
-          class="img-fluid news-image rounded shadow-sm"
-        />
+        <img src="@/assets/newscat3.jpg" alt="News 2" class="img-fluid news-image rounded shadow-sm" />
         <div class="news-text mt-3">
           <h4 class="news-title">Another News Title</h4>
           <p class="news-summary">
@@ -101,17 +85,6 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
   color: #555;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Add space below Read More button on mobile */
-@media (max-width: 768px) {
-  .latest-news .btn,
-  .news-card .btn {
-    margin-bottom: 2rem;
-  }
-}
-
->>>>>>> Stashed changes
 /* --- Older News Section --- */
 .news-card {
   display: flex;
@@ -143,6 +116,12 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
 
 /* Responsive */
 @media (max-width: 768px) {
+
+  .latest-news .btn,
+  .news-card .btn {
+    margin-bottom: 2rem;
+  }
+
   .latest-news {
     flex-direction: column;
   }
@@ -154,9 +133,6 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
   .latest-news .news-title {
     margin-top: 1rem;
   }
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 }
 </style>
