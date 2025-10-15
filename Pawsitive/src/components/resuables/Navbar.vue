@@ -225,7 +225,7 @@ const route = useRoute();
     display: block;
     
     background-color: var(--dark-blue);
-    height: 2px;
+    height: 3px;
     
     width: 70%; 
     position: absolute;
