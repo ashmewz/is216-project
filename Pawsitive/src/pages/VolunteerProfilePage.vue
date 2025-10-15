@@ -136,6 +136,8 @@ onMounted(() => {
 
         <!-- Main content -->
         <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
+
+            <!-- Card -->
             <div class="card text-center" style="width: 22rem;">
                 <!-- Avatar -->
                 <img :src="avatarUrl" alt="Avatar" class="rounded-circle border mx-auto mt-3" width="100"
@@ -164,11 +166,15 @@ onMounted(() => {
                     </div>
 
                     <!-- Buttons -->
-                    <div class="d-flex justify-content-start gap-2">
+                    <div class="d-flex justify-content-end gap-2">
                         <button class="btn btn-danger btn-sm" @click="onLogout">Logout</button>
                     </div>
                 </div>
             </div>
+
+
+
+
             <!-- Backdrop -->
             <div v-if="showModal" class="modal-backdrop fade show"></div>
             <!-- Bootstrap Modal -->
