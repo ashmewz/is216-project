@@ -10,7 +10,9 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// NOTE: This is a public testing key, so it's okay to commit.
+const STRIPE_SECRET_KEY = "sk_test_51SGctLA4UE4DKmEOkvM87bweMRiQyJNv5IlSXSVeFFAFmLoQqncz0fi0vNbkyoSh1rXmzQU1T4IWwlsgnulTzySu00wiN3zM5n"
+const stripe = new Stripe(STRIPE_SECRET_KEY)
 
 app.post('/create-payment-intent', async (req, res) => {
   const { amount } = req.body
