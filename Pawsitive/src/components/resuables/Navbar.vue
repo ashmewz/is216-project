@@ -220,9 +220,19 @@ const route = useRoute();
   text-align: center;
 }
 
-.dropdown-item.active {
-  border-left: 3px solid var(--dark-blue) !important;
-  border-right: 3px solid var(--dark-blue) !important;
+.dropdown-item.active::after {
+    content: '';
+    display: block;
+    
+    background-color: var(--dark-blue);
+    height: 2px;
+    
+    width: 70%; 
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    border-radius: 0; 
 }
 
 .dropdown-item:hover,
