@@ -52,15 +52,15 @@ const route = useRoute();
               <li>
                 <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/volunteer/signup') }"
                   to="/volunteer/signup/">
-                  <span class="underline">Sign Up</span>
+                  <span class="underline">Sign Up / Login</span>
                 </RouterLink>
               </li>
-              <li>
+              <!-- <li>
                 <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/volunteer/login') }"
                   to="/volunteer/login/">
                   <span class="underline">Log in</span>
                 </RouterLink>
-              </li>
+              </li> -->
               <li>
                 <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/volunteer/profile') }"
                   to="/volunteer/profile/">
