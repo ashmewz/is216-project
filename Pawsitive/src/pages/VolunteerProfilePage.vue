@@ -182,27 +182,29 @@ onMounted(() => {
                 aria-modal="true" role="dialog">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Profile</h5>
-                            <button type="button" class="btn-close" @click="showModal = false"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Display Name</label>
-                                <input type="text" class="form-control" v-model="form.displayName" />
+                        <form @submit.prevent="onSaveProfile">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Profile</h5>
+                                <button type="button" class="btn-close" @click="showModal = false"></button>
                             </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Display Name</label>
+                                    <input type="text" class="form-control" v-model="form.displayName" required/>
+                                </div>
 
 
-                            <div class="mb-3">
-                                <label class="form-label">Bio</label>
-                                <textarea class="form-control" v-model="form.bio"> </textarea>
+                                <div class="mb-3">
+                                    <label class="form-label">Bio</label>
+                                    <textarea class="form-control" v-model="form.bio"> </textarea>
+                                </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary btn-sm"
-                                @click="showModal = false">Cancel</button>
-                            <button type="button" class="btn btn-primary btn-sm" @click="onSaveProfile">Save</button>
-                        </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                    @click="showModal = false">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
