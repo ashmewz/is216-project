@@ -9,6 +9,9 @@ import { db } from "@/firebase";
 </script>
 
 <script>
+
+//TODO: have to change the vue format for this page to composition api instead of options api as it seems like everyone else is doing it that way
+
 export default {
     name: "AuthForm",
     data() {
@@ -40,7 +43,7 @@ export default {
 
                 // if login success go to root page
                 
-                this.$router.push("/"); 
+                this.$router.push("/volunteer/profile"); 
 
             } catch (error) {
                 // any error write to errorMessage
