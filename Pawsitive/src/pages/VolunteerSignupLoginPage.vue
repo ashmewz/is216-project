@@ -5,6 +5,7 @@ import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
+import { validateRegistration } from '@/utils/validators';
 
 </script>
 
@@ -57,57 +58,45 @@ export default {
         async handleRegister() {
             this.errorMessage = ""; // reset previous errors
 
-            const username = this.registerForm.username.trim();
-            const email = this.registerForm.email.trim();
-            const password = this.registerForm.password;
-            const confirmPassword = this.registerForm.confirmPassword;
-            const firstName = this.registerForm.firstName.trim();
-            const lastName = this.registerForm.lastName.trim();
-            const contactNumber = this.registerForm.contactNumber.trim();
+            const errors = validateRegistration(this.registerForm)
+            if (errors.length > 0) {
+                this.errorMessage = errors.join(' ')
+                return
+            }
 
             try {
-                // 1️⃣ Password match validation
-                if (password !== confirmPassword) {
-                    throw new Error("Passwords do not match.");
-                }
 
-                // 2️⃣ Basic contact number validation (digits only, 7-15 chars)
-                const phoneRegex = /^[0-9]{7,15}$/;
-                if (!phoneRegex.test(contactNumber)) {
-                    throw new Error("Please enter a valid contact number (digits only).");
-                }
-
-                // 3️⃣ Check username availability
-                const usernameRef = doc(db, "usernames", username);
+                //Check username availability
+                const usernameRef = doc(db, "usernames", this.registerForm.username);
                 const usernameSnap = await getDoc(usernameRef);
                 if (usernameSnap.exists()) {
                     throw new Error("That username is already taken. Please choose another.");
                 }
 
-                // 4️⃣ Reserve username
+                //Reserve username
                 await setDoc(usernameRef, { reserved: true });
 
-                // 5️⃣ Create Auth user
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                //Create Auth user
+                const userCredential = await createUserWithEmailAndPassword(auth, this.registerForm.email, this.registerForm.password);
                 const user = userCredential.user;
 
-                // 6️⃣ Link username → UID
+                // Link username → UID
                 await setDoc(usernameRef, { uid: user.uid });
 
-                // 7️⃣ Save volunteer record in Firestore
+                // Save volunteer record in Firestore
                 await setDoc(doc(db, "volunteers", user.uid), {
                     uid: user.uid,
-                    username,
-                    firstName,
-                    lastName,
-                    email,
-                    contactNumber,
+                    username: this.registerForm.username,
+                    firstName: this.registerForm.firstName,
+                    lastName: this.registerForm.lastName,
+                    email: this.registerForm.email,
+                    contactNumber: this.registerForm.contactNumber,
                     bio: "",
                     role: "user",
                     createdAt: serverTimestamp(),
                 });
 
-                // 8️⃣ Redirect on success
+                // Redirect on success
                 this.$router.push("/volunteer/profile");
 
             } catch (error) {

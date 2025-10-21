@@ -7,6 +7,8 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore'
 import defaultAvatar from '@/assets/avatar_placeholder.jpg'
 import ProfileCard from '@/components/resuables/ProfileCard.vue';
+import { validateProfileUpdate } from '@/utils/validators';
+
 
 const router = useRouter()
 
@@ -37,7 +39,7 @@ const serviceTypes = [
 //edit profile modal open/close state
 const showModal = ref(false)
 
-//update profile modal form input states
+//initiate update profile modal form input states
 const form = ref({
     username: '',
     firstName: '',
@@ -48,6 +50,9 @@ const form = ref({
     skills: [],
     services: [],
 })
+
+const errorMessage = ref('');
+
 
 //centralized avatarURL
 const avatarUrl = computed(() => {
@@ -144,11 +149,43 @@ const onEditProfile = async () => {
     form.value.skills = [...user.value.skills];
 }
 
+const addSkill = () => {
+    const errors = validateProfileUpdate(form.value)
+    const skillError = errors.find(e => e.includes('skill'))
+    if (!skillError) {
+        form.value.skills.push('')
+        errorMessage.value = ''
+    } else {
+        errorMessage.value = skillError
+    }
+}
+
+const addService = () => {
+    const errors = validateProfileUpdate(form.value)
+    const serviceError = errors.find(e => e.includes('service'))
+    if (!serviceError) {
+        form.value.services.push({ type: '', yearsOfExp: 0, feeRate: 0 })
+        errorMessage.value = ''
+    } else {
+        errorMessage.value = serviceError
+    }
+}
+
+
+
+
 
 // Save profile and update Firestore
 const onSaveProfile = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
+
+    const errors = validateProfileUpdate(form.value)  // <-- use validateProfileUpdate
+
+    if (errors.length > 0) {
+        errorMessage.value = errors.join(' ')
+        return
+    }
 
     try {
         const userDocRef = doc(db, 'volunteers', currentUser.uid);
@@ -158,7 +195,7 @@ const onSaveProfile = async () => {
             firstName: form.value.firstName || '',
             lastName: form.value.lastName || '',
             contactNumber: form.value.contactNumber || '',
-            bio: form.value.bio || '',
+            bio: form.value.bio.trim() || '',
             skills: form.value.skills || [],
             services: form.value.services || [],
             avatar: form.value.avatar || null
@@ -249,7 +286,7 @@ onMounted(() => {
 
                             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
 
-                                <!-- Profile Photo -->
+
                                 <!-- Profile Photo -->
                                 <div class="mb-3 d-flex flex-column align-items-center">
                                     <div class="position-relative" style="width: 100px; height: 100px; cursor: pointer;"
@@ -277,19 +314,21 @@ onMounted(() => {
 
 
 
-
+                                <div v-if="errorMessage" class="alert alert-danger">
+                                    {{ errorMessage }}
+                                </div>
 
                                 <!-- First Name + Last Name inline -->
                                 <div class="row mb-3">
                                     <div class="col-12 col-md-6 mb-2 mb-md-0">
                                         <label class="form-label">First Name</label>
                                         <input v-model="form.firstName" type="text" class="form-control"
-                                            placeholder="First Name">
+                                            placeholder="First Name" required>
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label">Last Name</label>
                                         <input v-model="form.lastName" type="text" class="form-control"
-                                            placeholder="Last Name">
+                                            placeholder="Last Name" required>
                                     </div>
                                 </div>
 
@@ -297,7 +336,7 @@ onMounted(() => {
                                 <div class="mb-3">
                                     <label class="form-label">Contact Number</label>
                                     <input v-model="form.contactNumber" type="tel" class="form-control"
-                                        placeholder="Contact Number">
+                                        placeholder="Contact Number" required>
                                 </div>
 
                                 <!-- Bio -->
@@ -318,10 +357,11 @@ onMounted(() => {
                                     </div>
 
                                     <div class="mt-2">
-                                        <button type="button" class="btn btn-outline-primary btn-sm"
-                                            @click="if (form.skills.every(s => s.trim() !== '')) form.skills.push(''); else alert('Fill existing skill before adding new')">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" @click="addSkill">
                                             Add Skill
                                         </button>
+
+
                                     </div>
                                 </div>
 
@@ -342,21 +382,22 @@ onMounted(() => {
                                         <div class="mb-2">
                                             <label class="form-label">Years of Experience</label>
                                             <input v-model.number="service.yearsOfExp" type="number"
-                                                class="form-control" placeholder="Years of Experience">
+                                                class="form-control" placeholder="Years of Experience" required>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Fee Rate ($/hr)</label>
                                             <input v-model.number="service.feeRate" type="number" class="form-control"
-                                                placeholder="Fee Rate">
+                                                placeholder="Fee Rate" required>
                                         </div>
                                         <button type="button" class="btn btn-outline-danger btn-sm"
                                             @click="form.services.splice(index, 1)">Remove Service</button>
                                     </div>
                                     <div class="mt-2">
                                         <button type="button" class="btn btn-outline-primary btn-sm"
-                                            @click="if (form.services.every(s => s.type.trim() !== '' && s.yearsOfExp > 0 && s.feeRate > 0)) form.services.push({ type: '', yearsOfExp: 0, feeRate: 0 }); else alert('Fill all fields of existing services before adding new')">
+                                            @click="addService">
                                             Add Service
                                         </button>
+
                                     </div>
                                 </div>
 
