@@ -51,15 +51,15 @@ const form = ref({
 
 //centralized avatarURL
 const avatarUrl = computed(() => {
-  // If editing (modal open), prefer form.avatar even if it's null
-  if (showModal.value) {
-    return form.value.avatar !== null
-      ? form.value.avatar
-      : defaultAvatar
-  }
+    // If editing (modal open), prefer form.avatar even if it's null
+    if (showModal.value) {
+        return form.value.avatar !== null
+            ? form.value.avatar
+            : defaultAvatar
+    }
 
-  // Otherwise, show user's saved avatar
-  return user.value.avatar || defaultAvatar
+    // Otherwise, show user's saved avatar
+    return user.value.avatar || defaultAvatar
 })
 
 //initialized avatarInput (for changing profile pic)
@@ -250,16 +250,34 @@ onMounted(() => {
                             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
 
                                 <!-- Profile Photo -->
-                                <div class="mb-3 text-center">
-                                    <img :src="avatarUrl" alt="Avatar" class="rounded-circle border" width="100"
-                                        height="100" style="cursor: pointer;" @click="triggerFileInput">
+                                <!-- Profile Photo -->
+                                <div class="mb-3 d-flex flex-column align-items-center">
+                                    <div class="position-relative" style="width: 100px; height: 100px; cursor: pointer;"
+                                        @click="triggerFileInput">
+                                        <img :src="avatarUrl" alt="Avatar" class="rounded-circle border w-100 h-100"
+                                            style="object-fit: cover;" />
+                                        <!-- Hover Overlay -->
+                                        <div
+                                            class="overlay d-flex justify-content-center align-items-center rounded-circle">
+                                            Click to change
+                                        </div>
+                                    </div>
+
                                     <input type="file" ref="avatarInput" @change="onAvatarChange" accept="image/*"
-                                        style="display: none;">
+                                        style="display: none;" />
+
                                     <div class="mt-2" v-if="form.avatar">
                                         <button type="button" class="btn btn-outline-danger btn-sm"
-                                            @click="onRemoveAvatar">Remove Photo</button>
+                                            @click="onRemoveAvatar">
+                                            Remove Photo
+                                        </button>
                                     </div>
                                 </div>
+
+
+
+
+
 
                                 <!-- First Name + Last Name inline -->
                                 <div class="row mb-3">
@@ -316,7 +334,8 @@ onMounted(() => {
                                             <label class="form-label">Service Type</label>
                                             <select v-model="service.type" class="form-select" required>
                                                 <option value="" disabled>Select a service</option>
-                                                <option v-for="type in serviceTypes" :key="type" :value="type">{{ type}}
+                                                <option v-for="type in serviceTypes" :key="type" :value="type">{{ type
+                                                    }}
                                                 </option>
                                             </select>
                                         </div>
@@ -365,5 +384,26 @@ onMounted(() => {
 main {
     min-height: calc(100vh - 120px);
     /* adjust based on Navbar + Footer height */
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    text-align: center;
+}
+
+.position-relative:hover .overlay {
+    opacity: 1;
 }
 </style>
