@@ -2,11 +2,13 @@
 import { computed } from 'vue'
 import defaultAvatar from '@/assets/avatar_placeholder.jpg'
 
+
+//props that will be passed in on the higher level
 const props = defineProps({
-  user: { type: Object, required: true },
-  showActions: { type: Boolean, default: false },
-  onEditProfile: { type: Function, default: () => {} },
-  onLogout: { type: Function, default: () => {} },
+  user: { type: Object, required: true }, //must require a user obect to display
+  showActions: { type: Boolean, default: false }, // toggle show logout and edit profile buttons
+  onEditProfile: { type: Function, default: () => {} }, //map the functions to the buttons
+  onLogout: { type: Function, default: () => {} }, //map the functions to the buttons
 })
 
 const avatarUrl = computed(() => props.user.avatar || defaultAvatar)

@@ -26,7 +26,7 @@ const user = ref({
     skills: [],
     services: [],
 })
-
+//define the services types
 const serviceTypes = [
     "Pet Grooming",
     "Pet Sitting",
@@ -49,11 +49,12 @@ const form = ref({
     services: [],
 })
 
-
+//centralized avatarURL
 const avatarUrl = computed(() => {
     return form.value.avatar || user.value.avatar || defaultAvatar;
 })
 
+//initialized avatarInput (for changing profile pic)
 const avatarInput = ref(null);
 
 // Trigger the hidden file input when image is clicked

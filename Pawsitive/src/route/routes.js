@@ -64,7 +64,7 @@ const routes = [
     {
         path: '/volunteer/profile/:username',
         name: 'VolunteerProfileView',
-        component: VolunteerProfileViewPage, // or a separate "ViewProfilePage" component if needed
+        component: VolunteerProfileViewPage, //access this page by passing the volunteer username as route param
         props: true // this lets you access the param as a prop
         ,
     },
