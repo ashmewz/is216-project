@@ -14,6 +14,7 @@ const router = useRouter()
 const auth = getAuth()
 const db = getFirestore();
 
+//user fields
 const user = ref({
     username: '',
     firstName: '',
@@ -81,8 +82,6 @@ const onRemoveAvatar = () => {
     form.value.avatar = null;
     user.value.avatar = null;
 };
-
-
 
 
 // Fetch user details from Firestore (not firebase auth, auth stores password and email, other user details stored in firestore)
@@ -210,11 +209,8 @@ onMounted(() => {
         <!-- Main content -->
         <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
 
-
-
             <!-- Card -->
             <ProfileCard :user="user" :showActions="true" :onEditProfile="onEditProfile" :onLogout="onLogout" />
-
 
             <!-- Backdrop -->
             <div v-if="showModal" class="modal-backdrop fade show"></div>

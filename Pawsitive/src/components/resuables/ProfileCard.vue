@@ -10,6 +10,7 @@ const props = defineProps({
 })
 
 const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
+
 </script>
 
 <template>
