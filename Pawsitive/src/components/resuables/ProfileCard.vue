@@ -79,7 +79,7 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
             </div>
           </div>
         </div>
-        <p v-else class="text-muted fst-italic text-center">No services yet</p>
+        <p v-else class="text-muted fst-italic text-start">No services yet</p>
       </div>
 
       <!-- Logout Button at bottom -->
