@@ -142,7 +142,7 @@ const fetchUserDetails = async () => {
 // Open modal and fetch Firestore data
 const onEditProfile = async () => {
     showModal.value = true
-
+    errorMessage.value = ''
     // Deep copy the services and skills to break reference btween user.services and form.services
     // this is to prevent the main card data from updating before the edit modal form is saved
     form.value.services = user.value.services.map(s => ({ ...s }));
