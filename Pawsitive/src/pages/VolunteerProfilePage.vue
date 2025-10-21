@@ -27,6 +27,13 @@ const user = ref({
     services: [],
 })
 
+const serviceTypes = [
+    "Pet Grooming",
+    "Pet Sitting",
+    "Vet Consultation",
+    "Pet Walking"
+];
+
 //edit profile modal open/close state
 const showModal = ref(false)
 
@@ -293,8 +300,11 @@ onMounted(() => {
                                         class="border p-2 mb-2 rounded">
                                         <div class="mb-2">
                                             <label class="form-label">Service Type</label>
-                                            <input v-model="service.type" type="text" class="form-control"
-                                                placeholder="Service Type" required>
+                                            <select v-model="service.type" class="form-select" required>
+                                                <option value="" disabled>Select a service</option>
+                                                <option v-for="type in serviceTypes" :key="type" :value="type">{{ type}}
+                                                </option>
+                                            </select>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Years of Experience</label>
