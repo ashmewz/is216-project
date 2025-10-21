@@ -5,7 +5,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore'
-import defaultAvatar from '../assets/profilepic2.jpg'
+import defaultAvatar from '../assets/avatar_placeholder.jpg'
 
 
 const router = useRouter()
@@ -15,52 +15,109 @@ const auth = getAuth()
 const db = getFirestore();
 
 const user = ref({
-    displayName: '',
+    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
+    contactNumber: '',
     avatar: null,
     bio: '',
-
+    skills: [],
+    services: [],
 })
-
-//default avatar for now
-const avatarUrl = computed(() => user.value.avatar || defaultAvatar)
 
 //edit profile modal open/close state
 const showModal = ref(false)
 
 //update profile modal form input states
 const form = ref({
-    displayName: '',
+    username: '',
+    firstName: '',
+    lastName: '',
+    contactNumber: '',
     bio: '',
+    avatar: null,
+    skills: [],
+    services: [],
 })
+
+
+const avatarUrl = computed(() => {
+    return form.value.avatar || user.value.avatar || defaultAvatar;
+})
+
+const avatarInput = ref(null);
+
+// Trigger the hidden file input when image is clicked
+const triggerFileInput = () => {
+    avatarInput.value.click();
+};
+
+// Convert file to Base64
+const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+};
+
+// When user selects a new photo
+const onAvatarChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+        const base64 = await fileToBase64(file);
+        form.value.avatar = base64;
+    } catch (err) {
+        console.error("Failed to read file:", err);
+        alert("Failed to load image");
+    }
+};
+
+// Remove avatar
+const onRemoveAvatar = () => {
+    form.value.avatar = null;
+    user.value.avatar = null;
+};
+
+
+
 
 // Fetch user details from Firestore (not firebase auth, auth stores password and email, other user details stored in firestore)
 const fetchUserDetails = async () => {
-
     const currentUser = auth.currentUser
     if (!currentUser) {
         router.push('/login')
         return
     }
-    const userDocRef = doc(db, 'users', currentUser.uid)
+    const userDocRef = doc(db, 'volunteers', currentUser.uid)
     const userSnap = await getDoc(userDocRef)
     if (userSnap.exists()) {
         const data = userSnap.data()
 
-        //set the values in the card
-        user.value.displayName = data.name || ''
-        user.value.bio = data.bio
+        user.value.username = data.username || ''
+        user.value.firstName = data.firstName || ''
+        user.value.lastName = data.lastName || ''
+        user.value.contactNumber = data.contactNumber || ''
+        user.value.bio = data.bio || ''
+        user.value.skills = data.skills || []
+        user.value.services = data.services || []
+        user.value.avatar = data.avatar || null;
 
-        //set the values in the edit modal form
-        form.value.bio = data.bio
-        form.value.displayName = data.name
-    } else {
-        user.value.displayName = ''
-        user.value.bio = ''
-        form.value.bio = ''
-        form.value.displayName = ''
+
+        // populate form
+        form.value.firstName = data.firstName || ''
+        form.value.lastName = data.lastName || ''
+        form.value.contactNumber = data.contactNumber || ''
+        form.value.bio = data.bio || ''
+        form.value.skills = [...(data.skills || [])]
+        form.value.services = [...(data.services || [])]
+        form.value.avatar = user.value.avatar
     }
 }
+
 
 // Open modal and fetch Firestore data
 const onEditProfile = async () => {
@@ -70,29 +127,45 @@ const onEditProfile = async () => {
 
 // Save profile and update Firestore
 const onSaveProfile = async () => {
-    const currentUser = auth.currentUser
-    if (!currentUser) return
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
-    //understand that doing this way will update to db even when theres no changes made, so there are some inefficiencies. But for sake of simpliicty wil keep it this way first
     try {
-        const userDocRef = doc(db, 'users', currentUser.uid)
-        await updateDoc(userDocRef, {
-            name: form.value.displayName,
-            bio: form.value.bio
-        })
+        const userDocRef = doc(db, 'volunteers', currentUser.uid);
 
-        // Update local user state immediately (updates the card details basically)
-        user.value.displayName = form.value.displayName
-        user.value.bio = form.value.bio
+        // ensure no undefined values
+        const dataToUpdate = {
+            firstName: form.value.firstName || '',
+            lastName: form.value.lastName || '',
+            contactNumber: form.value.contactNumber || '',
+            bio: form.value.bio || '',
+            skills: form.value.skills || [],
+            services: form.value.services || [],
+            avatar: form.value.avatar || null
 
-        //close modal
-        showModal.value = false
+        }
 
+        await updateDoc(userDocRef, dataToUpdate);
+
+        // Update local user state
+        user.value.firstName = dataToUpdate.firstName;
+        user.value.lastName = dataToUpdate.lastName;
+        user.value.contactNumber = dataToUpdate.contactNumber;
+        user.value.bio = dataToUpdate.bio;
+        user.value.skills = dataToUpdate.skills;
+        user.value.services = dataToUpdate.services;
+        user.value.avatar = form.value.avatar || null;
+
+
+        // Close modal
+        showModal.value = false;
     } catch (error) {
-        console.error('Failed to update profile:', error)
-        alert('Failed to update profile. Please try again.')
+        console.error('Failed to update profile:', error);
+        alert('Failed to update profile. Please try again.');
     }
-}
+};
+
+
 
 //Logout 
 const onLogout = async () => {
@@ -138,72 +211,206 @@ onMounted(() => {
         <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
 
             <!-- Card -->
-            <div class="card text-center" style="width: 22rem;">
+
+            <!-- Card -->
+            <div class="card text-center" style="width: 24rem;">
                 <!-- Avatar -->
                 <img :src="avatarUrl" alt="Avatar" class="rounded-circle border mx-auto mt-3" width="100"
                     height="100" />
 
+                <!-- Edit Profile Button -->
                 <div class="d-flex justify-content-center gap-2 mt-2">
-                    <button class="btn btn-outline-primary btn-sm " @click="onEditProfile">Edit Profile</button>
+                    <button class="btn btn-outline-primary btn-sm" @click="onEditProfile">Edit Profile</button>
                 </div>
 
                 <!-- User Details -->
-                <div class="card-body">
-                    <div class="mb-2 text-start">
-                        <small class="text-muted">Display Name</small>
-                        <h5 class="card-title" v-if="user.displayName && user.displayName.trim() !== ''">{{
-                            user.displayName }}
-                        </h5>
-                        <p class="card-text text-muted fst-italic" v-else>Error displaying name</p>
+                <div class="card-body text-start">
 
+                    <!-- Full Name -->
+                    <div class="mb-2">
+                        <small class="text-muted">Name</small>
+                        <p class="card-text">{{ user.firstName }} {{ user.lastName || '' }}</p>
                     </div>
 
-                    <div class="mb-3 text-start">
+                    <!-- Username -->
+                    <div class="mb-2">
+                        <small class="text-muted">Username</small>
+                        <p class="card-text">{{ user.username }}</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-2">
                         <small class="text-muted">Email</small>
-                        <p class="card-text" v-if="user.email && user.email.trim() !== ''">{{ user.email }}</p>
-                        <p class="card-text text-muted fst-italic" v-else>Error displaying email</p>
+                        <p class="card-text">{{ user.email }}</p>
                     </div>
 
-                    <div class="mb-3 text-start">
+                    <!-- Contact Number -->
+                    <div class="mb-2">
+                        <small class="text-muted">Contact Number</small>
+                        <p class="card-text" v-if="user.contactNumber">{{ user.contactNumber }}</p>
+                        <p class="card-text text-muted fst-italic" v-else>No contact number yet</p>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="mb-2">
                         <small class="text-muted">Bio</small>
-                        <p class="card-text" v-if="user.bio && user.bio.trim() !== ''">{{ user.bio }}</p>
+                        <p class="card-text" v-if="user.bio">{{ user.bio }}</p>
                         <p class="card-text text-muted fst-italic" v-else>No bio yet</p>
                     </div>
 
-                    <!-- Buttons -->
-                    <div class="d-flex justify-content-end gap-2">
+                    <!-- Skills -->
+                    <div class="mb-2">
+                        <small class="text-muted">Skills</small>
+                        <ul class="mb-0" v-if="user.skills.length">
+                            <li v-for="(skill, idx) in user.skills" :key="idx">{{ skill }}</li>
+                        </ul>
+                        <p class="text-muted fst-italic mb-0" v-else>No skills yet</p>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="mb-2">
+                        <small class="text-muted">Services</small>
+                        <ul class="mb-0" v-if="user.services.length">
+                            <li v-for="(service, idx) in user.services" :key="idx">
+                                {{ service.type }} — {{ service.yearsOfExp }} yrs — ${{ service.feeRate }}
+                            </li>
+                        </ul>
+                        <p class="text-muted fst-italic mb-0" v-else>No services yet</p>
+                    </div>
+
+                    <!-- Logout Button -->
+                    <div class="d-flex justify-content-end mt-2">
                         <button class="btn btn-danger btn-sm" @click="onLogout">Logout</button>
                     </div>
+
                 </div>
             </div>
 
 
 
 
+
+
+
             <!-- Backdrop -->
             <div v-if="showModal" class="modal-backdrop fade show"></div>
+
+
             <!-- Bootstrap Modal -->
             <div class="modal fade" :class="{ show: showModal }" tabindex="-1" style="display: block;" v-if="showModal"
                 aria-modal="true" role="dialog">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
                     <div class="modal-content">
                         <form @submit.prevent="onSaveProfile">
                             <div class="modal-header">
                                 <h5 class="modal-title">Edit Profile</h5>
                                 <button type="button" class="btn-close" @click="showModal = false"></button>
                             </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Display Name</label>
-                                    <input type="text" class="form-control" v-model="form.displayName" required />
+
+                            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+
+                                <!-- Profile Photo -->
+                                <div class="mb-3 text-center">
+                                    <img :src="avatarUrl" alt="Avatar" class="rounded-circle border" width="100"
+                                        height="100" style="cursor: pointer;" @click="triggerFileInput">
+                                    <input type="file" ref="avatarInput" @change="onAvatarChange" accept="image/*"
+                                        style="display: none;">
+                                    <div class="mt-2" v-if="form.avatar">
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            @click="onRemoveAvatar">Remove Photo</button>
+                                    </div>
                                 </div>
 
 
+
+
+
+
+
+
+                                <!-- First Name + Last Name inline -->
+                                <div class="row mb-3">
+                                    <div class="col-12 col-md-6 mb-2 mb-md-0">
+                                        <label class="form-label">First Name</label>
+                                        <input v-model="form.firstName" type="text" class="form-control"
+                                            placeholder="First Name">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Last Name</label>
+                                        <input v-model="form.lastName" type="text" class="form-control"
+                                            placeholder="Last Name">
+                                    </div>
+                                </div>
+
+                                <!-- Contact Number -->
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Number</label>
+                                    <input v-model="form.contactNumber" type="tel" class="form-control"
+                                        placeholder="Contact Number">
+                                </div>
+
+                                <!-- Bio -->
                                 <div class="mb-3">
                                     <label class="form-label">Bio</label>
-                                    <textarea class="form-control" v-model="form.bio"> </textarea>
+                                    <textarea v-model="form.bio" class="form-control" rows="3"
+                                        placeholder="Tell us about yourself"></textarea>
                                 </div>
+
+                                <!-- Skills -->
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Skills</label>
+                                    <div v-for="(skill, index) in form.skills" :key="index" class="input-group mb-2">
+                                        <input v-model="form.skills[index]" type="text" class="form-control"
+                                            placeholder="Skill">
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            @click="form.skills.splice(index, 1)">Remove</button>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                            @click="if (form.skills.every(s => s.trim() !== '')) form.skills.push(''); else alert('Fill existing skill before adding new')">
+                                            Add Skill
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Services -->
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Services</label>
+                                    <div v-for="(service, index) in form.services" :key="index"
+                                        class="border p-2 mb-2 rounded">
+                                        <div class="mb-2">
+                                            <label class="form-label">Service Type</label>
+                                            <input v-model="service.type" type="text" class="form-control"
+                                                placeholder="Service Type">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Years of Experience</label>
+                                            <input v-model.number="service.yearsOfExp" type="number"
+                                                class="form-control" placeholder="Years of Experience">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Fee Rate</label>
+                                            <input v-model.number="service.feeRate" type="number" class="form-control"
+                                                placeholder="Fee Rate">
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            @click="form.services.splice(index, 1)">Remove Service</button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                            @click="if (form.services.every(s => s.type.trim() !== '' && s.yearsOfExp > 0 && s.feeRate > 0)) form.services.push({ type: '', yearsOfExp: 0, feeRate: 0 }); else alert('Fill all fields of existing services before adding new')">
+                                            Add Service
+                                        </button>
+                                    </div>
+                                </div>
+
                             </div>
+
+
+
+
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary btn-sm"
                                     @click="showModal = false">Cancel</button>
