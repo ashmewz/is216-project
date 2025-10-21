@@ -51,7 +51,15 @@ const form = ref({
 
 //centralized avatarURL
 const avatarUrl = computed(() => {
-    return form.value.avatar || user.value.avatar || defaultAvatar;
+  // If editing (modal open), prefer form.avatar even if it's null
+  if (showModal.value) {
+    return form.value.avatar !== null
+      ? form.value.avatar
+      : defaultAvatar
+  }
+
+  // Otherwise, show user's saved avatar
+  return user.value.avatar || defaultAvatar
 })
 
 //initialized avatarInput (for changing profile pic)
@@ -88,7 +96,7 @@ const onAvatarChange = async (event) => {
 // Remove avatar
 const onRemoveAvatar = () => {
     form.value.avatar = null;
-    user.value.avatar = null;
+    // user.value.avatar = null;
 };
 
 
