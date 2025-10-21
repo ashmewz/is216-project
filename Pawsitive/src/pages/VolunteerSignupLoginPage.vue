@@ -7,7 +7,7 @@ import { auth } from "@/firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-import { validateRegistration } from '@/utils/validators';
+import { validateRegistration, validateLogin} from '@/utils/validators';
 
 const router = useRouter();
 
@@ -38,12 +38,19 @@ const toggleForm = () => {
 
 // Login handler
 const handleLogin = async () => {
-  errorMessage.value = '';
+  errorMessage.value = ""
+
+  const errors = validateLogin(loginForm)
+  if (errors.length > 0) {
+    errorMessage.value = errors.join(" ")
+    return
+  }
+
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password);
-    router.push("/volunteer/profile");
+    const userCredential = await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password)
+    router.push("/volunteer/profile")
   } catch (error) {
-    errorMessage.value = error.message;
+    errorMessage.value = error.message
   }
 }
 
