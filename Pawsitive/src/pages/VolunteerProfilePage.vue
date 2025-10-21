@@ -210,84 +210,89 @@ onMounted(() => {
         <!-- Main content -->
         <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
 
-            <!-- Card -->
+
 
             <!-- Card -->
-            <div class="card text-center" style="width: 24rem;">
-                <!-- Avatar -->
-                <img :src="avatarUrl" alt="Avatar" class="rounded-circle border mx-auto mt-3" width="100"
-                    height="100" />
-
-                <!-- Edit Profile Button -->
-                <div class="d-flex justify-content-center gap-2 mt-2">
-                    <button class="btn btn-outline-primary btn-sm" @click="onEditProfile">Edit Profile</button>
+            <div class="card mx-auto shadow-sm" style="width: 40%; max-width: 800px; border-radius: 1rem;">
+                <!-- Header / Avatar -->
+                <div class="card-header bg-white d-flex flex-column align-items-center border-0 pt-4">
+                    <img :src="avatarUrl" alt="Avatar" class="rounded-circle border" width="140" height="140" />
+                    <h4 class="mt-3 mb-1">{{ user.firstName }} {{ user.lastName || '' }}</h4>
+                    <small class="text-muted">@{{ user.username }}</small>
+                    <button class="btn btn-outline-primary btn-sm mt-3" @click="onEditProfile">
+                        Edit Profile
+                    </button>
                 </div>
 
-                <!-- User Details -->
-                <div class="card-body text-start">
-
-                    <!-- Full Name -->
-                    <div class="mb-2">
-                        <small class="text-muted">Name</small>
-                        <p class="card-text">{{ user.firstName }} {{ user.lastName || '' }}</p>
-                    </div>
-
-                    <!-- Username -->
-                    <div class="mb-2">
-                        <small class="text-muted">Username</small>
-                        <p class="card-text">{{ user.username }}</p>
-                    </div>
+                <!-- Body -->
+                <div class="card-body px-5">
 
                     <!-- Email -->
-                    <div class="mb-2">
-                        <small class="text-muted">Email</small>
-                        <p class="card-text">{{ user.email }}</p>
+                    <div class="mb-3 d-flex align-items-center">
+                        <i class="bi bi-envelope-fill text-primary me-2"></i>
+                        <span>{{ user.email }}</span>
                     </div>
 
                     <!-- Contact Number -->
-                    <div class="mb-2">
-                        <small class="text-muted">Contact Number</small>
-                        <p class="card-text" v-if="user.contactNumber">{{ user.contactNumber }}</p>
-                        <p class="card-text text-muted fst-italic" v-else>No contact number yet</p>
+                    <div class="mb-3 d-flex align-items-center">
+                        <i class="bi bi-telephone-fill text-success me-2"></i>
+                        <span v-if="user.contactNumber">{{ user.contactNumber }}</span>
+                        <span v-else class="text-muted fst-italic">No contact number yet</span>
                     </div>
 
                     <!-- Bio -->
-                    <div class="mb-2">
-                        <small class="text-muted">Bio</small>
-                        <p class="card-text" v-if="user.bio">{{ user.bio }}</p>
-                        <p class="card-text text-muted fst-italic" v-else>No bio yet</p>
+                    <div class="mb-3">
+                        <h6 class="text-muted small">About Me</h6>
+                        <p v-if="user.bio">{{ user.bio }}</p>
+                        <p v-else class="text-muted fst-italic">No bio yet</p>
                     </div>
 
                     <!-- Skills -->
-                    <div class="mb-2">
-                        <small class="text-muted">Skills</small>
-                        <ul class="mb-0" v-if="user.skills.length">
-                            <li v-for="(skill, idx) in user.skills" :key="idx">{{ skill }}</li>
-                        </ul>
-                        <p class="text-muted fst-italic mb-0" v-else>No skills yet</p>
+                    <div class="mb-3">
+                        <h6 class="text-muted small">Skills</h6>
+                        <div v-if="user.skills.length" class="d-flex flex-wrap gap-2">
+                            <span v-for="(skill, idx) in user.skills" :key="idx" class="badge bg-primary">
+                                {{ skill }}
+                            </span>
+                        </div>
+                        <p v-else class="text-muted fst-italic">No skills yet</p>
                     </div>
 
                     <!-- Services -->
-                    <div class="mb-2">
-                        <small class="text-muted">Services</small>
-                        <ul class="mb-0" v-if="user.services.length">
-                            <li v-for="(service, idx) in user.services" :key="idx">
-                                {{ service.type }} — {{ service.yearsOfExp }} yrs — ${{ service.feeRate }}
-                            </li>
-                        </ul>
-                        <p class="text-muted fst-italic mb-0" v-else>No services yet</p>
+                    <div class="mb-3">
+                        <h6 class="text-muted small">Services</h6>
+                        <div v-if="user.services.length" class="d-flex flex-column gap-3">
+                            <div v-for="(service, idx) in user.services" :key="idx" class="card p-3 shadow-sm w-100"
+                                style="border-radius: 0.75rem;">
+                                <div class="mb-2 ">
+                                    <strong>{{ service.type }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-start gap-4 ">
+                                    <div>
+                                        <small class="text-muted">Experience</small>
+                                        <p class="mb-0">{{ service.yearsOfExp }} yrs</p>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Fee</small>
+                                        <p class="mb-0">${{ service.feeRate }}/hr</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted fst-italic text-center">No services yet</p>
                     </div>
 
-                    <!-- Logout Button -->
-                    <div class="d-flex justify-content-end mt-2">
+
+
+
+
+                    <!-- Logout -->
+                    <div class="d-flex justify-content-end mt-4">
                         <button class="btn btn-danger btn-sm" @click="onLogout">Logout</button>
                     </div>
 
                 </div>
             </div>
-
-
-
 
 
 
@@ -320,13 +325,6 @@ onMounted(() => {
                                             @click="onRemoveAvatar">Remove Photo</button>
                                     </div>
                                 </div>
-
-
-
-
-
-
-
 
                                 <!-- First Name + Last Name inline -->
                                 <div class="row mb-3">
@@ -361,7 +359,7 @@ onMounted(() => {
                                     <label class="form-label d-block">Skills</label>
                                     <div v-for="(skill, index) in form.skills" :key="index" class="input-group mb-2">
                                         <input v-model="form.skills[index]" type="text" class="form-control"
-                                            placeholder="Skill">
+                                            placeholder="Skill" required>
                                         <button type="button" class="btn btn-outline-danger btn-sm"
                                             @click="form.skills.splice(index, 1)">Remove</button>
                                     </div>
@@ -382,7 +380,7 @@ onMounted(() => {
                                         <div class="mb-2">
                                             <label class="form-label">Service Type</label>
                                             <input v-model="service.type" type="text" class="form-control"
-                                                placeholder="Service Type">
+                                                placeholder="Service Type" required>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Years of Experience</label>
@@ -390,7 +388,7 @@ onMounted(() => {
                                                 class="form-control" placeholder="Years of Experience">
                                         </div>
                                         <div class="mb-2">
-                                            <label class="form-label">Fee Rate</label>
+                                            <label class="form-label">Fee Rate ($/hr)</label>
                                             <input v-model.number="service.feeRate" type="number" class="form-control"
                                                 placeholder="Fee Rate">
                                         </div>
