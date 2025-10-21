@@ -5,8 +5,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore'
-import defaultAvatar from '../assets/avatar_placeholder.jpg'
-
+import defaultAvatar from '@/assets/avatar_placeholder.jpg'
+import ProfileCard from '@/components/resuables/ProfileCard.vue';
 
 const router = useRouter()
 
@@ -213,93 +213,11 @@ onMounted(() => {
 
 
             <!-- Card -->
-            <div class="card mx-auto shadow-sm" style="width: 40%; max-width: 800px; border-radius: 1rem;">
-                <!-- Header / Avatar -->
-                <div class="card-header bg-white d-flex flex-column align-items-center border-0 pt-4">
-                    <img :src="avatarUrl" alt="Avatar" class="rounded-circle border" width="140" height="140" />
-                    <h4 class="mt-3 mb-1">{{ user.firstName }} {{ user.lastName || '' }}</h4>
-                    <small class="text-muted">@{{ user.username }}</small>
-                    <button class="btn btn-outline-primary btn-sm mt-3" @click="onEditProfile">
-                        Edit Profile
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div class="card-body px-5">
-
-                    <!-- Email -->
-                    <div class="mb-3 d-flex align-items-center">
-                        <i class="bi bi-envelope-fill text-primary me-2"></i>
-                        <span>{{ user.email }}</span>
-                    </div>
-
-                    <!-- Contact Number -->
-                    <div class="mb-3 d-flex align-items-center">
-                        <i class="bi bi-telephone-fill text-success me-2"></i>
-                        <span v-if="user.contactNumber">{{ user.contactNumber }}</span>
-                        <span v-else class="text-muted fst-italic">No contact number yet</span>
-                    </div>
-
-                    <!-- Bio -->
-                    <div class="mb-3">
-                        <h6 class="text-muted small">About Me</h6>
-                        <p v-if="user.bio">{{ user.bio }}</p>
-                        <p v-else class="text-muted fst-italic">No bio yet</p>
-                    </div>
-
-                    <!-- Skills -->
-                    <div class="mb-3">
-                        <h6 class="text-muted small">Skills</h6>
-                        <div v-if="user.skills.length" class="d-flex flex-wrap gap-2">
-                            <span v-for="(skill, idx) in user.skills" :key="idx" class="badge bg-primary">
-                                {{ skill }}
-                            </span>
-                        </div>
-                        <p v-else class="text-muted fst-italic">No skills yet</p>
-                    </div>
-
-                    <!-- Services -->
-                    <div class="mb-3">
-                        <h6 class="text-muted small">Services</h6>
-                        <div v-if="user.services.length" class="d-flex flex-column gap-3">
-                            <div v-for="(service, idx) in user.services" :key="idx" class="card p-3 shadow-sm w-100"
-                                style="border-radius: 0.75rem;">
-                                <div class="mb-2 ">
-                                    <strong>{{ service.type }}</strong>
-                                </div>
-                                <div class="d-flex justify-content-start gap-4 ">
-                                    <div>
-                                        <small class="text-muted">Experience</small>
-                                        <p class="mb-0">{{ service.yearsOfExp }} yrs</p>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted">Fee</small>
-                                        <p class="mb-0">${{ service.feeRate }}/hr</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <p v-else class="text-muted fst-italic text-center">No services yet</p>
-                    </div>
-
-
-
-
-
-                    <!-- Logout -->
-                    <div class="d-flex justify-content-end mt-4">
-                        <button class="btn btn-danger btn-sm" @click="onLogout">Logout</button>
-                    </div>
-
-                </div>
-            </div>
-
-
+            <ProfileCard :user="user" :showActions="true" :onEditProfile="onEditProfile" :onLogout="onLogout" />
 
 
             <!-- Backdrop -->
             <div v-if="showModal" class="modal-backdrop fade show"></div>
-
 
             <!-- Bootstrap Modal -->
             <div class="modal fade" :class="{ show: showModal }" tabindex="-1" style="display: block;" v-if="showModal"
@@ -404,10 +322,6 @@ onMounted(() => {
                                 </div>
 
                             </div>
-
-
-
-
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary btn-sm"
