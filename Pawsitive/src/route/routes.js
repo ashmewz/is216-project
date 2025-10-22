@@ -19,6 +19,7 @@ import ServicesPage from "@/pages/ServicesPage.vue";
 import AiRecogPage from "@/pages/AiRecogPage.vue";
 import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
 import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
+import DonationSuccessPage from "@/pages/DonationSuccessPage.vue";
 
 const history = createWebHistory();
 const routes = [
@@ -39,14 +40,6 @@ const routes = [
     {
         path: '/report/',
         component: ReportPage
-    },
-    {
-        path: '/volunteer/login/',
-        // TODO: Inject data for the mode to be in
-        // See: https://router.vuejs.org/guide/essentials/dynamic-matching
-        component: VolunteerSignupLoginPage
-
-        //might need to setup something like a route guard? to prevent user to access /signup and /login routes if they are loggedin
     },
     {
         path: '/volunteer/profile',
@@ -70,6 +63,10 @@ const routes = [
     {
         path: '/donations/',
         component: DonationPage
+    },
+    {
+        path: '/donation-success/',
+        component: DonationSuccessPage
     },
     {
         path: '/services/',
