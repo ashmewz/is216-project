@@ -19,6 +19,7 @@ import ServicesPage from "@/pages/ServicesPage.vue";
 import AiRecogPage from "@/pages/AiRecogPage.vue";
 import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
 import LandingPage from "@/pages/LandingPage.vue";
+import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
 
 const history = createWebHistory();
 const routes = [
@@ -50,15 +51,24 @@ const routes = [
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
-        
+
         //might need to setup something like a route guard? to prevent user to access /signup and /login routes if they are loggedin
     },
     {
-        path: '/volunteer/profile/',
+        path: '/volunteer/profile',
         // TODO: Inject profile data
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerProfilePage
     },
+
+    {
+        path: '/volunteer/profile/:username',
+        name: 'VolunteerProfileView',
+        component: VolunteerProfileViewPage, //access this page by passing the volunteer username as route param
+        props: true // this lets you access the param as a prop
+        ,
+    },
+
     {
         path: '/adoption/',
         component: AdoptionListPage
