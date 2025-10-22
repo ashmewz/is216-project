@@ -2,63 +2,94 @@
 const isEmpty = (str) => !str?.trim()
 const isValidPhone = (phone) => /^[0-9]{7,15}$/.test(phone)
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+const isValidUsername = (username) => /^[a-z0-9_]+$/.test(username);
+// only lowercase letters, numbers, and underscores
 
 /**
  * Validate volunteer registration form
  */
 export const validateRegistration = (form) => {
-  const errors = []
+  const errors = {};
 
-  if (isEmpty(form.firstName)) errors.push('First name cannot be empty.')
-  if (isEmpty(form.lastName)) errors.push('Last name cannot be empty.')
-  if (isEmpty(form.username)) errors.push('Username cannot be empty.')
+  if (isEmpty(form.firstName)) errors.firstName = 'First name cannot be empty.';
+  if (isEmpty(form.lastName)) errors.lastName = 'Last name cannot be empty.';
 
-  if (isEmpty(form.email)) errors.push('Email cannot be empty.')
-  else if (!isValidEmail(form.email)) errors.push('Invalid email format.')
+  if (isEmpty(form.username)) {
+    errors.username = 'Username cannot be empty.';
+  } else if (!isValidUsername(form.username)) {
+    errors.username = 'Username must be lowercase, no spaces, and only letters, numbers, or underscores.';
+  }
 
-  if (!form.password) errors.push('Password cannot be empty.')
-  else if (form.password.length < 6) errors.push('Password must be at least 6 characters.')
+  if (isEmpty(form.email)) errors.email = 'Email cannot be empty.';
+  else if (!isValidEmail(form.email)) errors.email = 'Invalid email format.';
 
-  if (form.password !== form.confirmPassword) errors.push('Passwords do not match.')
+  if (isEmpty(form.password)) errors.password = 'Password cannot be empty.';
+  else if (form.password.length < 6) errors.password = 'Password must be at least 6 characters.';
 
-  if (isEmpty(form.contactNumber)) errors.push('Contact number cannot be empty.')
+  if (isEmpty(form.confirmPassword)) errors.confirmPassword = 'Confirm Password cannot be empty';
+
+  if (form.password !== form.confirmPassword) errors.confirmPassword = 'Passwords do not match.';
+
+  if (isEmpty(form.contactNumber)) errors.contactNumber = 'Contact number cannot be empty.';
   else if (!isValidPhone(form.contactNumber))
-    errors.push('Contact number must be 7-15 digits.')
+    errors.contactNumber = 'Contact number must be 7-15 digits.';
 
-  return errors
-}
+  return errors;
+};
 
 /**
  * Validate login form
  */
 export const validateLogin = (form) => {
-  const errors = []
+  const errors = {};
 
-  if (isEmpty(form.email)) errors.push('Email cannot be empty.')
-  else if (!isValidEmail(form.email)) errors.push('Please enter a valid email address.')
+  if (isEmpty(form.email)) errors.email = 'Email cannot be empty.';
+  else if (!isValidEmail(form.email)) errors.email = 'Please enter a valid email address.';
 
-  if (isEmpty(form.password)) errors.push('Password cannot be empty.')
+  if (isEmpty(form.password)) errors.password = 'Password cannot be empty.';
 
-  return errors
-}
+  return errors;
+};
 
 /**
  * Validate profile update form
  */
+
 export const validateProfileUpdate = (form) => {
-  const errors = []
+  const errors = {};
 
-  if (isEmpty(form.firstName)) errors.push('First name cannot be empty.')
-  if (isEmpty(form.lastName)) errors.push('Last name cannot be empty.')
+  // First name
+  if (isEmpty(form.firstName)) {
+    errors.firstName = 'First name cannot be empty.';
+  }
 
-  if (isEmpty(form.contactNumber)) errors.push('Contact number cannot be empty.')
-  else if (!isValidPhone(form.contactNumber))
-    errors.push('Please enter a valid contact number (digits only, 7-15 characters).')
+  // Last name
+  if (isEmpty(form.lastName)) {
+    errors.lastName = 'Last name cannot be empty.';
+  }
 
-  if (form.skills.some((s) => !s.trim())) errors.push('All skills must be non-empty.')
+  // Contact number
+  if (isEmpty(form.contactNumber)) {
+    errors.contactNumber = 'Contact number cannot be empty.';
+  } else if (!isValidPhone(form.contactNumber)) {
+    errors.contactNumber = 'Please enter a valid phone number (8-15 digits).';
+  }
 
-  if (form.services.some((s) => !s.type?.trim() || s.yearsOfExp < 0 || s.feeRate < 0))
-    errors.push('All services must have type, experience, and fee.')
+  // Skills
+  if (Array.isArray(form.skills) && form.skills.some(s => isEmpty(s))) {
+    errors.skills = 'All skills must be non-empty.';
+  }
 
-  return errors
-}
+  // Services
+  if (
+    Array.isArray(form.services) &&
+    form.services.some(
+      s => isEmpty(s.type) || s.yearsOfExp == null || s.yearsOfExp < 0 || s.feeRate == null || s.feeRate < 0
+    )
+  ) {
+    errors.services = 'All services must have type, experience, and fee.';
+  }
+
+
+  return errors;
+};

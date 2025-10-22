@@ -1,7 +1,7 @@
 <script setup>
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore'
@@ -16,7 +16,11 @@ const router = useRouter()
 const auth = getAuth()
 const db = getFirestore();
 
-//user fields
+
+//general errror msg
+const errorMessage = ref('');
+
+//user obj
 const user = ref({
     username: '',
     firstName: '',
@@ -36,8 +40,12 @@ const serviceTypes = [
     "Pet Walking"
 ];
 
+//for form field validation
+const fieldErrors = ref({});
+
 //edit profile modal open/close state
 const showModal = ref(false)
+
 
 //initiate update profile modal form input states
 const form = ref({
@@ -51,8 +59,21 @@ const form = ref({
     services: [],
 })
 
-const errorMessage = ref('');
+//basically clear error messages when the field is being typed on
+watch(() => form.value.firstName, () => fieldErrors.value.firstName = '');
+watch(() => form.value.lastName, () => fieldErrors.value.lastName = '');
+watch(() => form.value.contactNumber, () => fieldErrors.value.contactNumber = '');
 
+
+// Open edit profile modal
+const onEditProfile = async () => {
+    showModal.value = true
+
+    // Deep copy the services and skills to break reference btween user.services and form.services
+    // this is to prevent the main card data from updating before the edit modal form is saved
+    form.value.services = user.value.services.map(s => ({ ...s }));
+    form.value.skills = [...user.value.skills];
+}
 
 //centralized avatarURL
 const avatarUrl = computed(() => {
@@ -94,7 +115,6 @@ const onAvatarChange = async (event) => {
         form.value.avatar = base64;
     } catch (err) {
         console.error("Failed to read file:", err);
-        alert("Failed to load image");
     }
 };
 
@@ -104,121 +124,72 @@ const onRemoveAvatar = () => {
     // user.value.avatar = null;
 };
 
-
-// Fetch user details from Firestore (not firebase auth, auth stores password and email, other user details stored in firestore)
-const fetchUserDetails = async () => {
-    const currentUser = auth.currentUser
-    if (!currentUser) {
-        router.push('/login')
-        return
-    }
-    const userDocRef = doc(db, 'volunteers', currentUser.uid)
-    const userSnap = await getDoc(userDocRef)
-    if (userSnap.exists()) {
-        const data = userSnap.data()
-
-        user.value.username = data.username || ''
-        user.value.firstName = data.firstName || ''
-        user.value.lastName = data.lastName || ''
-        user.value.contactNumber = data.contactNumber || ''
-        user.value.bio = data.bio || ''
-        user.value.skills = data.skills || []
-        user.value.services = data.services || []
-        user.value.avatar = data.avatar || null;
-
-
-        // populate form
-        form.value.firstName = data.firstName || ''
-        form.value.lastName = data.lastName || ''
-        form.value.contactNumber = data.contactNumber || ''
-        form.value.bio = data.bio || ''
-        form.value.skills = [...(data.skills || [])]
-        form.value.services = [...(data.services || [])]
-        form.value.avatar = user.value.avatar
-    }
-}
-
-
-// Open modal and fetch Firestore data
-const onEditProfile = async () => {
-    showModal.value = true
-    errorMessage.value = ''
-    // Deep copy the services and skills to break reference btween user.services and form.services
-    // this is to prevent the main card data from updating before the edit modal form is saved
-    form.value.services = user.value.services.map(s => ({ ...s }));
-    form.value.skills = [...user.value.skills];
-}
-
 const addSkill = () => {
-    const errors = validateProfileUpdate(form.value)
-    const skillError = errors.find(e => e.includes('skill'))
-    if (!skillError) {
-        form.value.skills.push('')
-        errorMessage.value = ''
-    } else {
-        errorMessage.value = skillError
+    // Clear previous skill error
+    fieldErrors.value.skills = '';
+
+    // Check if all existing skills are filled before allowing to add another
+    const hasEmptySkill = form.value.skills.some(s => !s.trim());
+    if (hasEmptySkill) {
+        fieldErrors.value.skills = 'Please fill in all existing skills before adding a new one.';
+        return;
     }
-}
+
+    // Add new empty skill field
+    form.value.skills.push('');
+};
+
 
 const addService = () => {
-    const errors = validateProfileUpdate(form.value)
-    const serviceError = errors.find(e => e.includes('service'))
-    if (!serviceError) {
-        form.value.services.push({ type: '', yearsOfExp: 0, feeRate: 0 })
-        errorMessage.value = ''
-    } else {
-        errorMessage.value = serviceError
+    fieldErrors.value.services = '';
+
+    // Check if all existing services are filled before allowing to add another
+    const hasIncompleteService = form.value.services.some(
+        s => !s.type.trim()
+    );
+
+    if (hasIncompleteService) {
+        fieldErrors.value.services = 'Please fill in all existing services before adding a new one.';
+        return;
     }
-}
-
-
-
-
+    form.value.services.push({ type: '', yearsOfExp: 0, feeRate: 0 });
+};
 
 // Save profile and update Firestore
+
 const onSaveProfile = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    const errors = validateProfileUpdate(form.value)  // <-- use validateProfileUpdate
+    // Run validation
+    const errors = validateProfileUpdate(form.value);
+    
 
-    if (errors.length > 0) {
-        errorMessage.value = errors.join(' ')
+    // Stop if there are validation errors
+    if (Object.keys(errors).length > 0){
+        fieldErrors.value = errors;
         return
-    }
+    };
 
     try {
-        const userDocRef = doc(db, 'volunteers', currentUser.uid);
-
-        // ensure no undefined values
-        const dataToUpdate = {
-            firstName: form.value.firstName || '',
-            lastName: form.value.lastName || '',
-            contactNumber: form.value.contactNumber || '',
+        // Update Firestore
+        const userDoc = doc(db, 'volunteers', currentUser.uid);
+        await updateDoc(userDoc, {
+            firstName: form.value.firstName.trim(),
+            lastName: form.value.lastName.trim(),
+            contactNumber: form.value.contactNumber.trim(),
+            skills: form.value.skills.map(s => s.trim()).filter(Boolean),
+            services: form.value.services,
+            avatar: form.value.avatar || null,
             bio: form.value.bio.trim() || '',
-            skills: form.value.skills || [],
-            services: form.value.services || [],
-            avatar: form.value.avatar || null
+        });
 
-        }
-
-        await updateDoc(userDocRef, dataToUpdate);
-
-        // Update local user state
-        user.value.firstName = dataToUpdate.firstName;
-        user.value.lastName = dataToUpdate.lastName;
-        user.value.contactNumber = dataToUpdate.contactNumber;
-        user.value.bio = dataToUpdate.bio;
-        user.value.skills = dataToUpdate.skills;
-        user.value.services = dataToUpdate.services;
-        user.value.avatar = form.value.avatar || null;
-
-
-        // Close modal
+        //fetch updated values after update
+        await fetchUserDetails()
         showModal.value = false;
+
     } catch (error) {
-        console.error('Failed to update profile:', error);
-        alert('Failed to update profile. Please try again.');
+        errorMessage = 'Failed to save profile. Please try again'
     }
 };
 
@@ -231,7 +202,46 @@ const onLogout = async () => {
         //go to login page upon logged out
         router.push('/volunteer/login')
     } catch (error) {
-        console.error('Logout error:', error)
+        alert("Failed to logout. Please try again")
+    }
+}
+
+// Fetch user details from Firestore (not firebase auth, auth stores password and email, other user details stored in firestore)
+const fetchUserDetails = async () => {
+    const currentUser = auth.currentUser
+    if (!currentUser) {
+        router.push('/login')
+        return
+    }
+
+    try {
+        const userDocRef = doc(db, 'volunteers', currentUser.uid)
+        const userSnap = await getDoc(userDocRef)
+        if (userSnap.exists()) {
+            const data = userSnap.data()
+
+            user.value.username = data.username || ''
+            user.value.firstName = data.firstName || ''
+            user.value.lastName = data.lastName || ''
+            user.value.contactNumber = data.contactNumber || ''
+            user.value.bio = data.bio || ''
+            user.value.skills = data.skills || []
+            user.value.services = data.services || []
+            user.value.avatar = data.avatar || null;
+
+
+            // populate form
+            form.value.firstName = data.firstName || ''
+            form.value.lastName = data.lastName || ''
+            form.value.contactNumber = data.contactNumber || ''
+            form.value.bio = data.bio || ''
+            form.value.skills = [...(data.skills || [])]
+            form.value.services = [...(data.services || [])]
+            form.value.avatar = user.value.avatar
+        }
+    }
+    catch (error) {
+        alert("Failed fetch profile. Please try again")
     }
 }
 
@@ -252,8 +262,6 @@ onMounted(() => {
             router.push('/volunteer/login')
         }
     })
-
-
 })
 </script>
 
@@ -311,24 +319,26 @@ onMounted(() => {
                                     </div>
                                 </div>
 
-
-
-
                                 <div v-if="errorMessage" class="alert alert-danger">
                                     {{ errorMessage }}
                                 </div>
-
                                 <!-- First Name + Last Name inline -->
                                 <div class="row mb-3">
                                     <div class="col-12 col-md-6 mb-2 mb-md-0">
                                         <label class="form-label">First Name</label>
                                         <input v-model="form.firstName" type="text" class="form-control"
-                                            placeholder="First Name" required>
+                                            :class="{ 'is-invalid': fieldErrors.firstName }" placeholder="First Name" />
+                                        <div class="invalid-feedback">
+                                            {{ fieldErrors.firstName }}
+                                        </div>
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label">Last Name</label>
                                         <input v-model="form.lastName" type="text" class="form-control"
-                                            placeholder="Last Name" required>
+                                            :class="{ 'is-invalid': fieldErrors.lastName }" placeholder="Last Name" />
+                                        <div class="invalid-feedback">
+                                            {{ fieldErrors.lastName }}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -336,7 +346,11 @@ onMounted(() => {
                                 <div class="mb-3">
                                     <label class="form-label">Contact Number</label>
                                     <input v-model="form.contactNumber" type="tel" class="form-control"
-                                        placeholder="Contact Number" required>
+                                        :class="{ 'is-invalid': fieldErrors.contactNumber }"
+                                        placeholder="Contact Number" />
+                                    <div class="invalid-feedback">
+                                        {{ fieldErrors.contactNumber }}
+                                    </div>
                                 </div>
 
                                 <!-- Bio -->
@@ -351,7 +365,7 @@ onMounted(() => {
                                     <label class="form-label d-block">Skills</label>
                                     <div v-for="(skill, index) in form.skills" :key="index" class="input-group mb-2">
                                         <input v-model="form.skills[index]" type="text" class="form-control"
-                                            placeholder="Skill" required>
+                                            placeholder="Skill">
                                         <button type="button" class="btn btn-outline-danger btn-sm"
                                             @click="form.skills.splice(index, 1)">Remove</button>
                                     </div>
@@ -360,7 +374,9 @@ onMounted(() => {
                                         <button type="button" class="btn btn-outline-primary btn-sm" @click="addSkill">
                                             Add Skill
                                         </button>
-
+                                        <div v-if="fieldErrors.skills" class="invalid-feedback d-block">
+                                            {{ fieldErrors.skills }}
+                                        </div>
 
                                     </div>
                                 </div>
@@ -372,7 +388,7 @@ onMounted(() => {
                                         class="border p-2 mb-2 rounded">
                                         <div class="mb-2">
                                             <label class="form-label">Service Type</label>
-                                            <select v-model="service.type" class="form-select" required>
+                                            <select v-model="service.type" class="form-select">
                                                 <option value="" disabled>Select a service</option>
                                                 <option v-for="type in serviceTypes" :key="type" :value="type">{{ type
                                                     }}
@@ -382,12 +398,12 @@ onMounted(() => {
                                         <div class="mb-2">
                                             <label class="form-label">Years of Experience</label>
                                             <input v-model.number="service.yearsOfExp" type="number"
-                                                class="form-control" placeholder="Years of Experience" required>
+                                                class="form-control" placeholder="Years of Experience">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Fee Rate ($/hr)</label>
                                             <input v-model.number="service.feeRate" type="number" class="form-control"
-                                                placeholder="Fee Rate" required>
+                                                placeholder="Fee Rate">
                                         </div>
                                         <button type="button" class="btn btn-outline-danger btn-sm"
                                             @click="form.services.splice(index, 1)">Remove Service</button>
@@ -397,6 +413,11 @@ onMounted(() => {
                                             @click="addService">
                                             Add Service
                                         </button>
+
+                                        <div v-if="fieldErrors.services" class="invalid-feedback d-block">
+                                            {{ fieldErrors.services }}
+                                        </div>
+
 
                                     </div>
                                 </div>
