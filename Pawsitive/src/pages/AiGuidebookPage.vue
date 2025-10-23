@@ -1,14 +1,20 @@
 <template>
+     <Navbar>
+      <template v-slot:navbar-title>AI Guidebook</template>
+    </Navbar>
   <div class="book" ref="bookRef">
     <div class="page" v-for="(page, idx) in pages" :key="idx">
       <div class="front" :class="page.frontClass" v-html="page.front"></div>
       <div class="back" :class="page.backClass" v-html="page.back"></div>
     </div>
   </div>
+   <BottomFooter />
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
+import Navbar from "@/components/resuables/Navbar.vue";
+import BottomFooter from "@/components/resuables/BottomFooter.vue";
 
 const bookRef = ref(null);
 
