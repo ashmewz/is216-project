@@ -33,17 +33,17 @@ const routes = [
     {
         path: '/map/',
         component: MapPage,
-         meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/forum/',
         component: ForumPage,
-         meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/report/',
         component: ReportPage,
-         meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/volunteer/login/',
@@ -57,7 +57,7 @@ const routes = [
         // TODO: Inject profile data
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerProfilePage,
-         meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
     },
 
     {
@@ -107,7 +107,7 @@ router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth && !user) {
         // user is not logged in but route requires auth
         next('/'); // redirect to login
-    } else if (!to.meta.requiresAuth && user && (to.path === '/' || to.path === '/volunteer/login/')) {
+    } else if (!to.meta.requiresAuth && user && (to.path === '/' || to.path === '/volunteer/login' || to.path === '/volunteer/login/')) {
         // logged-in user trying to access login page (on root '/' and 'volunteer/login')
         next('/map'); // redirect to /map
     } else {
