@@ -18,28 +18,28 @@ const currentTextIndex = ref(0)
 
 // Landing Page
 const accessButton = ref(null)
-const texts = ["\u00A0","Meow","OW","MEOWWWWWW","OW OW OW","STOP POKING ME","Bleh :P"]
+const texts = ["\u00A0", "Meow", "OW", "MEOWWWWWW", "OW OW OW", "STOP POKING ME", "Bleh :P"]
 const tips = [
-  "Cats sleep 12–16 hours a day on average.",
-  "A flicking tail often means irritation — give space.",
-  "Trim claws every few weeks to prevent overgrowth.",
-  "Cats can rotate their ears 180 degrees.",
-  "Keep your cat indoors or in a secured outdoor area for safety.",
-  "Overfeeding leads to obesity — measure meals carefully.",
-  "Cats knead to show contentment or mark scent.",
-  "Cats love high places — add shelves or cat trees.",
-  "Avoid giving cats milk — most are lactose intolerant.",
-  "A cat's purr can have calming effects on humans.", 
-  "Always keep poisonous plants away.",
-  "Regular vet checkups can prevent serious health issues.",
-  "Play with your cat at least 10–15 minutes daily.",
-  "Cats walk by moving both right feet, then both left — like camels.",
-  "Provide a quiet, safe space for them to retreat.",
-  "Respect their personal space; don't force cuddles.",
-  "Each cat's nose print is unique — like a human fingerprint.",
-  "Watch for subtle signs of illness: grooming, hiding, appetite.",
-  "Domestic cats share 95.6% of their DNA with tigers.",
-  "Spaying/neutering prevents unwanted litters and certain diseases."
+    "Cats sleep 12–16 hours a day on average.",
+    "A flicking tail often means irritation — give space.",
+    "Trim claws every few weeks to prevent overgrowth.",
+    "Cats can rotate their ears 180 degrees.",
+    "Keep your cat indoors or in a secured outdoor area for safety.",
+    "Overfeeding leads to obesity — measure meals carefully.",
+    "Cats knead to show contentment or mark scent.",
+    "Cats love high places — add shelves or cat trees.",
+    "Avoid giving cats milk — most are lactose intolerant.",
+    "A cat's purr can have calming effects on humans.",
+    "Always keep poisonous plants away.",
+    "Regular vet checkups can prevent serious health issues.",
+    "Play with your cat at least 10–15 minutes daily.",
+    "Cats walk by moving both right feet, then both left — like camels.",
+    "Provide a quiet, safe space for them to retreat.",
+    "Respect their personal space; don't force cuddles.",
+    "Each cat's nose print is unique — like a human fingerprint.",
+    "Watch for subtle signs of illness: grooming, hiding, appetite.",
+    "Domestic cats share 95.6% of their DNA with tigers.",
+    "Spaying/neutering prevents unwanted litters and certain diseases."
 ]
 
 const leftTipDisplay = ref('')
@@ -55,96 +55,96 @@ const registerForm = reactive({ firstName: '', lastName: '', username: '', email
 const loginFieldErrors = reactive({})
 const registerFieldErrors = reactive({})
 
-watch(() => loginForm.email, () => loginFieldErrors.value.email = '');
-watch(() => loginForm.password, () => loginFieldErrors.value.password = '');
+watch(() => loginForm.email, () => loginFieldErrors.email = '');
+watch(() => loginForm.password, () => loginFieldErrors.password = '');
 
-watch(() => registerForm.firstName, () => registerFieldErrors.value.firstName = '');
-watch(() => registerForm.lastName, () => registerFieldErrors.value.lastName = '');
-watch(() => registerForm.username, () => registerFieldErrors.value.username = '');
-watch(() => registerForm.email, () => registerFieldErrors.value.email = '');
-watch(() => registerForm.password, () => registerFieldErrors.value.password = '');
-watch(() => registerForm.confirmPassword, () => registerFieldErrors.value.confirmPassword = '');
-watch(() => registerForm.contactNumber, () => registerFieldErrors.value.contactNumber = '');
+watch(() => registerForm.firstName, () => registerFieldErrors.firstName = '');
+watch(() => registerForm.lastName, () => registerFieldErrors.lastName = '');
+watch(() => registerForm.username, () => registerFieldErrors.username = '');
+watch(() => registerForm.email, () => registerFieldErrors.email = '');
+watch(() => registerForm.password, () => registerFieldErrors.password = '');
+watch(() => registerForm.confirmPassword, () => registerFieldErrors.confirmPassword = '');
+watch(() => registerForm.contactNumber, () => registerFieldErrors.contactNumber = '');
 
 onMounted(() => {
-  setTimeout(() => accessButton.value?.classList.replace('access-button-hidden','access-button-visible'), 1000)
-  startTipAnimation('left')
-  startTipAnimation('right')
+    setTimeout(() => accessButton.value?.classList.replace('access-button-hidden', 'access-button-visible'), 1000)
+    startTipAnimation('left')
+    startTipAnimation('right')
 })
 onUnmounted(() => { clearInterval(leftTipInterval); clearInterval(rightTipInterval) })
 
 function startTipAnimation(side) {
-  const isLeft = side==='left'
-  const tipIndex = isLeft ? leftTipIndex : rightTipIndex
-  const tipDisplay = isLeft ? leftTipDisplay : rightTipDisplay
+    const isLeft = side === 'left'
+    const tipIndex = isLeft ? leftTipIndex : rightTipIndex
+    const tipDisplay = isLeft ? leftTipDisplay : rightTipDisplay
 
-  tipDisplay.value = ''
-  let charIndex = 0
-  const charInterval = setInterval(() => {
-    if(charIndex < tips[tipIndex.value].length) tipDisplay.value += tips[tipIndex.value][charIndex++]
-    else {
-      clearInterval(charInterval)
-      setTimeout(() => {
-        tipIndex.value = (tipIndex.value + 1) % tips.length
-        startTipAnimation(side)
-      }, Math.max(1000, tips[tipIndex.value].length*70))
-    }
-  }, 40)
+    tipDisplay.value = ''
+    let charIndex = 0
+    const charInterval = setInterval(() => {
+        if (charIndex < tips[tipIndex.value].length) tipDisplay.value += tips[tipIndex.value][charIndex++]
+        else {
+            clearInterval(charInterval)
+            setTimeout(() => {
+                tipIndex.value = (tipIndex.value + 1) % tips.length
+                startTipAnimation(side)
+            }, Math.max(1000, tips[tipIndex.value].length * 70))
+        }
+    }, 40)
 
-  if(isLeft) leftTipInterval = charInterval
-  else rightTipInterval = charInterval
+    if (isLeft) leftTipInterval = charInterval
+    else rightTipInterval = charInterval
 }
 
 function nextText() {
-  currentTextIndex.value = (currentTextIndex.value + 1) % texts.length
-  const calloutEle = document.getElementById("callout")
-  calloutEle.classList.remove("bubble-pulse")
-  void calloutEle.offsetWidth
-  calloutEle.classList.toggle("speech-bubble-visible", currentTextIndex.value!==0)
-  calloutEle.classList.toggle("speech-bubble-hidden", currentTextIndex.value===0)
-  if(currentTextIndex.value!==0) calloutEle.classList.add("bubble-pulse")
+    currentTextIndex.value = (currentTextIndex.value + 1) % texts.length
+    const calloutEle = document.getElementById("callout")
+    calloutEle.classList.remove("bubble-pulse")
+    void calloutEle.offsetWidth
+    calloutEle.classList.toggle("speech-bubble-visible", currentTextIndex.value !== 0)
+    calloutEle.classList.toggle("speech-bubble-hidden", currentTextIndex.value === 0)
+    if (currentTextIndex.value !== 0) calloutEle.classList.add("bubble-pulse")
 }
 
 function goToLogin() {
-  isFadingOut.value = true
-  setTimeout(() => { showLogin.value = true; setTimeout(()=>isCardVisible.value=true,100) }, 800)
+    isFadingOut.value = true
+    setTimeout(() => { showLogin.value = true; setTimeout(() => isCardVisible.value = true, 100) }, 800)
 }
 
 const toggleForm = () => {
-  errorMessage.value = ''
-  Object.keys(loginFieldErrors).forEach(k=>loginFieldErrors[k]='')
-  Object.keys(registerFieldErrors).forEach(k=>registerFieldErrors[k]='')
-  isLogin.value = !isLogin.value
+    errorMessage.value = ''
+    Object.keys(loginFieldErrors).forEach(k => loginFieldErrors[k] = '')
+    Object.keys(registerFieldErrors).forEach(k => registerFieldErrors[k] = '')
+    isLogin.value = !isLogin.value
 }
 
 const handleLogin = async () => {
-  Object.keys(loginFieldErrors).forEach(k=>loginFieldErrors[k]='')
-  errorMessage.value = ''
-  const errors = validateLogin(loginForm)
-  if(Object.keys(errors).length) { Object.assign(loginFieldErrors,errors); return }
-  try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/volunteer/profile") }
-  catch(e){ errorMessage.value = e.message }
+    Object.keys(loginFieldErrors).forEach(k => loginFieldErrors[k] = '')
+    errorMessage.value = ''
+    const errors = validateLogin(loginForm)
+    if (Object.keys(errors).length) { Object.assign(loginFieldErrors, errors); return }
+    try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/volunteer/profile") }
+    catch (e) { errorMessage.value = e.message }
 }
 
 const handleRegister = async () => {
-  Object.keys(registerFieldErrors).forEach(k=>registerFieldErrors[k]='')
-  errorMessage.value = ''
-  const errors = validateRegistration(registerForm)
-  if(Object.keys(errors).length) { Object.assign(registerFieldErrors,errors); return }
+    Object.keys(registerFieldErrors).forEach(k => registerFieldErrors[k] = '')
+    errorMessage.value = ''
+    const errors = validateRegistration(registerForm)
+    if (Object.keys(errors).length) { Object.assign(registerFieldErrors, errors); return }
 
-  const { username, email, password, firstName, lastName, contactNumber } = registerForm
-  try {
-    const usernameRef = doc(db,"usernames",username)
-    if((await getDoc(usernameRef)).exists()){ errorMessage.value="Username taken"; return }
-    await setDoc(usernameRef,{reserved:true})
-    const user = (await createUserWithEmailAndPassword(auth,email,password)).user
-    await setDoc(usernameRef,{uid:user.uid})
-    await setDoc(doc(db,"volunteers",user.uid), { uid:user.uid, username, firstName, lastName, email, contactNumber, bio:"", role:"user", createdAt:serverTimestamp() })
-    router.push("/volunteer/profile")
-  } catch(e){
-    errorMessage.value = e.message
-    if(registerForm.username) await deleteDoc(doc(db,"usernames",registerForm.username))
-  }
+    const { username, email, password, firstName, lastName, contactNumber } = registerForm
+    try {
+        const usernameRef = doc(db, "usernames", username)
+        if ((await getDoc(usernameRef)).exists()) { errorMessage.value = "Username taken"; return }
+        await setDoc(usernameRef, { reserved: true })
+        const user = (await createUserWithEmailAndPassword(auth, email, password)).user
+        await setDoc(usernameRef, { uid: user.uid })
+        await setDoc(doc(db, "volunteers", user.uid), { uid: user.uid, username, firstName, lastName, email, contactNumber, bio: "", role: "user", createdAt: serverTimestamp() })
+        router.push("/volunteer/profile")
+    } catch (e) {
+        errorMessage.value = e.message
+        if (registerForm.username) await deleteDoc(doc(db, "usernames", registerForm.username))
+    }
 }
 </script>
 
@@ -157,7 +157,7 @@ const handleRegister = async () => {
             <div class="tip-column tip-left" :class="{ 'fade-out-element': isFadingOut }">
                 <div class="tip-text">{{ leftTipDisplay }}</div>
             </div>
-            
+
             <div class="center-content" :class="{ 'fade-out-element': isFadingOut }">
                 <video src="/src/assets/pawsitive_gif_updated.mp4" autoplay muted loop playsinline
                     class="landing-video explode-bounce gif" @click="nextText"></video>
@@ -170,7 +170,7 @@ const handleRegister = async () => {
                     ENTER
                 </button>
             </div>
-            
+
             <div class="tip-column tip-right" :class="{ 'fade-out-element': isFadingOut }">
                 <div class="tip-text">{{ rightTipDisplay }}</div>
             </div>
@@ -179,9 +179,11 @@ const handleRegister = async () => {
         <!-- Login/Register View -->
         <div v-if="showLogin" class="login-container">
             <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
-                <div class="card shadow card-entrance" :class="{ 'card-visible': isCardVisible }" style="max-width: 900px; width: 90%;">
+                <div class="card shadow card-entrance" :class="{ 'card-visible': isCardVisible }"
+                    style="max-width: 900px; width: 90%;">
                     <div class="row g-0">
-                        <div class="col-md-6 d-none d-md-flex flex-column justify-content-center align-items-center bg-secondary text-white p-4 rounded-start">
+                        <div
+                            class="col-md-6 d-none d-md-flex flex-column justify-content-center align-items-center bg-secondary text-white p-4 rounded-start">
                             <h1>Welcome!</h1>
                             <p class="lead text-center">Join our volunteer community and make a difference.</p>
                             <img src="../assets/pawsitive-logo.png" alt="Graphic" class="img-fluid rounded mt-3">
@@ -189,29 +191,35 @@ const handleRegister = async () => {
 
                         <div class="col-12 col-md-6 d-flex justify-content-center align-items-center p-4">
                             <div class="w-100" style="max-width: 25rem;">
-                                <h3 class="text-center mb-4">{{ isLogin ? 'Volunteer Login' : 'Volunteer Registration' }}</h3>
+                                <h3 class="text-center mb-4">{{ isLogin ? 'Volunteer Login' : 'Volunteer Registration'
+                                    }}</h3>
 
                                 <transition name="slide-fade" mode="out-in">
                                     <form v-if="isLogin" key="login" @submit.prevent="handleLogin">
                                         <div class="mb-3">
                                             <label class="form-label">Email</label>
-                                            <input v-model="loginForm.email" type="email" class="form-control"
-                                                :class="{ 'is-invalid': loginFieldErrors.email }" placeholder="Enter email" />
+                                            <input v-model="loginForm.email" class="form-control"
+                                                :class="{ 'is-invalid': loginFieldErrors.email }"
+                                                placeholder="Enter email" />
                                             <div class="invalid-feedback">{{ loginFieldErrors.email }}</div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Password</label>
                                             <input v-model="loginForm.password" type="password" class="form-control"
-                                                :class="{ 'is-invalid': loginFieldErrors.password }" placeholder="Enter password" />
+                                                :class="{ 'is-invalid': loginFieldErrors.password }"
+                                                placeholder="Enter password" />
                                             <div class="invalid-feedback">{{ loginFieldErrors.password }}</div>
                                         </div>
 
-                                        <div v-if="errorMessage" class="alert alert-danger" style="white-space: pre-line;">{{ errorMessage }}</div>
-                                        <button type="submit" class="btn w-100" style="background-color: #7a5cfb; color: #fff;">Login</button>
+                                        <div v-if="errorMessage" class="alert alert-danger"
+                                            style="white-space: pre-line;">{{ errorMessage }}</div>
+                                        <button type="submit" class="btn w-100"
+                                            style="background-color: #7a5cfb; color: #fff;">Login</button>
 
                                         <p class="text-center mt-3">
                                             Not a volunteer?
-                                            <a href="javascript:void(0)" class="text-primary" @click.prevent="toggleForm">Register here</a>
+                                            <a href="javascript:void(0)" class="text-primary"
+                                                @click.prevent="toggleForm">Register here</a>
                                         </p>
                                     </form>
 
@@ -220,13 +228,15 @@ const handleRegister = async () => {
                                             <div class="col-12 col-md-6 mb-2 mb-md-0">
                                                 <label class="form-label">First Name</label>
                                                 <input v-model="registerForm.firstName" type="text" class="form-control"
-                                                    :class="{ 'is-invalid': registerFieldErrors.firstName }" placeholder="First Name" />
+                                                    :class="{ 'is-invalid': registerFieldErrors.firstName }"
+                                                    placeholder="First Name" />
                                                 <div class="invalid-feedback">{{ registerFieldErrors.firstName }}</div>
                                             </div>
                                             <div class="col-12 col-md-6">
                                                 <label class="form-label">Last Name</label>
                                                 <input v-model="registerForm.lastName" type="text" class="form-control"
-                                                    :class="{ 'is-invalid': registerFieldErrors.lastName }" placeholder="Last Name" />
+                                                    :class="{ 'is-invalid': registerFieldErrors.lastName }"
+                                                    placeholder="Last Name" />
                                                 <div class="invalid-feedback">{{ registerFieldErrors.lastName }}</div>
                                             </div>
                                         </div>
@@ -234,44 +244,54 @@ const handleRegister = async () => {
                                         <div class="mb-3">
                                             <label class="form-label">Username</label>
                                             <input v-model="registerForm.username" type="text" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.username }" placeholder="Enter username" />
+                                                :class="{ 'is-invalid': registerFieldErrors.username }"
+                                                placeholder="Enter username" />
                                             <div class="invalid-feedback">{{ registerFieldErrors.username }}</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Email address</label>
                                             <input v-model="registerForm.email" type="email" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.email }" placeholder="Enter email" />
+                                                :class="{ 'is-invalid': registerFieldErrors.email }"
+                                                placeholder="Enter email" />
                                             <div class="invalid-feedback">{{ registerFieldErrors.email }}</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Contact Number</label>
                                             <input v-model="registerForm.contactNumber" type="tel" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.contactNumber }" placeholder="Enter contact number" />
+                                                :class="{ 'is-invalid': registerFieldErrors.contactNumber }"
+                                                placeholder="Enter contact number" />
                                             <div class="invalid-feedback">{{ registerFieldErrors.contactNumber }}</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Password</label>
                                             <input v-model="registerForm.password" type="password" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.password }" placeholder="Enter password" />
+                                                :class="{ 'is-invalid': registerFieldErrors.password }"
+                                                placeholder="Enter password" />
                                             <div class="invalid-feedback">{{ registerFieldErrors.password }}</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Confirm Password</label>
-                                            <input v-model="registerForm.confirmPassword" type="password" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.confirmPassword }" placeholder="Confirm password" />
-                                            <div class="invalid-feedback">{{ registerFieldErrors.confirmPassword }}</div>
+                                            <input v-model="registerForm.confirmPassword" type="password"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': registerFieldErrors.confirmPassword }"
+                                                placeholder="Confirm password" />
+                                            <div class="invalid-feedback">{{ registerFieldErrors.confirmPassword }}
+                                            </div>
                                         </div>
 
-                                        <div v-if="errorMessage" class="alert alert-danger" style="white-space: pre-line;">{{ errorMessage }}</div>
-                                        <button type="submit" class="btn w-100" style="background-color: #7a5cfb; color: #fff;">Register</button>
+                                        <div v-if="errorMessage" class="alert alert-danger"
+                                            style="white-space: pre-line;">{{ errorMessage }}</div>
+                                        <button type="submit" class="btn w-100"
+                                            style="background-color: #7a5cfb; color: #fff;">Register</button>
 
                                         <p class="text-center mt-3">
                                             Already a volunteer?
-                                            <a href="javascript:void(0)" class="text-primary" @click.prevent="toggleForm">Login here</a>
+                                            <a href="javascript:void(0)" class="text-primary"
+                                                @click.prevent="toggleForm">Login here</a>
                                         </p>
                                     </form>
                                 </transition>
@@ -328,12 +348,29 @@ const handleRegister = async () => {
 }
 
 @keyframes explodeBounce {
-    0% { transform: scale(0.1); }
-    30% { transform: scale(1.2); }
-    50% { transform: scale(0.9); }
-    65% { transform: scale(1.1); }
-    80% { transform: scale(0.95); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(0.1);
+    }
+
+    30% {
+        transform: scale(1.2);
+    }
+
+    50% {
+        transform: scale(0.9);
+    }
+
+    65% {
+        transform: scale(1.1);
+    }
+
+    80% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .explode-bounce {
@@ -423,9 +460,17 @@ const handleRegister = async () => {
 }
 
 @keyframes bubble-pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .access-button {
@@ -473,6 +518,7 @@ const handleRegister = async () => {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+
     100% {
         opacity: 0;
         transform: translateY(-30px) scale(0.95);
