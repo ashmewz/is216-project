@@ -49,8 +49,7 @@ const routes = [
         path: '/volunteer/login/',
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
-        component: VolunteerSignupLoginPage,
-         meta: { requiresAuth: true }
+        component: VolunteerSignupLoginPage
 
     },
     {
