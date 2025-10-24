@@ -76,9 +76,9 @@ function startTipAnimation(side) {
       setTimeout(() => {
         tipIndex.value = (tipIndex.value + 1) % tips.length
         startTipAnimation(side)
-      }, Math.max(1000, tips[tipIndex.value].length*70))
+      }, Math.max(1000, tips[tipIndex.value].length*35))
     }
-  }, 40)
+  }, 35)
 
   if(isLeft) leftTipInterval = charInterval
   else rightTipInterval = charInterval
@@ -96,7 +96,7 @@ function nextText() {
 
 function goToLogin() {
   isFadingOut.value = true
-  setTimeout(() => { showLogin.value = true; setTimeout(()=>isCardVisible.value=true,100) }, 800)
+  setTimeout(() => { showLogin.value = true; setTimeout(()=>isCardVisible.value=true,100) }, 400)
 }
 
 const toggleForm = () => {
