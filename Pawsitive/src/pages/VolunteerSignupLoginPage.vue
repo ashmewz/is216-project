@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth, db } from "@/firebase"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
@@ -54,6 +54,17 @@ const loginForm = reactive({ email: '', password: '' })
 const registerForm = reactive({ firstName: '', lastName: '', username: '', email: '', password: '', confirmPassword: '', contactNumber: '' })
 const loginFieldErrors = reactive({})
 const registerFieldErrors = reactive({})
+
+watch(() => loginForm.email, () => loginFieldErrors.value.email = '');
+watch(() => loginForm.password, () => loginFieldErrors.value.password = '');
+
+watch(() => registerForm.firstName, () => registerFieldErrors.value.firstName = '');
+watch(() => registerForm.lastName, () => registerFieldErrors.value.lastName = '');
+watch(() => registerForm.username, () => registerFieldErrors.value.username = '');
+watch(() => registerForm.email, () => registerFieldErrors.value.email = '');
+watch(() => registerForm.password, () => registerFieldErrors.value.password = '');
+watch(() => registerForm.confirmPassword, () => registerFieldErrors.value.confirmPassword = '');
+watch(() => registerForm.contactNumber, () => registerFieldErrors.value.contactNumber = '');
 
 onMounted(() => {
   setTimeout(() => accessButton.value?.classList.replace('access-button-hidden','access-button-visible'), 1000)
