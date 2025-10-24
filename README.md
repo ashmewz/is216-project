@@ -30,3 +30,16 @@ Card CVC: 567
 Upon "Donate Now" success, you will currently be directed to a blank page, with the following browser path pattern:
 `http://localhost:5173/donate/success?payment_intent=pi_3SI1WnA4UE4DKmEO0KHD04IZ&payment_intent_client_secret=pi_3SI1WnA4UE4DKmEO0KHD04IZ_secret_g26E0UQS8m7bJ1aUh70EQcleP&redirect_status=succeeded`
 In future this should redirect back to some other page. But this has yet to be implemented. (CAA 14 Oct 2025)
+
+
+## Testing AI Recognition Page
+You must have a VITE_GEMINI_API_KEY value in your .env file.
+ENV files are git ignored. Please get the gemini API key from Kevan.
+The key allows for up to 50 per day and resets.
+
+To test:
+1. Load the page.
+2. Grab a random cat image from google and upload it.
+3. Click "Run cat prediction".
+You will see a prediction of what cat breed the image is with a probability/confidence percentage.
+And then afterwards you will also see the generated care tips from Gemini API.

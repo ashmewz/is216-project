@@ -6,7 +6,9 @@ const props = defineProps({
   clientSecret: String,
 })
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+// NOTE: This is a public testing key, so it's okay to commit.
+const VITE_STRIPE_PUBLISHABLE_KEY = "pk_test_51SGctLA4UE4DKmEOYkurPuHwLOC7aZGSMLJ0SxgGWnjdIz0PyfrwohTpxD1paL9X5xhFoPbUTdQnV3oyUIHNgb7j00YEyGc6kv"
+const stripePromise = loadStripe(VITE_STRIPE_PUBLISHABLE_KEY)
 const paymentElementRef = ref(null)
 let stripe, elements
 
