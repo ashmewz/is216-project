@@ -1,26 +1,27 @@
 <script setup>
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
+import ProfileCard from '@/components/resuables/ProfileCard.vue';
+import defaultAvatar from '@/assets/avatar_placeholder.jpg'
+import { validateProfileUpdate } from '@/utils/validators';
+
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore'
-import defaultAvatar from '@/assets/avatar_placeholder.jpg'
-import ProfileCard from '@/components/resuables/ProfileCard.vue';
-import { validateProfileUpdate } from '@/utils/validators';
 
-
+// FIREBASE SETUP
 const router = useRouter()
-
-//get the firebase variables needed
 const auth = getAuth()
-const db = getFirestore();
+const db = getFirestore()
+
+const errorMessage = ref('')
+const fieldErrors = ref({})
+const showModal = ref(false)
+const avatarInput = ref(null)
 
 
-//general errror msg
-const errorMessage = ref('');
-
-//user obj
+// STATE MANAGEMENT
 const user = ref({
     username: '',
     firstName: '',
@@ -32,22 +33,7 @@ const user = ref({
     skills: [],
     services: [],
 })
-//define the services types
-const serviceTypes = [
-    "Pet Grooming",
-    "Pet Sitting",
-    "Vet Consultation",
-    "Pet Walking"
-];
 
-//for form field validation
-const fieldErrors = ref({});
-
-//edit profile modal open/close state
-const showModal = ref(false)
-
-
-//initiate update profile modal form input states
 const form = ref({
     username: '',
     firstName: '',
@@ -59,23 +45,14 @@ const form = ref({
     services: [],
 })
 
-//basically clear error messages when the field is being typed on
-watch(() => form.value.firstName, () => fieldErrors.value.firstName = '');
-watch(() => form.value.lastName, () => fieldErrors.value.lastName = '');
-watch(() => form.value.contactNumber, () => fieldErrors.value.contactNumber = '');
+const serviceTypes = [
+    "Pet Grooming",
+    "Pet Sitting",
+    "Vet Consultation",
+    "Pet Walking"
+];
 
-
-// Open edit profile modal
-const onEditProfile = async () => {
-    showModal.value = true
-
-    // Deep copy the services and skills to break reference btween user.services and form.services
-    // this is to prevent the main card data from updating before the edit modal form is saved
-    form.value.services = user.value.services.map(s => ({ ...s }));
-    form.value.skills = [...user.value.skills];
-}
-
-//centralized avatarURL
+// CENTRALISED AVATARURL
 const avatarUrl = computed(() => {
     // If editing (modal open), prefer form.avatar even if it's null
     if (showModal.value) {
@@ -84,19 +61,21 @@ const avatarUrl = computed(() => {
             : defaultAvatar
     }
 
-    // Otherwise, show user's saved avatar
     return user.value.avatar || defaultAvatar
 })
 
-//initialized avatarInput (for changing profile pic)
-const avatarInput = ref(null);
+//basically clear error messages when the field is being typed on
+watch(() => form.value.firstName, () => fieldErrors.value.firstName = '');
+watch(() => form.value.lastName, () => fieldErrors.value.lastName = '');
+watch(() => form.value.contactNumber, () => fieldErrors.value.contactNumber = '');
+
 
 // Trigger the hidden file input when image is clicked
 const triggerFileInput = () => {
     avatarInput.value.click();
 };
 
-// Convert file to Base64
+// AVATAR HANDLING
 const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -106,7 +85,6 @@ const fileToBase64 = (file) => {
     });
 };
 
-// When user selects a new photo
 const onAvatarChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -118,14 +96,23 @@ const onAvatarChange = async (event) => {
     }
 };
 
-// Remove avatar
 const onRemoveAvatar = () => {
     form.value.avatar = null;
     // user.value.avatar = null;
 };
 
+
+// PROFILE EDITING
+const onEditProfile = async () => {
+    showModal.value = true
+
+    // Deep copy the services and skills to break reference btween user.services and form.services
+    // this is to prevent the main card data from updating before the edit modal form is saved
+    form.value.services = user.value.services.map(s => ({ ...s }));
+    form.value.skills = [...user.value.skills];
+}
+
 const addSkill = () => {
-    // Clear previous skill error
     fieldErrors.value.skills = '';
 
     // Check if all existing skills are filled before allowing to add another
@@ -155,24 +142,18 @@ const addService = () => {
     form.value.services.push({ type: '', yearsOfExp: 0, feeRate: 0 });
 };
 
-// Save profile and update Firestore
-
+// PROFILE SAVE
 const onSaveProfile = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    // Run validation
     const errors = validateProfileUpdate(form.value);
-    
-
-    // Stop if there are validation errors
     if (Object.keys(errors).length > 0){
         fieldErrors.value = errors;
         return
     };
 
     try {
-        // Update Firestore
         const userDoc = doc(db, 'volunteers', currentUser.uid);
         await updateDoc(userDoc, {
             firstName: form.value.firstName.trim(),
@@ -183,34 +164,30 @@ const onSaveProfile = async () => {
             avatar: form.value.avatar || null,
             bio: form.value.bio.trim() || '',
         });
-
-        //fetch updated values after update
         await fetchUserDetails()
         showModal.value = false;
 
     } catch (error) {
         errorMessage = 'Failed to save profile. Please try again'
+        return
     }
 };
 
-
-
-//Logout 
+// LOGOUT 
 const onLogout = async () => {
     try {
         await signOut(auth)
-        //go to login page upon logged out
-        router.push('/volunteer/login')
+        router.push('/')
     } catch (error) {
         alert("Failed to logout. Please try again")
     }
 }
 
-// Fetch user details from Firestore (not firebase auth, auth stores password and email, other user details stored in firestore)
+// FETCH USER DETAILS FROM FIRESTORE
 const fetchUserDetails = async () => {
     const currentUser = auth.currentUser
     if (!currentUser) {
-        router.push('/login')
+        router.push('/')
         return
     }
 
@@ -229,8 +206,6 @@ const fetchUserDetails = async () => {
             user.value.services = data.services || []
             user.value.avatar = data.avatar || null;
 
-
-            // populate form
             form.value.firstName = data.firstName || ''
             form.value.lastName = data.lastName || ''
             form.value.contactNumber = data.contactNumber || ''
@@ -245,13 +220,12 @@ const fetchUserDetails = async () => {
     }
 }
 
-
+// LIFECYCLE
 onMounted(() => {
-
     onAuthStateChanged(auth, (currentUser) => {
         if (currentUser) {
             // user is logged in
-            //set email value in card (get from firebase auth as email is stored there)
+            // set email value in card (get from firebase auth as email is stored there)
             user.value.email = currentUser.email || ''
 
             //get and set other user details from firestore
@@ -259,7 +233,7 @@ onMounted(() => {
         } else {
             // user is NOT logged in
             // redirect to login page
-            router.push('/volunteer/login')
+            router.push('/')
         }
     })
 })
