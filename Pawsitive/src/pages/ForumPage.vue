@@ -15,7 +15,7 @@ const posts = reactive([
     likes: 22,
     comments: [{ user: 'Sia', text: 'So cute!', time: '2025-10-24 14:30' }],
     datePosted: '2025-10-23 18:00',
-    expanded: false, // 👇 for read more
+    expanded: false, // for read more
   },
   {
     id: 'p2',
@@ -33,7 +33,7 @@ const posts = reactive([
     username: 'CatCareTips',
     profilePic: '/src/assets/profilepic3.jpg',
     caption: 'Cats are wonderful companions, but caring for them goes beyond just feeding. Regular grooming helps them stay clean and prevents hairballs. Providing scratching posts protects your furniture and helps them stretch. Always schedule vet visits, and remember — love, patience, and playtime go a long way in keeping your feline friend happy and healthy.',
-    image: '', // 👇 text-only post
+    image: '', // text-only post
     likes: 12,
     comments: [],
     datePosted: '2025-10-22 16:45',
@@ -97,7 +97,7 @@ function addComment() {
   newComment.value = ''
 }
 
-// 👇 For read more toggle
+// For read more toggle
 function toggleExpand(post) {
   post.expanded = !post.expanded
 }
@@ -145,7 +145,7 @@ async function sharePost(postId) {
 
     <main class="container mt-4">
       <div class="d-flex justify-content-end align-items-center mb-3">
-        <!-- 👇 Buttons moved to right -->
+        <!-- Buttons moved to right -->
         <div class="btn-group me-2">
           <button class="btn btn-outline-secondary dropdown-toggle" style="height: 40px" data-bs-toggle="dropdown">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-arrow-down-up" viewBox="0 0 16 16">
@@ -184,7 +184,7 @@ async function sharePost(postId) {
           </button>
         </div>
 
-        <!-- 👇 Read more functionality -->
+        <!-- Read more functionality -->
         <img
         v-if="post.image"
         :src="post.image"
