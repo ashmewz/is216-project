@@ -65,9 +65,16 @@ const avatarUrl = computed(() => {
 })
 
 //basically clear error messages when the field is being typed on
-watch(() => form.value.firstName, () => fieldErrors.value.firstName = '');
-watch(() => form.value.lastName, () => fieldErrors.value.lastName = '');
-watch(() => form.value.contactNumber, () => fieldErrors.value.contactNumber = '');
+watch(() => loginForm.email, () => loginFieldErrors.value.email = '');
+watch(() => loginForm.password, () => loginFieldErrors.value.password = '');
+
+watch(() => registerForm.firstName, () => registerFieldErrors.value.firstName = '');
+watch(() => registerForm.lastName, () => registerFieldErrors.value.lastName = '');
+watch(() => registerForm.username, () => registerFieldErrors.value.username = '');
+watch(() => registerForm.email, () => registerFieldErrors.value.email = '');
+watch(() => registerForm.password, () => registerFieldErrors.value.password = '');
+watch(() => registerForm.confirmPassword, () => registerFieldErrors.value.confirmPassword = '');
+watch(() => registerForm.contactNumber, () => registerFieldErrors.value.contactNumber = '');
 
 
 // Trigger the hidden file input when image is clicked
