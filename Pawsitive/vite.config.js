@@ -15,4 +15,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      '/api/news': {
+        target: 'http://api.mediastack.com/v1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/news/, '')
+      }
+    }
+  },
 })
