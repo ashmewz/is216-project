@@ -1,13 +1,43 @@
 <script setup>
 import { useRoute } from "vue-router";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ref, onMounted } from "vue";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase";
+import defaultAvatar from '@/assets/avatar_placeholder.jpg'
+
+const avatar = ref(null);
+const auth = getAuth();
+
+onMounted(() => {
+  // get user's avatar from db to display on navbar
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const docRef = doc(db, "volunteers", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          avatar.value = docSnap.data().avatar || null;
+        }
+      } catch (error) {
+        console.error("Error fetching profile photo:", error);
+        avatar.value = null;
+      }
+    } else {
+      avatar.value = null;
+    }
+  });
+});
+
 
 const route = useRoute();
+
 </script>
 
 <template>
   <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
     <div class="container-fluid">
-      <RouterLink to="/" class="navbar-brand d-flex align-items-center gap-2">
+      <RouterLink class="navbar-brand d-flex align-items-center gap-2">
         <img src="@/assets/pawsitive_updated.png" alt="Pawsitive Logo" class="navbar-logo" />
         <span class="fw-bold">Pawsitive</span>
       </RouterLink>
@@ -40,34 +70,6 @@ const route = useRoute();
             <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
               Report
             </RouterLink>
-          </li>
-
-          <!-- Volunteer Dropdown -->
-          <li class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" id="navbar-volunteer-dropdown" role="button"
-              data-bs-toggle="dropdown">
-              Volunteer
-            </a>
-            <ul class="dropdown-menu">
-              <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/volunteer/signup') }"
-                  to="/volunteer/signup/">
-                  <span class="underline">Sign Up / Login</span>
-                </RouterLink>
-              </li>
-              <!-- <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/volunteer/login') }"
-                  to="/volunteer/login/">
-                  <span class="underline">Log in</span>
-                </RouterLink>
-              </li> -->
-              <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/volunteer/profile') }"
-                  to="/volunteer/profile/">
-                  <span class="underline">Volunteer Profile</span>
-                </RouterLink>
-              </li>
-            </ul>
           </li>
 
           <li class="nav-item">
@@ -104,6 +106,18 @@ const route = useRoute();
             </ul>
           </li>
         </ul>
+
+        <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
+          style="width:40px; height:40px;">
+          <!-- Show profile photo if available -->
+          <img v-if="avatar" :src="avatar" alt="Profile Photo" class="rounded-circle"
+            style="width:100%; height:100%; object-fit:cover;" />
+          <!-- Otherwise show default SVG -->
+          <img v-else :src="defaultAvatar" alt="Profile Photo" class="rounded-circle"
+            style="width:100%; height:100%; object-fit:cover;" />
+
+        </a>
+
       </div>
     </div>
   </nav>

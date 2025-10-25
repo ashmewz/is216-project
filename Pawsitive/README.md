@@ -33,3 +33,7 @@ npm run build
 ```sh
 npm run lint
 ```
+
+### Test Account
+Email: meow@meow.com
+Password: kitten
