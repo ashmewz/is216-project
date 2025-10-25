@@ -83,9 +83,15 @@ const route = useRoute();
               Services
             </RouterLink>
           </li>
+           <li class="nav-item">
+                <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/ai/recog') }"
+                  to="/ai/recog/">
+                  AI Recognition
+                </RouterLink>
+              </li>
 
           <!-- AI Dropdown -->
-          <li class="nav-item dropdown">
+          <!-- <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle" id="navbar-ai-dropdown" role="button"
               data-bs-toggle="dropdown">
               AI
@@ -104,7 +110,7 @@ const route = useRoute();
                 </RouterLink>
               </li>
             </ul>
-          </li>
+          </li> -->
         </ul>
 
         <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
