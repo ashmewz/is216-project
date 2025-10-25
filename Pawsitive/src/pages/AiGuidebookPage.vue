@@ -8,6 +8,23 @@
       <div class="back" :class="page.backClass" v-html="page.back"></div>
     </div>
   </div>
+
+    <div class="guidebook">
+    <h2>AI Cat Guidebook</h2>
+
+    <div v-if="catStore.imageData">
+      <img :src="catStore.imageData" alt="Captured cat" style="max-width: 300px; border-radius: 8px;" />
+    </div>
+
+    <div v-if="catStore.breedData" style="margin-top: 16px;">
+      <h3>Breed Information:</h3>
+      <pre>{{ catStore.breedData }}</pre>
+    </div>
+
+    <div v-else>
+      <p>No breed data found.</p>
+    </div>
+  </div>
    <BottomFooter />
 </template>
 
@@ -15,8 +32,10 @@
 import { onMounted, ref } from "vue";
 import Navbar from "@/components/resuables/Navbar.vue";
 import BottomFooter from "@/components/resuables/BottomFooter.vue";
+import { useCatStore } from '@/stores/catDataStore'
 
 const bookRef = ref(null);
+const catStore = useCatStore()
 
 // Pages content as HTML strings — easier to map
 const pages = [

@@ -3,6 +3,22 @@ import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
 import { onMounted, ref } from 'vue';
 import { Client } from "@gradio/client";
+import { useCatStore } from '@/stores/catDataStore'
+import { useRouter } from 'vue-router'
+
+const catStore = useCatStore()
+
+
+//Routes to AI Guide Book Passing the image
+const router = useRouter()
+function goToGuidebook() {
+  if (!catStore.imageData || !catStore.breedData) {
+    alert('Please run the prediction first!')
+    return
+  }
+
+  router.push({ name: 'AiGuideBook' })
+}
 
 // File input
 const preview = ref(null);
@@ -29,27 +45,34 @@ function onFileChange(event) {
 
 // Calling cat breed identifier API
 async function uploadFile() {
-  if (!selectedFile.value) {
-    alert('Please select or capture an image first.');
-    return;
+  if (!selectedFile.value && !canvas.value) {
+    alert('Please select or capture an image first.')
+    return
   }
 
-  const imageBlob = selectedFile.value;
+  const imageBlob = selectedFile.value || await new Promise((resolve) =>
+    canvas.value.toBlob(resolve, 'image/jpeg')
+  )
 
   try {
-    const client = await Client.connect("kevansoon/cat-breed-detector");
-    const result = await client.predict("/predict", { image: imageBlob });
+    const client = await Client.connect("kevansoon/cat-breed-detector")
+    const result = await client.predict("/predict", { image: imageBlob })
 
     if (result.data) {
-      console.log("Prediction result:", result.data);
+      console.log("Prediction result:", result.data)
+
+      // Store data in Pinia
+      catStore.setCatData(canvas.value.toDataURL('image/jpeg'), result.data)
       document.getElementById("catBreedInfo").innerText = result.data;
-      getStructuredCatBreedInfo(result.data);
+
+      
     }
   } catch (error) {
-    alert('Upload and prediction failed.');
-    console.error(error);
+    alert('Upload and prediction failed.')
+    console.error(error)
   }
 }
+
 
 // Upload button to convert camera screenshot for uploadFile()
 function uploadCanvasImage() {
@@ -66,61 +89,8 @@ function uploadCanvasImage() {
   }, "image/jpeg");
 }
 
-// Gemini AI Guidebook (structured cat breed info)
-async function getStructuredCatBreedInfo(breedName) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-  const promptText = `Provide detailed information about the cat breed "${breedName}" with these fields: name, origin, characteristics, temperament, and careTips. Respond only with JSON matching this structure.`;
 
-  const requestBody = {
-    contents: [{ parts: [{ text: promptText }] }],
-    generationConfig: {
-      response_mime_type: "application/json",
-      response_schema: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          origin: { type: "string" },
-          characteristics: { type: "string" },
-          temperament: { type: "string" },
-          careTips: { type: "string" }
-        },
-        required: ["name", "origin", "characteristics", "temperament", "careTips"]
-      }
-    }
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-goog-api-key": apiKey
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) throw new Error(`Gemini API error: ${response.statusText}`);
-    const data = await response.json();
-    const jsonString = data.candidates[0].content.parts[0].text;
-    const parsedData = JSON.parse(jsonString);
-
-    const descriptionBox = document.getElementById("catBreedGenAiInfo");
-    descriptionBox.innerHTML = `
-      <div class="breed-info-content">
-        <h3 class="breed-info-title">Gen AI GuideBook Response</h3>
-        <div class="breed-info-item"><strong>Name:</strong> ${parsedData.name}</div>
-        <div class="breed-info-item"><strong>Origin:</strong> ${parsedData.origin}</div>
-        <div class="breed-info-item"><strong>Care Tips:</strong> ${parsedData.careTips}</div>
-        <div class="breed-info-item"><strong>Characteristics:</strong> ${parsedData.characteristics}</div>
-        <div class="breed-info-item"><strong>Temperament:</strong> ${parsedData.temperament}</div>
-      </div>
-    `;
-  } catch (error) {
-    console.error("Failed to get structured cat breed info:", error);
-  }
-}
 
 // Camera controls
 function toggleCamera() {
@@ -188,7 +158,7 @@ function downloadImage() {
     <template v-slot:navbar-title>AI Recognition</template>
   </Navbar>
 
-  <div class="page-wrapper">
+  <div class="page-wrapper background">
     <div class="stream-layout">
       <!-- Left: Main Frame -->
       <div class="main-display">
@@ -270,7 +240,7 @@ function downloadImage() {
 
     <!-- Bottom Buttons -->
     <div class="bottom-buttons">
-      <button class="btn">Generate GenAI Cat Guide</button>
+      <button class="btn" @click="goToGuidebook" >Generate GenAI Cat Guide</button>
     </div>
   </div>
 
@@ -279,7 +249,7 @@ function downloadImage() {
 
 <style scoped>
 .page-wrapper {
-  background: linear-gradient(135deg, #c1cfe6, #f8e1e1); /* light blue -> pink */
+  /* background: linear-gradient(135deg, #c1cfe6, #f8e1e1); */
   min-height: 100vh;
   padding: 2rem;
   display: flex;
