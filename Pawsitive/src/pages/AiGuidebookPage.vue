@@ -9,13 +9,10 @@
         class="front"
         :class="page.frontClass"
         v-html="page.front"
-        :style="page.frontClass === 'cover' && catStore.imageData
-          ? {
-              backgroundImage: `radial-gradient(circle farthest-corner at 80% 20%, rgba(150,80,20,0.3) 0%, rgba(170,60,10,0.1) 100%), url(${catStore.imageData})`,
-              backgroundSize: 'cover',
-              backgroundPosition: '50% 50%',
-              color: 'hsl(200 30% 98%)'
-            }
+       :style="page.frontClass === 'cover' && generatedImageUrl
+        ? {
+            backgroundImage: `radial-gradient(circle farthest-corner at 80% 20%, rgba(150,80,20,0.3) 0%, rgba(170,60,10,0.1) 100%), url(${generatedImageUrl})`
+          } 
           : {}"
       ></div>
 
@@ -36,22 +33,7 @@
     </div>
   </div>
 
-    <!-- <div class="guidebook">
-    <h2>AI Cat Guidebook</h2>
 
-    <div v-if="catStore.imageData">
-      <img :src="catStore.imageData" alt="Captured cat" style="max-width: 300px; border-radius: 8px;" />
-    </div>
-
-    <div v-if="catStore.breedData" style="margin-top: 16px;">
-      <h3>Breed Information:</h3>
-      <pre>{{ catStore.breedData }}</pre>
-    </div>
-
-    <div v-else>
-      <p>No breed data found.</p>
-    </div>
-  </div> -->
    <BottomFooter />
 </template>
 
@@ -60,14 +42,22 @@ import { onMounted, ref } from "vue";
 import Navbar from "@/components/resuables/Navbar.vue";
 import BottomFooter from "@/components/resuables/BottomFooter.vue";
 import { useCatStore } from '@/stores/catDataStore'
+import { Client } from "@gradio/client";
 
 const bookRef = ref(null);
 const catStore = useCatStore()
 const pages = ref([])
 
 
+const loading = ref(false);
+const images = ref([]); 
+const generatedImageUrl = ref(null);
+
+
+
+
+
 // Gemini AI Guidebook (structured cat breed info)
-// Gemini AI Guidebook
 async function getStructuredCatBreedGuide(breedName) {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
@@ -116,6 +106,7 @@ async function getStructuredCatBreedGuide(breedName) {
   }
 }
 
+//Structuring data from gemini for the flipbook
 async function generateGuidebookFromBreed() {
   if (!catStore.breedData) return alert('No breed data found!')
 
@@ -126,7 +117,7 @@ async function generateGuidebookFromBreed() {
     {
       frontClass: 'cover',
       backClass: '',
-      front: `<h1>${catStore.breedData} Guide</h1>`,
+      front: ``,
       back: `<p>AI Generated FlipBook</p>`
     },
     {
@@ -240,6 +231,7 @@ async function generateGuidebookFromBreed() {
 //   },
 // ];
 
+//initialize flipbook
 const initFlipBook = (elBook) => {
   elBook.style.setProperty("--c", 0);
   elBook.querySelectorAll(".page").forEach((page, idx) => {
@@ -252,11 +244,50 @@ const initFlipBook = (elBook) => {
   });
 };
 
+//image generation for flipbook
+const generateImage = async () => {
+  loading.value = true;
+  images.value = [];
+
+  try {
+    const client = await Client.connect("black-forest-labs/FLUX.1-schnell");
+
+    const result = await client.predict("/infer", {
+      prompt: `Generate a image of ${catStore.breedData} for a book cover` || "Generate a random cat for a book cover",
+      seed: 0,
+      randomize_seed: true,
+      width: 512,
+      height: 512,
+      num_inference_steps: 4,
+    });
+
+    const outputs = Array.isArray(result.data) ? result.data : [result.data];
+
+    images.value = outputs.map((item) => ({
+      image: item.url,
+      caption: item.orig_name || "Generated image",
+    }));
+
+    // 🧠 Store first generated image for flipbook background
+    generatedImageUrl.value = images.value[0]?.image || null;
+
+    console.log("Result:", result.data);
+  } catch (err) {
+    console.error("Error generating image:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+
+//on page load
 onMounted(async () => {
-  // 1️⃣ Wait for the guidebook pages to be generated
+  //Wait for cat image for book cover to be generated
+  await generateImage();
+  // Wait for the guidebook pages to be generated
   await generateGuidebookFromBreed()
 
-  // 2️⃣ Only initialize flipbook after pages are ready
+  // Only initialize flipbook after pages are ready
   if (bookRef.value) {
     initFlipBook(bookRef.value)
   }
