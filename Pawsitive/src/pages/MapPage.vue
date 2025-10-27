@@ -248,7 +248,7 @@ onMounted(async () => {
         <div class="content">
             <div class="map-page-container">
                 <div class="search-overlay input-group">
-                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." />
+                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." @keyup.enter="performSearch"/>
                     <button class="btn btn-primary" @click="performSearch">Search</button>
                 </div>
 
