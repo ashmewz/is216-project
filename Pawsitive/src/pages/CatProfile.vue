@@ -35,60 +35,65 @@
             <!-- RIGHT: Details -->
             <section class="right">
                 <table class="details">
-                    <tr>
-                        <th>Name</th>
-                        <td>{{ cat.name || '—' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Age</th>
-                        <td>{{ cat.age ?? 'unknown' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Color</th>
-                        <td>{{ cat.color || '—' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Gender</th>
-                        <td>{{ cat.gender || 'unknown' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Neutered</th>
-                        <td>{{ cat.neutered || 'unknown' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Species</th>
-                        <td>{{ cat.species || 'unknown' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Status</th>
-                        <td>{{ cat.status || '—' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Last seen</th>
-                        <td>{{ formatDate(cat.last_seen) }}</td>
-                    </tr>
-                    <tr>
-                        <th>Created</th>
-                        <td>{{ formatDate(cat.created_at) }}</td>
-                    </tr>
-                    <tr>
-                        <th>Updated</th>
-                        <td>{{ formatDate(cat.updated_at) }}</td>
-                    </tr>
-                    <tr>
-                        <th>Last location</th>
-                        <td v-if="cat.last_location">
-                            {{ latLngDisplay(cat.last_location) }}
-                            <div class="small muted">(<a :href="mapsLink(cat.last_location)" target="_blank"
-                                    rel="noreferrer">Open in map</a>)</div>
-                        </td>
-                        <td v-else>—</td>
-                    </tr>
-                    <tr v-if="cat.description">
-                        <th>Description</th>
-                        <td>{{ cat.description }}</td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ cat.name || '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Age</th>
+                            <td>{{ cat.age ?? 'unknown' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Color</th>
+                            <td>{{ cat.color || '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Gender</th>
+                            <td>{{ cat.gender || 'unknown' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Neutered</th>
+                            <td>{{ cat.neutered || 'unknown' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Species</th>
+                            <td>{{ cat.species || 'unknown' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>{{ cat.status || '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last seen</th>
+                            <td>{{ formatDate(cat.last_seen) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created</th>
+                            <td>{{ formatDate(cat.created_at) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Updated</th>
+                            <td>{{ formatDate(cat.updated_at) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last location</th>
+                            <td v-if="cat.last_location">
+                                {{ latLngDisplay(cat.last_location) }}
+                                <div class="small muted">
+                                    (<a :href="mapsLink(cat.last_location)" target="_blank" rel="noreferrer">Open in
+                                        map</a>)
+                                </div>
+                            </td>
+                            <td v-else>—</td>
+                        </tr>
+                        <tr v-if="cat.description">
+                            <th>Description</th>
+                            <td>{{ cat.description }}</td>
+                        </tr>
+                    </tbody>
                 </table>
+
 
                 <div class="actions">
                     <!-- Add more actions here if needed -->
