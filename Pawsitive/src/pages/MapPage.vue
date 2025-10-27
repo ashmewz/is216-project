@@ -44,26 +44,39 @@ const performSearch = async () => {
 };
 
 async function getCatData(lat, lng, zoom) {
-    const catsRef = collection(db, 'cats');
+    const catsRef = collection(db, "cats");
     const snapshot = await getDocs(catsRef);
     const center = { lat, lng };
 
     // Adjust threshold dynamically by zoom level
-    // smaller threshold when zoomed in
     const baseThreshold = 0.02; // ~2km radius rough
     const threshold = baseThreshold / Math.pow(2, (zoom - 15));
 
     const cats = [];
-    snapshot.forEach(doc => {
+    snapshot.forEach((doc) => {
         const data = doc.data();
         if (!data.last_location) return;
+
         const { _lat: catLat, _long: catLng } = data.last_location;
-        if (Math.abs(catLat - center.lat) <= threshold && Math.abs(catLng - center.lng) <= threshold) {
+        if (
+            Math.abs(catLat - center.lat) <= threshold &&
+            Math.abs(catLng - center.lng) <= threshold
+        ) {
             cats.push({
-                name: data.name || 'Unnamed Cat',
+                id: doc.id,
+                name: data.name || "Unnamed Cat",
                 coords: [catLat, catLng],
-                img: data.photos?.[0] || 'https://cataas.com/cat',
-                desc: data.color || 'No color info',
+                img: data.photos?.[0] || "https://cataas.com/cat",
+                color: data.color || "Unknown",
+                gender: data.gender || "Unknown",
+                neutered: data.neutered || "Unknown",
+                species: data.species || "Unknown",
+                age: data.age || "Unknown",
+                status: data.status || "Unknown",
+                last_seen: data.last_seen
+                    ? new Date(data.last_seen.seconds * 1000).toLocaleString()
+                    : "Unknown",
+                desc: data.description || "No additional info",
             });
         }
     });
@@ -78,6 +91,7 @@ function updateMapDiv(catMapData) {
         return
     }
     if (!catMapData) return;
+    console.log(catMapData);
 
     // Clear previous markers
     allMarkers.forEach(m => onemap.removeLayer(m));
@@ -92,28 +106,45 @@ function updateMapDiv(catMapData) {
         shadowSize: [41, 41]
     });
 
-    catMapData.forEach(data => {
+    catMapData.forEach((data) => {
         const popupContent = `
-            <div class="card" style="width: 18rem; border: none;">
-              <div class="row g-0 align-items-center">
-                <div class="col-4">
-                  <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
-                </div>
-                <div class="col-8">
-                  <div class="card-body p-0 ps-2">
-                    <h6 class="card-title mb-1">${data.name}</h6>
-                    <p class="card-text small text-muted m-0">${data.desc}</p>
-                  </div>
-                </div>
-              </div>
-            </div>`;
+        <div class="card" style="width: 18rem; border: none;">
+        <div class="row g-0 align-items-center">
+            <div class="col-4">
+            <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
+            </div>
+            <div class="col-8">
+            <div class="card-body p-0 ps-2">
+                <h6 class="card-title mb-1 fw-bold">${data.name}</h6>
+                <p class="card-text small text-muted mb-1">${data.desc}</p>
+                <p class="card-text small m-0">
+                <strong>Color:</strong> ${data.color}<br>
+                <strong>Gender:</strong> ${data.gender}<br>
+                <strong>Neutered:</strong> ${data.neutered}<br>
+                <strong>Age:</strong> ${data.age}<br>
+                <strong>Species:</strong> ${data.species}<br>
+                <strong>Status:</strong> ${data.status}<br>
+                <strong>Last Seen:</strong> ${data.last_seen}
+                </p>
+            </div>
+            </div>
+        </div>
+        </div>`;
 
         const marker = L.marker(data.coords, { icon: markerIcon })
             .addTo(onemap)
-            .bindPopup(popupContent, { maxWidth: 300, closeButton: true, autoClose: false });
+            .bindPopup(popupContent, {
+                maxWidth: 300,
+                closeButton: true,
+                autoClose: false,
+            });
 
-        marker.on('mouseover', function () { this.openPopup(); })
-        marker.on('mouseout', function () { this.closePopup(); })
+        marker.on("mouseover", function () {
+            this.openPopup();
+        });
+        marker.on("mouseout", function () {
+            this.closePopup();
+        });
         allMarkers.push(marker);
     });
 }
