@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
+import { db } from '@/firebase'
+import { collection, getDocs } from 'firebase/firestore'
 
 const MAP_DIV_ID = 'mapdiv';
 let onemap;
@@ -34,56 +36,82 @@ const performSearch = async () => {
         const zoom = DEFAULT_ZOOM;
         onemap.setView([lat, lng], zoom);
 
-        updateMapDiv(getCatData(lat, lng, zoom));
+        updateMapDiv(await getCatData(lat, lng, zoom));
     } catch (e) {
         console.error("Search error:", e);
         alert("Failed to fetch location.");
     }
 };
 
-function getCatData(lat, lng, zoom) {
-    return generateSimulatedData(lat, lng, zoom);
+async function getCatData(lat, lng, zoom) {
+    const catsRef = collection(db, 'cats');
+    const snapshot = await getDocs(catsRef);
+    const center = { lat, lng };
+
+    // Adjust threshold dynamically by zoom level
+    // smaller threshold when zoomed in
+    const baseThreshold = 0.02; // ~2km radius rough
+    const threshold = baseThreshold / Math.pow(2, (zoom - 15));
+
+    const cats = [];
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        if (!data.last_location) return;
+        const { _lat: catLat, _long: catLng } = data.last_location;
+        if (Math.abs(catLat - center.lat) <= threshold && Math.abs(catLng - center.lng) <= threshold) {
+            cats.push({
+                name: data.name || 'Unnamed Cat',
+                coords: [catLat, catLng],
+                img: data.photos?.[0] || 'https://cataas.com/cat',
+                desc: data.color || 'No color info',
+            });
+        }
+    });
+
+    console.log(`Loaded ${cats.length} cats from Firestore within threshold ${threshold.toFixed(4)}`);
+    return cats;
 }
 
-// TODO: Replace this later with firebase
-function generateSimulatedData(lat, lng, zoomLevel) {
-    const MAX_POINTS = 20;
-    const MIN_POINTS = 2;
-    const numPoints = Math.min(
-        MAX_POINTS,
-        Math.max(
-            MIN_POINTS,
-            Math.floor((MAX_ZOOM - zoomLevel) * (MAX_POINTS / (MAX_ZOOM - MIN_ZOOM)))
-        )
-    ) // More zoom results in more data given
-    console.log("numPoints generated for fake data: " + numPoints);
+// TODO: This function can be transfered to an test data creation page.
+// function generateSimulatedData(lat, lng, zoomLevel) {
+//     const MAX_POINTS = 20;
+//     const MIN_POINTS = 2;
+//     const numPoints = Math.min(
+//         MAX_POINTS,
+//         Math.max(
+//             MIN_POINTS,
+//             Math.floor((MAX_ZOOM - zoomLevel) * (MAX_POINTS / (MAX_ZOOM - MIN_ZOOM)))
+//         )
+//     ) // More zoom results in more data given
+//     console.log("numPoints generated for fake data: " + numPoints);
 
-    const markers = []
-    for (let i = 0; i < numPoints; i++) {
-        const offsetLat = (Math.random() - 0.5) * (0.25 / zoomLevel)
-        const offsetLng = (Math.random() - 0.5) * (0.25 / zoomLevel)
-        markers.push({
-            name: `Simulated Cat ${i + 1}`,
-            coords: [lat + offsetLat, lng + offsetLng],
-            image: 'https://picsum.photos/80?random=' + i,
-            img: [
-                'https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg',
-                'https://cataas.com/cat',
-                'https://cataas.com/cat/gif',
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Six_weeks_old_cat_%28aka%29.jpg/1200px-Six_weeks_old_cat_%28aka%29.jpg',
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/250px-Cat_November_2010-1a.jpg',
-            ][i % 5],
-            desc: `Zoom Level: ${zoomLevel}. Randomly generated nearby cat profile.`,
-        })
-    }
-    return markers
-}
+//     const markers = []
+//     for (let i = 0; i < numPoints; i++) {
+//         const offsetLat = (Math.random() - 0.5) * (0.25 / zoomLevel)
+//         const offsetLng = (Math.random() - 0.5) * (0.25 / zoomLevel)
+//         markers.push({
+//             name: `Simulated Cat ${i + 1}`,
+//             coords: [lat + offsetLat, lng + offsetLng],
+//             image: 'https://picsum.photos/80?random=' + i,
+//             img: [
+//                 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg',
+//                 'https://cataas.com/cat',
+//                 'https://cataas.com/cat/gif',
+//                 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Six_weeks_old_cat_%28aka%29.jpg/1200px-Six_weeks_old_cat_%28aka%29.jpg',
+//                 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/250px-Cat_November_2010-1a.jpg',
+//             ][i % 5],
+//             desc: `Zoom Level: ${zoomLevel}. Randomly generated nearby cat profile.`,
+//         })
+//     }
+//     return markers
+// }
 
 function updateMapDiv(catMapData) {
     if (!window.L) {
         console.error('Leaflet not loaded')
         return
     }
+    if (!catMapData) return;
 
     // Clear previous markers
     allMarkers.forEach(m => onemap.removeLayer(m));
@@ -163,7 +191,7 @@ onMounted(async () => {
         // NOTE: To not spam our firebase, we need to throttle cap the updates.
         onemap.on('moveend', () => {
             if (moveThrottleTimeout) clearTimeout(moveThrottleTimeout);
-            moveThrottleTimeout = setTimeout(() => {
+            moveThrottleTimeout = setTimeout(async () => {
                 const center = onemap.getCenter();
                 const zoom = onemap.getZoom();
                 if (Math.abs(lastCenter.lat - center.lat) <= POLL_TOLERANCE &&
@@ -172,14 +200,14 @@ onMounted(async () => {
                 console.log('Updating Map: Map moved prev:', lastCenter, ' → new center:', center, 'zoom:', zoom);
                 lastCenter.lat = center.lat;
                 lastCenter.lng = center.lng;
-                updateMapDiv(getCatData(center.lat, center.lng, zoom));
+                updateMapDiv(await getCatData(center.lat, center.lng, zoom));
             }, THROTTLE_INTERVAL);
         });
 
         // If we can get the user's device location.
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                pos => {
+                async pos => {
                     const { latitude, longitude } = pos.coords;
                     lastCenter.lat = latitude;
                     lastCenter.lng = longitude;
@@ -197,7 +225,7 @@ onMounted(async () => {
                         fillOpacity: 0.9
                     }).addTo(onemap);
 
-                    updateMapDiv(getCatData(latitude, longitude, zoom));
+                    updateMapDiv(await getCatData(latitude, longitude, zoom));
                 },
                 err => {
                     console.warn('Geolocation failed or denied:', err.message);
