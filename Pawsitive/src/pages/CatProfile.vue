@@ -81,8 +81,7 @@
                             <td v-if="cat.last_location">
                                 {{ latLngDisplay(cat.last_location) }}
                                 <div class="small muted">
-                                    (<a :href="mapsLink(cat.last_location)" target="_blank" rel="noreferrer">Open in
-                                        map</a>)
+                                    <a :href="mapsLink(cat.last_location)" target="_blank" rel="noreferrer">(Open in onemap)</a>
                                 </div>
                             </td>
                             <td v-else>—</td>
@@ -96,8 +95,7 @@
 
 
                 <div class="actions">
-                    <!-- Add more actions here if needed -->
-                    <button class="btn" @click="copyLink">Copy Link</button>
+                    For now no actions
                 </div>
             </section>
         </div>
@@ -146,7 +144,8 @@ function mapsLink(gp) {
     const lat = gp.latitude ?? gp._lat ?? gp.lat;
     const lng = gp.longitude ?? gp._long ?? gp.lng;
     if (lat == null || lng == null) return '#';
-    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    return `https://www.onemap.gov.sg/main/v2/?lat=${lat}&lng=${lng}`;
+    // return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
 
 // carousel controls
