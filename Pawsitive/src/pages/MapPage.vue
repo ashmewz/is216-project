@@ -72,40 +72,6 @@ async function getCatData(lat, lng, zoom) {
     return cats;
 }
 
-// TODO: This function can be transfered to an test data creation page.
-// function generateSimulatedData(lat, lng, zoomLevel) {
-//     const MAX_POINTS = 20;
-//     const MIN_POINTS = 2;
-//     const numPoints = Math.min(
-//         MAX_POINTS,
-//         Math.max(
-//             MIN_POINTS,
-//             Math.floor((MAX_ZOOM - zoomLevel) * (MAX_POINTS / (MAX_ZOOM - MIN_ZOOM)))
-//         )
-//     ) // More zoom results in more data given
-//     console.log("numPoints generated for fake data: " + numPoints);
-
-//     const markers = []
-//     for (let i = 0; i < numPoints; i++) {
-//         const offsetLat = (Math.random() - 0.5) * (0.25 / zoomLevel)
-//         const offsetLng = (Math.random() - 0.5) * (0.25 / zoomLevel)
-//         markers.push({
-//             name: `Simulated Cat ${i + 1}`,
-//             coords: [lat + offsetLat, lng + offsetLng],
-//             image: 'https://picsum.photos/80?random=' + i,
-//             img: [
-//                 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg',
-//                 'https://cataas.com/cat',
-//                 'https://cataas.com/cat/gif',
-//                 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Six_weeks_old_cat_%28aka%29.jpg/1200px-Six_weeks_old_cat_%28aka%29.jpg',
-//                 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/250px-Cat_November_2010-1a.jpg',
-//             ][i % 5],
-//             desc: `Zoom Level: ${zoomLevel}. Randomly generated nearby cat profile.`,
-//         })
-//     }
-//     return markers
-// }
-
 function updateMapDiv(catMapData) {
     if (!window.L) {
         console.error('Leaflet not loaded')
