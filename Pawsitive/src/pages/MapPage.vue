@@ -129,6 +129,7 @@ function updateMapDiv(catMapData) {
             </div>
             </div>
         </div>
+        <a href="/cat/${data.id}" onclick="window.open(this.href, '_blank'); return false;">View full profile</a>
         </div>`;
 
         const marker = L.marker(data.coords, { icon: markerIcon })
@@ -142,9 +143,9 @@ function updateMapDiv(catMapData) {
         marker.on("mouseover", function () {
             this.openPopup();
         });
-        marker.on("mouseout", function () {
-            this.closePopup();
-        });
+        // marker.on("mouseout", function () {
+        //     this.closePopup();
+        // });
         allMarkers.push(marker);
     });
 }

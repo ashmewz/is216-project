@@ -11,6 +11,7 @@ import RouterTest from '@/components/RouterTest.vue';
 // End of TODO
 
 import MapPage from "@/pages/MapPage.vue";
+import CatProfile from "@/pages/CatProfile.vue";
 import ForumPage from "@/pages/ForumPage.vue";
 import ReportPage from "@/pages/ReportPage.vue";
 import VolunteerSignupLoginPage from "@/pages/VolunteerSignupLoginPage.vue";
@@ -35,6 +36,11 @@ const routes = [
     {
         path: '/map/',
         component: MapPage,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/cat/:id',
+        component: CatProfile,
         meta: { requiresAuth: true }
     },
     {
