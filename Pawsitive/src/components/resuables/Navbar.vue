@@ -1,7 +1,37 @@
 <script setup>
 import { useRoute } from "vue-router";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ref, onMounted } from "vue";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase";
+import defaultAvatar from '@/assets/avatar_placeholder.jpg'
+
+const avatar = ref(null);
+const auth = getAuth();
+
+onMounted(() => {
+  // get user's avatar from db to display on navbar
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const docRef = doc(db, "volunteers", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          avatar.value = docSnap.data().avatar || null;
+        }
+      } catch (error) {
+        console.error("Error fetching profile photo:", error);
+        avatar.value = null;
+      }
+    } else {
+      avatar.value = null;
+    }
+  });
+});
+
 
 const route = useRoute();
+
 </script>
 
 <template>
@@ -76,11 +106,18 @@ const route = useRoute();
             </ul>
           </li>
         </ul>
-        <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle" title="Profile">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
-            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
-          </svg>
+
+        <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
+          style="width:40px; height:40px;">
+          <!-- Show profile photo if available -->
+          <img v-if="avatar" :src="avatar" alt="Profile Photo" class="rounded-circle"
+            style="width:100%; height:100%; object-fit:cover;" />
+          <!-- Otherwise show default SVG -->
+          <img v-else :src="defaultAvatar" alt="Profile Photo" class="rounded-circle"
+            style="width:100%; height:100%; object-fit:cover;" />
+
         </a>
+
       </div>
     </div>
   </nav>
