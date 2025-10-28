@@ -111,11 +111,12 @@ function updateMapDiv(catMapData) {
         <div class="card" style="width: 18rem; border: none;">
         <div class="row g-0 align-items-center">
             <div class="col-4">
+            <h6 class="card-title mb-1 fw-bold">${data.name}</h6>
             <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
+            <a href="/cat/${data.id}" onclick="window.open(this.href, '_blank'); return false;">View full profile</a>
             </div>
             <div class="col-8">
             <div class="card-body p-0 ps-2">
-                <h6 class="card-title mb-1 fw-bold">${data.name}</h6>
                 <p class="card-text small text-muted mb-1">${data.desc}</p>
                 <p class="card-text small m-0">
                 <strong>Color:</strong> ${data.color}<br>
@@ -129,7 +130,6 @@ function updateMapDiv(catMapData) {
             </div>
             </div>
         </div>
-        <a href="/cat/${data.id}" onclick="window.open(this.href, '_blank'); return false;">View full profile</a>
         </div>`;
 
         const marker = L.marker(data.coords, { icon: markerIcon })
@@ -310,5 +310,20 @@ onMounted(async () => {
 :deep(.leaflet-control-attribution) {
     display: inline-flex !important;
     align-items: center !important;
+}
+
+:deep(.leaflet-popup-content) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+  padding: 0 !important;
+  border-radius: 0.5rem;
+}
+
+:deep(.leaflet-popup-content > div) {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 </style>
