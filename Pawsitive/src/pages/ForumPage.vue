@@ -192,7 +192,7 @@ async function sharePost(postId) {
             </ul>
           </div>
 
-          <RouterLink to="/create-post" class="btn btn-outline-secondary" style="height: 40px">
+          <RouterLink to="/create-post" class="btn btn-outline-secondary text-nowrap" style="height: 40px">
             + Create New Post
           </RouterLink>
         </div>
