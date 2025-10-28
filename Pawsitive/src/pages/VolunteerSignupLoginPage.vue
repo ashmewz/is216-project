@@ -174,6 +174,8 @@ const handleRegister = async () => {
             <div class="tip-column tip-right" :class="{ 'fade-out-element': isFadingOut }">
                 <div class="tip-text">{{ rightTipDisplay }}</div>
             </div>
+
+            
         </div>
 
         <!-- Login/Register View -->
