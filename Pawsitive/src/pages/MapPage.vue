@@ -108,29 +108,27 @@ function updateMapDiv(catMapData) {
 
     catMapData.forEach((data) => {
         const popupContent = `
-        <div class="card" style="width: 18rem; border: none;">
-        <div class="row g-0 align-items-center">
-            <div class="col-4">
-            <h6 class="card-title mb-1 fw-bold">${data.name}</h6>
-            <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
-            <a href="/cat/${data.id}" onclick="window.open(this.href, '_blank'); return false;">View full profile</a>
-            </div>
-            <div class="col-8">
-            <div class="card-body p-0 ps-2">
-                <p class="card-text small text-muted mb-1">${data.desc}</p>
-                <p class="card-text small m-0">
-                <strong>Color:</strong> ${data.color}<br>
-                <strong>Gender:</strong> ${data.gender}<br>
-                <strong>Neutered:</strong> ${data.neutered}<br>
-                <strong>Age:</strong> ${data.age}<br>
-                <strong>Species:</strong> ${data.species}<br>
-                <strong>Status:</strong> ${data.status}<br>
-                <strong>Last Seen:</strong> ${data.last_seen}
-                </p>
-            </div>
-            </div>
+  <div class="popup-card shadow-sm rounded overflow-hidden" style="font-family: system-ui, sans-serif;">
+    <div class="popup-inner d-flex align-items-start">
+      <div class="popup-img-container me-2">
+        <img src="${data.img}" alt="${data.name}" class="popup-img" />
+      </div>
+      <div class="popup-info flex-grow-1">
+        <h6 class="popup-title fw-bold mb-1 text-primary">${data.name}</h6>
+        <div class="popup-meta small">
+          <span><strong>Species:</strong> ${data.species}</span><br>
+          <span><strong>Gender:</strong> ${data.gender}</span><br>
+          <span><strong>Age:</strong> ${data.age}</span><br>
         </div>
-        </div>`;
+        <a href="/cat/${data.id}" 
+           onclick="window.open(this.href, '_blank'); return false;" 
+           class="popup-link d-inline-block mt-1">View full profile →</a>
+      </div>
+    </div>
+  </div>
+`;
+
+
 
         const marker = L.marker(data.coords, { icon: markerIcon })
             .addTo(onemap)
@@ -248,7 +246,8 @@ onMounted(async () => {
         <div class="content">
             <div class="map-page-container">
                 <div class="search-overlay input-group">
-                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." @keyup.enter="performSearch"/>
+                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..."
+                        @keyup.enter="performSearch" />
                     <button class="btn btn-primary" @click="performSearch">Search</button>
                 </div>
 
@@ -312,18 +311,76 @@ onMounted(async () => {
     align-items: center !important;
 }
 
+:deep(.leaflet-popup-content-wrapper) {
+  padding: 0 !important;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
 :deep(.leaflet-popup-content) {
   margin: 0 !important;
   padding: 0 !important;
+  width: 280px !important;
 }
 
-:deep(.leaflet-popup-content-wrapper) {
-  padding: 0 !important;
-  border-radius: 0.5rem;
+:deep(.popup-card) {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  padding: 0.5rem;
 }
 
-:deep(.leaflet-popup-content > div) {
-  margin: 0 !important;
-  padding: 0 !important;
+:deep(.popup-inner) {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+:deep(.popup-img-container) {
+  flex-shrink: 0;
+  width: 85px;
+  height: 85px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+:deep(.popup-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:deep(.popup-info) {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.popup-title) {
+  font-size: 0.95rem;
+  color: #0d6efd;
+}
+
+:deep(.popup-desc) {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+:deep(.popup-meta) {
+  line-height: 1.1;
+  font-size: 0.75rem;
+  color: #333;
+}
+
+:deep(.popup-link) {
+  font-size: 0.75rem;
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+:deep(.popup-link:hover) {
+  text-decoration: underline;
 }
 </style>
