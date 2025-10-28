@@ -122,7 +122,7 @@ const handleLogin = async () => {
     errorMessage.value = ''
     const errors = validateLogin(loginForm)
     if (Object.keys(errors).length) { Object.assign(loginFieldErrors, errors); return }
-    try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/volunteer/profile") }
+    try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/map") }
     catch (e) { errorMessage.value = e.message }
 }
 
