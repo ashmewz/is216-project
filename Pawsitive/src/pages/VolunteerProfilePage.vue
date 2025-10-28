@@ -20,6 +20,14 @@ const fieldErrors = ref({})
 const showModal = ref(false)
 const avatarInput = ref(null)
 
+const region = [
+  "Central",
+  "North",
+  "North-East",
+  "East",
+  "West"
+];
+
 
 // STATE MANAGEMENT
 const user = ref({
@@ -32,6 +40,7 @@ const user = ref({
     bio: '',
     skills: [],
     services: [],
+    region: [],
 })
 
 const form = ref({
@@ -332,6 +341,17 @@ onMounted(() => {
                                     <label class="form-label">Bio</label>
                                     <textarea v-model="form.bio" class="form-control" rows="3"
                                         placeholder="Tell us about yourself"></textarea>
+                                </div>
+
+                                <!-- Locaton -->
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Number</label>
+                                    <input v-model="form.contactNumber" type="tel" class="form-control"
+                                        :class="{ 'is-invalid': fieldErrors.contactNumber }"
+                                        placeholder="Contact Number" />
+                                    <div class="invalid-feedback">
+                                        {{ fieldErrors.contactNumber }}
+                                    </div>
                                 </div>
 
                                 <!-- Skills -->
