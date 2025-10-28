@@ -2,8 +2,7 @@
 import { ref, reactive, computed } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
-import * as bootstrap from 'bootstrap'
-import 'bootstrap/dist/css/bootstrap.min.css'
+
 
 // ✅ Posts data
 const posts = reactive([
