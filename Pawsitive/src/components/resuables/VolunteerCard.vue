@@ -24,10 +24,11 @@ const goToVolunteer = (username) => {
             alt="Profile" />
         <div class="card-body">
             <h5 class="card-title fw-bold mb-2">{{ volunteer.firstName }} {{ volunteer.lastName }}</h5>
-
+            <p v-if="volunteer.region" class="text-muted mb-2">{{ volunteer.region}}</p>
+            <p v-else="volunteer.region" class="text-muted mb-2">No Region Set</p>
             <p class="mb-2 small">
                 <strong>Services:</strong>
-                <br></br>
+                <br></br> 
                 <span  v-for="s in volunteer.services" :key="s.type"
                     class="badge bg-secondary-subtle text-dark border m-1">
                     {{ s.type }}

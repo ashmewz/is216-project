@@ -139,7 +139,7 @@ const handleRegister = async () => {
         await setDoc(usernameRef, { reserved: true })
         const user = (await createUserWithEmailAndPassword(auth, email, password)).user
         await setDoc(usernameRef, { uid: user.uid })
-        await setDoc(doc(db, "volunteers", user.uid), { uid: user.uid, username, firstName, lastName, email, contactNumber, bio: "", role: "user", createdAt: serverTimestamp() })
+        await setDoc(doc(db, "volunteers", user.uid), { uid: user.uid, username, firstName, lastName, email, contactNumber, bio: "", role: "user", createdAt: serverTimestamp(), region: "" })
         router.push("/volunteer/profile")
     } catch (e) {
         errorMessage.value = e.message
