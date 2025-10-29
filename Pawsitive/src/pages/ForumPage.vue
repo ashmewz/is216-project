@@ -2,6 +2,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
+import GridSplit from '@/components/resuables/GridSplit.vue'
 import { Modal } from 'bootstrap'
 
 const posts = reactive([
@@ -189,167 +190,122 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Restructured controls for responsive layout -->
-      <div class="controls-wrapper py-3 bg-light">
-        <div class="container">
-          <div class="row">
-            <!-- Empty left space (takes 9 columns) -->
-            <div class="col-12 col-md-9"></div>
-
-            <!-- Controls Section (right 3 columns) -->
-            <div class="col-12 col-md-3">
-              <div class="buttons-stack d-flex flex-column align-items-end gap-3">
-                <!-- Search -->
-                <div class="controls-inner w-100">
-                  <div class="search-wrapper position-relative w-100">
-                    <i class="bi bi-search position-absolute search-icon"></i>
-                    <input
-                      v-model="searchQuery"
-                      class="form-control search-input ps-5"
-                      placeholder="Search posts or users..."
+      <!-- Replaced manual grid with GridSplit component -->
+      <GridSplit>
+        <!-- Main content area (9/12 width) - Posts -->
+        <template #main>
+          <div class="posts-container">
+            <div
+              v-for="(post, index) in displayedPosts"
+              :key="post.id"
+              class="post mb-4 p-4 border-0 rounded-4 shadow-sm animate-in"
+              :style="{ animationDelay: `${index * 0.1}s` }"
+            >
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                  <div class="profile-pic-wrapper">
+                    <img
+                      :src="post.profilePic"
+                      alt="Profile"
+                      class="rounded-circle border-2"
                     />
+                  </div>
+                  <div class="ms-3">
+                    <span class="fw-bold text-accent d-block">{{ post.username }}</span>
+                    <small class="text-muted">
+                      <i class="bi bi-clock me-1"></i>{{ post.datePosted }}
+                    </small>
                   </div>
                 </div>
 
-                <!-- Create Button -->
-                <button
-                  @click="openCreatePost"
-                  class="btn btn-primary create-btn text-nowrap w-100"
-                >
-                  <i class="bi bi-plus-circle"></i>
-                  <span class="ms-2">Create Post</span>
+                <button class="btn btn-sm btn-light share-btn rounded-circle" @click="sharePost(post.id)">
+                  <i class="bi bi-share-fill"></i>
                 </button>
-
-                <!-- Sort Dropdown -->
-                <div
-                  class="btn-group position-relative sort-dropdown w-100"
-                  ref="dropdownRef"
-                >
-                  <button
-                    class="btn btn-outline-secondary sort-btn w-100 text-start"
-                    @click="dropdownOpen = !dropdownOpen"
-                  >
-                    <i :class="['bi', sortLabel.icon]"></i>
-                    <span class="ms-2">{{ sortLabel.text }}</span>
-                    <i class="bi bi-caret-down-fill ms-2 float-end"></i>
-                  </button>
-                  <ul
-                    class="dropdown-menu dropdown-menu-end shadow"
-                    :class="{ show: dropdownOpen }"
-                  >
-                    <li>
-                      <a
-                        class="dropdown-item"
-                        href="#"
-                        @click.prevent="setSort('newest')"
-                      >
-                        <i class="bi bi-clock-history me-2"></i>Newest First
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        class="dropdown-item"
-                        href="#"
-                        @click.prevent="setSort('oldest')"
-                      >
-                        <i class="bi bi-clock me-2"></i>Oldest First
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        class="dropdown-item"
-                        href="#"
-                        @click.prevent="setSort('popular')"
-                      >
-                        <i class="bi bi-heart-fill me-2"></i>Most Liked
-                      </a>
-                    </li>
-                  </ul>
-                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-
-      <div class="posts-container">
-        <div
-          v-for="(post, index) in displayedPosts"
-          :key="post.id"
-          class="post mb-4 p-4 border-0 rounded-4 shadow-sm animate-in"
-          :style="{ animationDelay: `${index * 0.1}s` }"
-        >
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center">
-              <div class="profile-pic-wrapper">
+              <div v-if="post.image" class="post-image-wrapper mb-3">
                 <img
-                  :src="post.profilePic"
-                  alt="Profile"
-                  class="rounded-circle border-2"
+                  :src="post.image"
+                  alt="Post image"
+                  class="post-image rounded-3"
                 />
               </div>
-              <div class="ms-3">
-                <span class="fw-bold text-accent d-block">{{ post.username }}</span>
-                <small class="text-muted">
-                  <i class="bi bi-clock me-1"></i>{{ post.datePosted }}
-                </small>
+
+              <p class="mb-3 post-caption">
+                {{ post.expanded || post.caption.length <= 150
+                  ? post.caption
+                  : post.caption.slice(0, 150) + '...' }}
+                <button
+                  v-if="post.caption.length > 150"
+                  class="btn btn-link p-0 text-accent read-more-btn"
+                  @click="toggleExpand(post)"
+                >
+                  {{ post.expanded ? 'Show less' : 'Read more' }}
+                </button>
+              </p>
+
+              <div class="d-flex gap-4 align-items-center interaction-bar pt-2 border-top">
+                <button 
+                  class="interaction-btn like-btn" 
+                  :class="{ 'liked': hasLiked(post.id), 'animating': likeAnimations[post.id] }"
+                  @click="toggleLike(post.id)"
+                >
+                  <i :class="['bi', hasLiked(post.id) ? 'bi-heart-fill' : 'bi-heart']"></i>
+                  <span class="ms-2">{{ post.likes }}</span>
+                  <span class="like-text ms-1">{{ post.likes === 1 ? 'Like' : 'Likes' }}</span>
+                </button>
+              
+                <button class="interaction-btn comment-btn" @click="openComments(post.id)">
+                  <i class="bi bi-chat-dots"></i>
+                  <span class="ms-2">{{ post.comments.length }}</span>
+                  <span class="comment-text ms-1">{{ post.comments.length === 1 ? 'Comment' : 'Comments' }}</span>
+                </button>
               </div>
             </div>
 
-            <button class="btn btn-sm btn-light share-btn rounded-circle" @click="sharePost(post.id)">
-              <i class="bi bi-share-fill"></i>
-            </button>
+            <div v-if="displayedPosts.length === 0" class="empty-state text-center py-5">
+              <div class="empty-icon mb-3">🔍</div>
+              <h4 class="mb-2">No posts found</h4>
+              <p class="text-muted">Try adjusting your search or create a new post!</p>
+            </div>
           </div>
+        </template>
 
-          <div v-if="post.image" class="post-image-wrapper mb-3">
-            <img
-              :src="post.image"
-              alt="Post image"
-              class="post-image rounded-3"
-            />
+        <!-- Sidebar area (3/12 width) - Controls -->
+        <template #sidebar>
+          <div class="controls-sidebar">
+            <div class="search-wrapper position-relative mb-3">
+              <i class="bi bi-search position-absolute search-icon"></i>
+              <input
+                v-model="searchQuery"
+                class="form-control search-input"
+                placeholder="Search posts or users..."
+              />
+            </div>
+
+            <button @click="openCreatePost" class="btn btn-primary create-btn text-nowrap w-100 mb-3">
+              <i class="bi bi-plus-circle"></i>
+              <span class="ms-2">Create Post</span>
+            </button>
+
+            <div class="btn-group position-relative sort-dropdown w-100" ref="dropdownRef">
+              <button
+                class="btn btn-outline-secondary sort-btn w-100"
+                @click="dropdownOpen = !dropdownOpen"
+              >
+                <i :class="['bi', sortLabel.icon]"></i>
+                <span class="ms-2">{{ sortLabel.text }}</span>
+                <i class="bi bi-caret-down-fill ms-2 float-end"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow w-100" :class="{ 'show': dropdownOpen }">
+                <li><a class="dropdown-item" href="#" @click.prevent="setSort('newest')"><i class="bi bi-clock-history me-2"></i>Newest First</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="setSort('oldest')"><i class="bi bi-clock me-2"></i>Oldest First</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="setSort('popular')"><i class="bi bi-heart-fill me-2"></i>Most Liked</a></li>
+              </ul>
+            </div>
           </div>
-
-          <p class="mb-3 post-caption">
-            {{ post.expanded || post.caption.length <= 150
-              ? post.caption
-              : post.caption.slice(0, 150) + '...' }}
-            <button
-              v-if="post.caption.length > 150"
-              class="btn btn-link p-0 text-accent read-more-btn"
-              @click="toggleExpand(post)"
-            >
-              {{ post.expanded ? 'Show less' : 'Read more' }}
-            </button>
-          </p>
-
-          <!-- Enhanced interaction buttons with better styling -->
-          <div class="d-flex gap-4 align-items-center interaction-bar pt-2 border-top">
-            <button 
-              class="interaction-btn like-btn" 
-              :class="{ 'liked': hasLiked(post.id), 'animating': likeAnimations[post.id] }"
-              @click="toggleLike(post.id)"
-            >
-              <i :class="['bi', hasLiked(post.id) ? 'bi-heart-fill' : 'bi-heart']"></i>
-              <span class="ms-2">{{ post.likes }}</span>
-              <span class="like-text ms-1">{{ post.likes === 1 ? 'Like' : 'Likes' }}</span>
-            </button>
-          
-            <button class="interaction-btn comment-btn" @click="openComments(post.id)">
-              <i class="bi bi-chat-dots"></i>
-              <span class="ms-2">{{ post.comments.length }}</span>
-              <span class="comment-text ms-1">{{ post.comments.length === 1 ? 'Comment' : 'Comments' }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Added empty state when no posts match search -->
-        <div v-if="displayedPosts.length === 0" class="empty-state text-center py-5">
-          <div class="empty-icon mb-3">🔍</div>
-          <h4 class="mb-2">No posts found</h4>
-          <p class="text-muted">Try adjusting your search or create a new post!</p>
-        </div>
-      </div>
+        </template>
+      </GridSplit>
     </main>
 
     <!-- Comments Modal -->
@@ -483,6 +439,7 @@ onUnmounted(() => {
 
 <style scoped>
 
+/* Enhanced base styles with better colors and animations */
 body {
   background-color: #f8e1e1;
   font-family: 'Nunito', sans-serif;
@@ -493,6 +450,7 @@ body {
   color: #806e83 !important;
 }
 
+/* Welcome banner with gradient background */
 .welcome-banner {
   background: linear-gradient(135deg, #fef5f5 0%, #f8e1e1 100%);
   border: 2px solid #f0d4d4;
@@ -570,6 +528,7 @@ body {
 
 .create-btn {
   background: #806e83;
+  border: 2px solid #806e83;
   color: white;
   height: 42px;
 }
@@ -1076,33 +1035,17 @@ body {
   color: white;
 }
 
-/* --- Minimal fixes for right-side 3/12 alignment --- */
-@media (min-width: 1200px) {
-  .controls-inner {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-
-  .buttons-stack {
-    flex: 0 0 220px;
-    align-items: flex-end;
-  }
-
-  .create-btn,
-  .sort-btn {
-    width: 100%;
-  }
+/* Updated styles for GridSplit sidebar layout */
+.controls-sidebar {
+  position: sticky;
+  top: 100px;
+  padding: 1rem;
+  background: #f8e1e1;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
 }
 
-@media (min-width: 768px) and (max-width: 1199px) {
-  .buttons-stack {
-    width: 100%;
-  }
-
-  .create-btn,
-  .sort-btn {
-    width: 100%;
-  }
+.posts-container {
+  width: 100%;
 }
 </style>
