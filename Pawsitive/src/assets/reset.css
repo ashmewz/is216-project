@@ -1,0 +1,66 @@
+*,
+*::before,
+*::after {
+  all: unset;
+  display: revert;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  display: block;
+  line-height: 1;
+  background: white;
+  color: black;
+  font-family: system-ui, sans-serif;
+}
+
+a, a:link, a:visited, a:hover, a:active, a:focus {
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  outline: none;
+  cursor: pointer;
+}
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+a,
+button,
+span {
+  all: unset;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
