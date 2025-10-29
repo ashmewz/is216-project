@@ -163,7 +163,9 @@ function downloadImage() {
       <!-- Left: Main Frame -->
       <div class="main-display">
        <h3>Webcam</h3>
-        <video ref="camera" autoplay></video>
+       <div class="video-container">
+            <video ref="camera" autoplay></video>
+       </div>
         <button class="btn camera-toggle" @click="toggleCamera" :disabled="isLoading">
           <span v-if="isLoading">Starting...</span>
           <span v-else>{{ isCameraOpen ? "Turn Off Camera" : "Turn On Camera" }}</span>
@@ -189,59 +191,56 @@ function downloadImage() {
         <div class="panel live-chat">
  
             <!-- Cat Spinner UI -->
-            <div id="wrapper">
-  <div id="cat-mask">
-    <div id="cat">
-      <div class="body-up"></div>
-      <div class="body-down"></div>
-      <div class="body-inside"></div>
-      <div class="body-mask"></div>
-      <div class="body-inside-wrapper">
-        <div class="body-inside-fix"></div>
-      </div>
-      <div class="body-inside-wrapper-end">
-        <div class="body-inside-fix end"></div>
-      </div>
-      <div class="inner-mask"></div>
+             <div class="cat-spinner-container">
+                <div id="wrapper">
+                <div id="cat-mask">
+                  <div id="cat">
+                    <div class="body-up"></div>
+                    <div class="body-down"></div>
+                    <div class="body-inside"></div>
+                    <div class="body-mask"></div>
+                    <div class="body-inside-wrapper">
+                      <div class="body-inside-fix"></div>
+                    </div>
+                    <div class="body-inside-wrapper-end">
+                      <div class="body-inside-fix end"></div>
+                    </div>
+                    <div class="inner-mask"></div>
 
-      <div class="shape-mask"></div>
-      <div class="shape-mask second"></div>
-      <div class="cat-ass-wrapper">
-        <div class="cat-tail"></div>
-        <div class="cat-ass"></div>
-        <div class="cat-leg"></div>
-        <div class="cat-leg right"></div>
-      </div>
-      <div class="cat-head-wrapper">
-        <div class="cat-head">
-          <div class="cat-eye"></div>
-          <div class="cat-eye right"></div>
-          <div class="cat-mouth-wrapper">
-          <div class="cat-mouth"></div>
-          <div class="cat-mouth-up"></div>
-          <div class="cat-mouth-up right"></div>
-            <div class="cat-beard up"></div>
-            <div class="cat-beard"></div>
-            <div class="cat-beard down"></div>
-            <div class="cat-beard right up"></div>
-            <div class="cat-beard right"></div>
-            <div class="cat-beard right down"></div>
-          </div>
-        </div>
-        <div class="cat-ear"></div>
-        <div class="cat-ear right"></div>
-        <div class="cat-hand"></div>
-        <div class="cat-hand right"></div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="information">
-  <p>Created by <a href="http://blog.frost.tw">Aotokitsuruya</a> @ Web Developer & Game Developer</p>
-  <p>Original design <a href="https://dribbble.com/shots/3197970-Loading-cat" target="_blank">Loading Cat</a> @ Dribbble</p>
-</div>
-          
-          
+                    <div class="shape-mask"></div>
+                    <div class="shape-mask second"></div>
+                    <div class="cat-ass-wrapper">
+                      <div class="cat-tail"></div>
+                      <div class="cat-ass"></div>
+                      <div class="cat-leg"></div>
+                      <div class="cat-leg right"></div>
+                    </div>
+                    <div class="cat-head-wrapper">
+                      <div class="cat-head">
+                        <div class="cat-eye"></div>
+                        <div class="cat-eye right"></div>
+                        <div class="cat-mouth-wrapper">
+                        <div class="cat-mouth"></div>
+                        <div class="cat-mouth-up"></div>
+                        <div class="cat-mouth-up right"></div>
+                          <div class="cat-beard up"></div>
+                          <div class="cat-beard"></div>
+                          <div class="cat-beard down"></div>
+                          <div class="cat-beard right up"></div>
+                          <div class="cat-beard right"></div>
+                          <div class="cat-beard right down"></div>
+                        </div>
+                      </div>
+                      <div class="cat-ear"></div>
+                      <div class="cat-ear right"></div>
+                      <div class="cat-hand"></div>
+                      <div class="cat-hand right"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+             </div>
+           
            <!-- END: Cat Spinner UI-->
         </div>
       </div>
@@ -320,6 +319,23 @@ function downloadImage() {
   position: relative; /* ensures it doesn’t affect other positioning */
 }
 
+.video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3; /* Maintain a fixed shape */
+  overflow: hidden;
+  border-radius: 12px;
+  border: 2px solid #99b4da;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Fill the box without overflow */
+  display: block;
+  border-radius: 12px;
+}
+
 .webcam video {
   width: 100%;
   border-radius: 12px;
@@ -368,6 +384,16 @@ function downloadImage() {
   margin-top: 1rem;
 }
 
+
+.cat-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 350px;
+  background: transparent;
+}
 
 /*Cat Loading Spinner*/
 @keyframes rotating {
@@ -427,6 +453,7 @@ function downloadImage() {
   padding: 50px;
   background: #6982B5;
   transform: translate(-50%, -50%);
+ 
 }
 
 #cat-mask {
@@ -749,6 +776,18 @@ function downloadImage() {
 
 /* Responsive Design for Mobile Devices */
 @media (max-width: 768px) {
+  /* cat spinner wrapper */
+
+  .cat-spinner-container {
+    height: 280px;
+  }
+
+    #wrapper {
+    width: 180px;
+    height: 180px;
+    padding: 25px;
+  }
+
   .stream-layout {
     grid-template-columns: 1fr; /* stack main + side panels */
     grid-gap: 1rem;
@@ -795,6 +834,15 @@ function downloadImage() {
 /* Extra small devices */
 @media (max-width: 480px) {
 
+   .cat-spinner-container {
+    height: 300px;
+  }
+  
+    #wrapper {
+    width: 140px;
+    height: 140px;
+    padding: 15px;
+  }
 
   .panel.live-chat {
     min-height: 250px;
