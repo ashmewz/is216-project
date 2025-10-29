@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import { Modal } from 'bootstrap'
@@ -28,7 +28,7 @@ const newComment = ref('')
 const showWelcome = ref(true)
 const likeAnimations = reactive({})
 const dropdownOpen = ref(false)
-
+const dropdownRef = ref(null) // Added ref for dropdown element to detect clicks outside
 
 const newPost = reactive({
   caption: '',
@@ -60,6 +60,7 @@ const formatDateTime = (date = new Date()) => {
 
 function setSort(mode) {
   sortMode.value = mode
+  dropdownOpen.value = false
 }
 
 function toggleLike(postId) {
@@ -150,8 +151,26 @@ function createPost() {
   const modalInstance = Modal.getInstance(modalEl)
   if (modalInstance) modalInstance.hide()
 }
-</script>
 
+function triggerImageUpload() {
+  const fileInput = document.getElementById('imageUpload')
+  if (fileInput) fileInput.click()
+}
+
+function handleClickOutside(event) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
 
 <template>
   <div class="forum-page">
@@ -170,39 +189,89 @@ function createPost() {
         </div>
       </div>
 
-=      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <div class="search-wrapper position-relative">
-          <i class="bi bi-search position-absolute search-icon"></i>
-          <input
-            v-model="searchQuery"
-            class="form-control search-input"
-            placeholder="Search posts or users..."
-          />
-        </div>
+      <!-- Restructured controls for responsive layout -->
+      <div class="controls-wrapper py-3 bg-light">
+        <div class="container">
+          <div class="row">
+            <!-- Empty left space (takes 9 columns) -->
+            <div class="col-12 col-md-9"></div>
 
-        <div class="d-flex align-items-center gap-2">
-          <div class="btn-group" tabindex="0" @blur="dropdownOpen = false">
-            <button
-              class="btn btn-outline-secondary sort-btn d-flex align-items-center"
-              @click="dropdownOpen = !dropdownOpen"
-            >
-              <i :class="['bi', sortLabel.icon]"></i>
-              <span class="ms-2">{{ sortLabel.text }}</span>
-              <i class="bi bi-caret-down-fill ms-2"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow">
-              <li><a class="dropdown-item" href="#" @click.prevent="setSort('newest')"><i class="bi bi-clock-history me-2"></i>Newest First</a></li>
-              <li><a class="dropdown-item" href="#" @click.prevent="setSort('oldest')"><i class="bi bi-clock me-2"></i>Oldest First</a></li>
-              <li><a class="dropdown-item" href="#" @click.prevent="setSort('popular')"><i class="bi bi-heart-fill me-2"></i>Most Liked</a></li>
-            </ul>
+            <!-- Controls Section (right 3 columns) -->
+            <div class="col-12 col-md-3">
+              <div class="buttons-stack d-flex flex-column align-items-end gap-3">
+                <!-- Search -->
+                <div class="controls-inner w-100">
+                  <div class="search-wrapper position-relative w-100">
+                    <i class="bi bi-search position-absolute search-icon"></i>
+                    <input
+                      v-model="searchQuery"
+                      class="form-control search-input ps-5"
+                      placeholder="Search posts or users..."
+                    />
+                  </div>
+                </div>
+
+                <!-- Create Button -->
+                <button
+                  @click="openCreatePost"
+                  class="btn btn-primary create-btn text-nowrap w-100"
+                >
+                  <i class="bi bi-plus-circle"></i>
+                  <span class="ms-2">Create Post</span>
+                </button>
+
+                <!-- Sort Dropdown -->
+                <div
+                  class="btn-group position-relative sort-dropdown w-100"
+                  ref="dropdownRef"
+                >
+                  <button
+                    class="btn btn-outline-secondary sort-btn w-100 text-start"
+                    @click="dropdownOpen = !dropdownOpen"
+                  >
+                    <i :class="['bi', sortLabel.icon]"></i>
+                    <span class="ms-2">{{ sortLabel.text }}</span>
+                    <i class="bi bi-caret-down-fill ms-2 float-end"></i>
+                  </button>
+                  <ul
+                    class="dropdown-menu dropdown-menu-end shadow"
+                    :class="{ show: dropdownOpen }"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click.prevent="setSort('newest')"
+                      >
+                        <i class="bi bi-clock-history me-2"></i>Newest First
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click.prevent="setSort('oldest')"
+                      >
+                        <i class="bi bi-clock me-2"></i>Oldest First
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click.prevent="setSort('popular')"
+                      >
+                        <i class="bi bi-heart-fill me-2"></i>Most Liked
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <button @click="openCreatePost" class="btn btn-primary create-btn text-nowrap d-flex align-items-center">
-            <i class="bi bi-plus-circle"></i>
-            <span class="ms-2">Create Post</span>
-          </button>
         </div>
       </div>
+
 
       <div class="posts-container">
         <div
@@ -229,22 +298,10 @@ function createPost() {
             </div>
 
             <button class="btn btn-sm btn-light share-btn rounded-circle" @click="sharePost(post.id)">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                fill="currentColor"
-                class="bi bi-share"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 0 1-.488.876l-6.718-3.12a2.5 2.5 0 0 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
-                />
-              </svg>
+              <i class="bi bi-share-fill"></i>
             </button>
           </div>
 
-          <!-- Improved post image styling -->
           <div v-if="post.image" class="post-image-wrapper mb-3">
             <img
               :src="post.image"
@@ -388,7 +445,7 @@ function createPost() {
                   @change="handleImageUpload"
                 />
                 
-                <div v-if="!newPost.imagePreview" class="upload-placeholder" @click="$refs.imageUpload?.click()">
+                <div v-if="!newPost.imagePreview" class="upload-placeholder" @click="triggerImageUpload">
                   <i class="bi bi-cloud-upload fs-1 text-muted mb-2"></i>
                   <p class="text-muted mb-0">Click to upload an image</p>
                   <small class="text-muted">JPG, PNG, or GIF</small>
@@ -425,7 +482,7 @@ function createPost() {
 </template>
 
 <style scoped>
-/* Enhanced base styles with better colors and animations */
+
 body {
   background-color: #f8e1e1;
   font-family: 'Nunito', sans-serif;
@@ -436,7 +493,6 @@ body {
   color: #806e83 !important;
 }
 
-/* Welcome banner with gradient background */
 .welcome-banner {
   background: linear-gradient(135deg, #fef5f5 0%, #f8e1e1 100%);
   border: 2px solid #f0d4d4;
@@ -514,7 +570,6 @@ body {
 
 .create-btn {
   background: #806e83;
-  border: 2px solid #806e83;
   color: white;
   height: 42px;
 }
@@ -881,5 +936,173 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Updated controls wrapper for grid-based responsive layout */
+.controls-wrapper {
+  background: #f8e1e1;
+  z-index: 100;
+  padding: 1rem 0;
+  margin: -1rem 0 1rem 0;
+}
+
+.controls-inner {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Mobile layout - single column, only create button is sticky */
+@media (max-width: 767px) {
+  .controls-wrapper {
+    position: static;
+  }
+  
+  .controls-inner {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  
+  .search-wrapper {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .buttons-stack {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    gap: 0.75rem;
+  }
+  
+  .create-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+  }
+  
+  .sort-btn {
+    width: 100%;
+  }
+}
+
+/* Tablet layout - single column, search on top, buttons below, all sticky */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .controls-wrapper {
+    position: sticky;
+    top: 80px;
+  }
+  
+  .controls-inner {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    max-width: 400px;
+    margin-left: auto;
+  }
+  
+  .search-wrapper {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .buttons-stack {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    gap: 0.75rem;
+  }
+  
+  .create-btn,
+  .sort-btn {
+    width: 100%;
+  }
+}
+
+/* Desktop layout - 2 columns, search on left, buttons on right, all sticky */
+@media (min-width: 1200px) {
+  .controls-wrapper {
+    position: sticky;
+    top: 80px;
+  }
+  
+  .controls-inner {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto;
+    align-items: start;
+  }
+  
+  .search-wrapper {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 350px;
+  }
+  
+  .buttons-stack {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    gap: 0.75rem;
+    min-width: 220px;
+  }
+  
+  .create-btn,
+  .sort-btn {
+    width: 100%;
+  }
+}
+
+/* Ensure buttons are fully rounded on all 4 corners */
+.sort-btn,
+.create-btn {
+  border-radius: 25px !important;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sort-btn {
+  border: 2px solid #806e83 !important;
+}
+
+.create-btn {
+  background: #806e83;
+  border: 2px solid #806e83 !important;
+  color: white;
+}
+
+/* --- Minimal fixes for right-side 3/12 alignment --- */
+@media (min-width: 1200px) {
+  .controls-inner {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  .buttons-stack {
+    flex: 0 0 220px;
+    align-items: flex-end;
+  }
+
+  .create-btn,
+  .sort-btn {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .buttons-stack {
+    width: 100%;
+  }
+
+  .create-btn,
+  .sort-btn {
+    width: 100%;
+  }
 }
 </style>
