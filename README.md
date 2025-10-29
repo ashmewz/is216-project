@@ -99,11 +99,12 @@ Provide screenshots and captions showing how users interact with your app.
    - Displays the list of volunteers who have services offered
    - Ability to filter by region and type of service
    - Clicking on it will go to the volunteer profile page
-
 5. **Volunteer Page**  
-<img src="photos/use-case/volunteerPage.png" width="600">  
+   <img src="photos/use-case/volunteerPage.png" width="600">  
    - Displays the public profile of a volunteer
    
+
+
 
 <!-- > Save screenshots inside `/screenshots` with clear filenames. -->
 
