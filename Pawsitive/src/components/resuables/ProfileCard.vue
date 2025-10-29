@@ -52,6 +52,13 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
         <p v-else class="text-muted fst-italic">No bio yet</p>
       </div>
 
+        <!-- Region -->
+      <div class="mb-3">
+        <h6 class="text-muted">Region</h6>
+        <p v-if="user.region">{{ user.region }}</p>
+        <p v-else class="text-muted fst-italic">No region yet</p>
+      </div>
+
       <!-- Skills -->
       <div class="mb-3">
         <h6 class="text-muted small">Skills</h6>
@@ -93,4 +100,7 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
 </template>
 
 <style scoped>
+.card {
+  all: revert;
+}
 </style>

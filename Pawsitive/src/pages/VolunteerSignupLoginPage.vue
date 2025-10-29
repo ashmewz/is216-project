@@ -122,7 +122,7 @@ const handleLogin = async () => {
     errorMessage.value = ''
     const errors = validateLogin(loginForm)
     if (Object.keys(errors).length) { Object.assign(loginFieldErrors, errors); return }
-    try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/volunteer/profile") }
+    try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/map") }
     catch (e) { errorMessage.value = e.message }
 }
 
@@ -139,7 +139,7 @@ const handleRegister = async () => {
         await setDoc(usernameRef, { reserved: true })
         const user = (await createUserWithEmailAndPassword(auth, email, password)).user
         await setDoc(usernameRef, { uid: user.uid })
-        await setDoc(doc(db, "volunteers", user.uid), { uid: user.uid, username, firstName, lastName, email, contactNumber, bio: "", role: "user", createdAt: serverTimestamp() })
+        await setDoc(doc(db, "volunteers", user.uid), { uid: user.uid, username, firstName, lastName, email, contactNumber, bio: "", role: "user", createdAt: serverTimestamp(), region: "" })
         router.push("/volunteer/profile")
     } catch (e) {
         errorMessage.value = e.message
@@ -174,6 +174,8 @@ const handleRegister = async () => {
             <div class="tip-column tip-right" :class="{ 'fade-out-element': isFadingOut }">
                 <div class="tip-text">{{ rightTipDisplay }}</div>
             </div>
+
+            
         </div>
 
         <!-- Login/Register View -->
