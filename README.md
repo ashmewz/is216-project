@@ -100,7 +100,7 @@ Provide screenshots and captions showing how users interact with your app.
    - Ability to filter by region and type of service
    - Clicking on it will go to the volunteer profile page
 
-4. **Volunteer Page**  
+5. **Volunteer Page**  
 <img src="photos/use-case/volunteerPage.png" width="600">  
    - Displays the public profile of a volunteer
    
