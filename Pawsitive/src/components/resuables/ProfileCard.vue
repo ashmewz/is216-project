@@ -100,4 +100,7 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
 </template>
 
 <style scoped>
+.card {
+  all: revert;
+}
 </style>

@@ -39,6 +39,11 @@ const goToVolunteer = (username) => {
 </template>
 
 <style scoped>
+
+.card {
+  all: revert;
+}
+
 .profile-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 1rem;
