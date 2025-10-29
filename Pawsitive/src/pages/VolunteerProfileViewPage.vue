@@ -56,8 +56,5 @@ onMounted(async () => {
 <style scoped>
 main {
     min-height: calc(100vh - 120px);
-    /* adjust based on Navbar + Footer height */
-    padding-left: 1rem;
-    padding-right: 1rem;
 }
 </style>
