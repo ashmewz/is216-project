@@ -1,14 +1,13 @@
 <template>
     <div class="cat-profile container p-4" v-if="loaded">
-        <button class="btn-back" @click="goBack">← Back</button>
-
         <div class="header">
             <h1 class="title">{{ cat.name || 'Unnamed Cat' }}</h1>
-            <div class="meta">
+            <!-- Removed for now -->
+            <!-- <div class="meta">
                 <span class="badge">{{ cat.status || '—' }}</span>
                 <span class="muted">•</span>
                 <span class="muted">{{ cat.species || '—' }}</span>
-            </div>
+            </div> -->
         </div>
 
         <div class="layout">
@@ -95,7 +94,7 @@
 
 
                 <div class="actions">
-                    For now no actions
+                    <!-- For now no actions -->
                 </div>
             </section>
         </div>
