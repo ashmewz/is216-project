@@ -968,12 +968,7 @@ body {
     position: sticky;
     top: 80px;
   }
-  
-  .controls-inner {
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto;
-    align-items: start;
-  }
+
   
   .search-wrapper {
     min-width: 80%;

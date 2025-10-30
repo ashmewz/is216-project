@@ -35,9 +35,24 @@ onMounted(() => {
     new bootstrap.Dropdown(el);
   });
 });
-
-
 const route = useRoute();
+
+import { nextTick } from "vue";
+const aiDropdownOpen = ref(false);
+const dropdownMenu = ref(null);
+function toggleAIDropdown() {
+  aiDropdownOpen.value = !aiDropdownOpen.value;
+  nextTick(() => {
+    if (dropdownMenu.value) {
+      const rect = dropdownMenu.value.getBoundingClientRect();
+      if (rect.right > window.innerWidth) {
+        dropdownMenu.value.style.left = `-${rect.right - window.innerWidth + 5}px`;
+      } else {
+        dropdownMenu.value.style.left = '';
+      }
+    }
+  });
+}
 
 </script>
 
@@ -54,64 +69,68 @@ const route = useRoute();
       </button>
 
       <div class="collapse navbar-collapse" id="pawsitive-navbar">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/map') }" to="/map/">
-              Map
-            </RouterLink>
-          </li>
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/map') }" to="/map/">
+                Map
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/forum') }" to="/forum/">
-              Forum
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/forum') }" to="/forum/">
+                Forum
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/donations') }" to="/donations/">
-              Donations
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/donations') }" to="/donations/">
+                Donations
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
-              Report
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
+                Report
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/adoption') }" to="/adoption/">
-              Adoption
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/adoption') }" to="/adoption/">
+                Adoption
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/services') }" to="/services/">
-              Services
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/services') }" to="/services/">
+                Services
+              </RouterLink>
+            </li>
 
-          <!-- AI Dropdown -->
-          <li class="nav-item dropdown">
-            <a
-              href="#"
-              class="nav-link dropdown-toggle"
-              id="navbar-ai-dropdown"
-              role="button"
-              data-bs-toggle="dropdown"
-            >
-              AI
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li>
-                <RouterLink class="dropdown-item" to="/ai/recog/">AI Recognition</RouterLink>
-              </li>
-              <li>
-                <RouterLink class="dropdown-item" to="/ai/guidebook/">AI Guidebook</RouterLink>
-              </li>
-            </ul>
-          </li>
-        </ul>
+            <!-- AI Dropdown -->
+            <li class="nav-item dropdown" @mouseleave="aiDropdownOpen = false">
+              <button
+                class="nav-link dropdown-toggle"
+                type="button"
+                @click="toggleAIDropdown"
+                :aria-expanded="aiDropdownOpen"
+                style="margin-top: 5px;"
+              >
+                AI
+              </button>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                ref="dropdownMenu"
+                :class="{ show: aiDropdownOpen }"
+              >
+                <li>
+                  <RouterLink class="dropdown-item" to="/ai/recog/">AI Recognition</RouterLink>
+                </li>
+                <li>
+                  <RouterLink class="dropdown-item" to="/ai/guidebook/">AI Guidebook</RouterLink>
+                </li>
+              </ul>
+            </li>
+          </ul>
 
         <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
           style="width:40px; height:40px;">
