@@ -179,7 +179,7 @@ const onSaveProfile = async () => {
         showModal.value = false;
 
     } catch (error) {
-        errorMessage = 'Failed to save profile. Please try again'
+        errorMessage.value = 'Failed to save profile. Please try again'
         return
     }
 };
