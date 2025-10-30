@@ -215,7 +215,7 @@ const handleRegister = async () => {
 
                                         <div v-if="errorMessage" class="alert alert-danger"
                                             style="white-space: pre-line;">{{ errorMessage }}</div>
-                                        <button type="submit" class="btn w-100"
+                                        <button type="submit" class="btn login-btn"
                                             style="background-color: #7a5cfb; color: #fff;">Login</button>
 
                                         <p class="text-center mt-3">
@@ -307,7 +307,6 @@ const handleRegister = async () => {
 </template>
 
 <style scoped>
-/* Main container with smooth background transition */
 .main-container {
     min-height: 100vh;
     background-color: var(--blue);
@@ -318,7 +317,6 @@ const handleRegister = async () => {
     background: var(--dark-blue);
 }
 
-/* Landing page styles */
 .landing-page {
     height: 100vh;
     display: grid;
@@ -527,7 +525,6 @@ const handleRegister = async () => {
     }
 }
 
-/* Login container styles */
 .login-container {
     min-height: 100vh;
     display: flex;
@@ -560,9 +557,6 @@ const handleRegister = async () => {
     transform: translateY(0) scale(1);
 }
 
-/* ===== Bootstrap Grid & Layout Overrides ===== */
-
-/* Login/Register Card Responsiveness */
 .login-container .card {
     display: flex;
     flex-direction: row;
@@ -570,9 +564,14 @@ const handleRegister = async () => {
     max-width: 900px;
 }
 
-/* Left panel (welcome) */
+.login-btn {
+    width: 100%;
+    padding: 0 !important;
+    height: 40px;
+    display: block;
+}
+
 .login-container .card .col-md-6.bg-secondary {
-    padding: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -580,7 +579,6 @@ const handleRegister = async () => {
     text-align: center;
 }
 
-/* Right panel (form) */
 .login-container .card .col-12.col-md-6 {
     padding: 2rem;
     display: flex;
@@ -588,7 +586,6 @@ const handleRegister = async () => {
     align-items: center;
 }
 
-/* Collapse left panel and switch to column on smaller devices */
 @media (max-width: 768px) {
     .login-container .card {
         flex-direction: column;
@@ -602,10 +599,9 @@ const handleRegister = async () => {
     }
 }
 
-/* Forms width adjustment for mobile */
 .login-container .w-100 {
     width: 100%;
-    max-width: 25rem;
+    max-width: 30rem;
 }
 @media (max-width: 576px) {
     .login-container .w-100 {
@@ -613,7 +609,6 @@ const handleRegister = async () => {
     }
 }
 
-/* Form inputs and labels mobile-friendly */
 .form-control {
     font-size: 1rem;
     padding: 0.65rem 0.75rem;
@@ -628,11 +623,11 @@ const handleRegister = async () => {
     }
 }
 
-/* Buttons mobile adjustment */
 .btn {
     font-size: 1rem;
     padding: 0.75rem 1rem;
 }
+
 @media (max-width: 576px) {
     .btn {
         font-size: 0.95rem;
@@ -640,7 +635,6 @@ const handleRegister = async () => {
     }
 }
 
-/* Landing Page Grid */
 .landing-page {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -692,7 +686,6 @@ const handleRegister = async () => {
     }
 }
 
-/* Access Button Adjustments */
 .access-button {
     font-size: 1.2rem;
     padding: 1rem 2rem;
@@ -704,14 +697,12 @@ const handleRegister = async () => {
     }
 }
 
-/* Collapse tips entirely on small mobile */
 @media (max-width: 576px) {
     .tip-column {
         display: none;
     }
 }
 
-/* Make video landing page responsive */
 .landing-video {
     max-width: 100%;
     height: auto;

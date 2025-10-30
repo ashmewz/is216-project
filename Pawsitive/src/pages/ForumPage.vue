@@ -10,8 +10,7 @@ const posts = reactive([
     id: 'p1',
     username: 'Meowie',
     profilePic: '/src/assets/profilepic1.jpg',
-    caption:
-      'I love this cat soooo much! 😻 This is Whiskers, and she\'s been with me since I rescued her from the void deck. She loves cuddles, chasing string toys, and stealing my seat whenever I get up for just 2 seconds!',
+    caption: 'I love this cat soooo much! 😻 This is Whiskers, and she\'s been with me since I rescued her from the void deck. She loves cuddles, chasing string toys, and stealing my seat whenever I get up for just 2 seconds!',
     image: '/src/assets/cutecats1.jpg',
     likes: 22,
     comments: [{ user: 'Sia', text: 'So cute!', time: '2025-10-24 14:30' }],
@@ -29,19 +28,19 @@ const newComment = ref('')
 const showWelcome = ref(true)
 const likeAnimations = reactive({})
 const dropdownOpen = ref(false)
-const dropdownRef = ref(null) // Added ref for dropdown element to detect clicks outside
-
-const newPost = reactive({
-  caption: '',
-  image: null,
-  imagePreview: null
-})
+const dropdownRef = ref(null)
+const newPost = reactive({ caption: '', image: null, imagePreview: null })
 
 const displayedPosts = computed(() => {
-  let list = posts.filter(p => !searchQuery.value || p.caption.toLowerCase().includes(searchQuery.value.toLowerCase()) || p.username.toLowerCase().includes(searchQuery.value.toLowerCase()))
-  if (sortMode.value === 'oldest') list = [...list].reverse()
-  if (sortMode.value === 'popular') list = [...list].sort((a, b) => b.likes - a.likes)
-  return list
+  const filtered = posts.filter(p => 
+    !searchQuery.value || 
+    p.caption.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+    p.username.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+  
+  if (sortMode.value === 'oldest') return [...filtered].reverse()
+  if (sortMode.value === 'popular') return [...filtered].sort((a, b) => b.likes - a.likes)
+  return filtered
 })
 
 const sortLabel = computed(() => ({
@@ -55,8 +54,8 @@ const setLikedPosts = arr => localStorage.setItem('likedPosts', JSON.stringify(a
 const hasLiked = id => getLikedPosts().includes(id)
 
 const formatDateTime = (date = new Date()) => {
-  const pad = n => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const d = new Date(date)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 function setSort(mode) {
@@ -67,13 +66,13 @@ function setSort(mode) {
 function toggleLike(postId) {
   const post = posts.find(p => p.id === postId)
   if (!post) return
+  
   const liked = hasLiked(postId)
-
+  post.likes += liked ? -1 : 1
+  
   if (liked) {
-    post.likes = Math.max(0, post.likes - 1)
     setLikedPosts(getLikedPosts().filter(id => id !== postId))
   } else {
-    post.likes++
     setLikedPosts([...getLikedPosts(), postId])
     likeAnimations[postId] = true
     setTimeout(() => likeAnimations[postId] = false, 600)
@@ -87,35 +86,48 @@ function toggleExpand(post) {
 async function sharePost(postId) {
   const post = posts.find(p => p.id === postId)
   if (!post) return
-  const shareData = { title: `Post by ${post.username}`, text: post.caption, url: location.href + `#post-${postId}` }
-  if (navigator.share) try { await navigator.share(shareData); return } catch(e) {}
+  
+  const shareData = { 
+    title: `Post by ${post.username}`, 
+    text: post.caption, 
+    url: `${location.href}#post-${postId}` 
+  }
+  
+  if (navigator.share) {
+    try { 
+      await navigator.share(shareData)
+      return 
+    } catch(e) {}
+  }
+  
   await navigator.clipboard.writeText(shareData.url)
   alert('Link copied to clipboard! 📋')
 }
 
 function openComments(postId) {
   activePostId.value = postId
-  const modalEl = document.getElementById('commentsModal')
-  if (modalEl) new Modal(modalEl).show()
+  new Modal(document.getElementById('commentsModal')).show()
 }
 
 function addComment() {
   const text = newComment.value.trim()
   if (!text) return alert('Please write a comment.')
+  
   const post = posts.find(p => p.id === activePostId.value)
   if (!post) return
+  
   post.comments.push({ user: 'You', text, time: formatDateTime() })
   newComment.value = ''
 }
 
 function openCreatePost() {
-  const modalEl = document.getElementById('createPostModal')
-  if (modalEl) new Modal(modalEl).show()
+  new Modal(document.getElementById('createPostModal')).show()
 }
 
 function handleImageUpload(event) {
   const file = event.target.files[0]
   if (!file) return
+  
   newPost.image = file
   const reader = new FileReader()
   reader.onload = e => newPost.imagePreview = e.target.result
@@ -147,15 +159,11 @@ function createPost() {
 
   newPost.caption = ''
   removeImage()
-
-  const modalEl = document.getElementById('createPostModal')
-  const modalInstance = Modal.getInstance(modalEl)
-  if (modalInstance) modalInstance.hide()
+  Modal.getInstance(document.getElementById('createPostModal'))?.hide()
 }
 
 function triggerImageUpload() {
-  const fileInput = document.getElementById('imageUpload')
-  if (fileInput) fileInput.click()
+  document.getElementById('imageUpload')?.click()
 }
 
 function handleClickOutside(event) {
@@ -164,13 +172,8 @@ function handleClickOutside(event) {
   }
 }
 
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <template>
@@ -634,7 +637,7 @@ body {
 /* Added posts container with width constraints */
 .posts-container {
   width: 90%;
-  margin: 0 auto;
+  margin: 0;
 }
 
 @media (min-width: 768px) {
@@ -650,9 +653,7 @@ body {
 }
 @media (min-width: 992px) {
   .post {
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
   }
 }
 
