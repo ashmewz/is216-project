@@ -97,13 +97,13 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/ai/guidebook/',
+        path: '/ai/guidebook',
+        name: 'AiGuideBook',
         component: AiGuidebookPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true },
     },
-    
-    // TEST ROUTES ONLY
-    {
+
+    { // TEST ONLY
         path: '/admin',
         component: AdminAddCat,
     }

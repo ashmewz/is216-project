@@ -20,6 +20,14 @@ const fieldErrors = ref({})
 const showModal = ref(false)
 const avatarInput = ref(null)
 
+const region = [
+    "Central",
+    "North",
+    "North-East",
+    "East",
+    "West"
+];
+
 
 // STATE MANAGEMENT
 const user = ref({
@@ -32,6 +40,7 @@ const user = ref({
     bio: '',
     skills: [],
     services: [],
+    region: '',
 })
 
 const form = ref({
@@ -43,6 +52,7 @@ const form = ref({
     avatar: null,
     skills: [],
     services: [],
+    region: '',
 })
 
 const serviceTypes = [
@@ -148,7 +158,7 @@ const onSaveProfile = async () => {
     if (!currentUser) return;
 
     const errors = validateProfileUpdate(form.value);
-    if (Object.keys(errors).length > 0){
+    if (Object.keys(errors).length > 0) {
         fieldErrors.value = errors;
         return
     };
@@ -163,12 +173,13 @@ const onSaveProfile = async () => {
             services: form.value.services,
             avatar: form.value.avatar || null,
             bio: form.value.bio.trim() || '',
+            region: form.value.region
         });
         await fetchUserDetails()
         showModal.value = false;
 
     } catch (error) {
-        errorMessage = 'Failed to save profile. Please try again'
+        errorMessage.value = 'Failed to save profile. Please try again'
         return
     }
 };
@@ -205,6 +216,7 @@ const fetchUserDetails = async () => {
             user.value.skills = data.skills || []
             user.value.services = data.services || []
             user.value.avatar = data.avatar || null;
+            user.value.region = data.region
 
             form.value.firstName = data.firstName || ''
             form.value.lastName = data.lastName || ''
@@ -213,6 +225,7 @@ const fetchUserDetails = async () => {
             form.value.skills = [...(data.skills || [])]
             form.value.services = [...(data.services || [])]
             form.value.avatar = user.value.avatar
+            form.value.region = user.value.region
         }
     }
     catch (error) {
@@ -333,6 +346,19 @@ onMounted(() => {
                                     <textarea v-model="form.bio" class="form-control" rows="3"
                                         placeholder="Tell us about yourself"></textarea>
                                 </div>
+
+                                <!-- Region -->
+                                <div class="mb-3">
+                                    <label class="form-label">Region</label>
+                                    <select v-model="form.region" class="form-select"
+                                        :class="{ 'is-invalid': fieldErrors.region }">
+                                        <option value="select" disabled>Select a region</option>
+                                        <option value="">None</option>
+                                        <option v-for="r in region" :key="r" :value="r">{{ r }}</option>
+                                    </select>
+                                    <div class="invalid-feedback">{{ fieldErrors.region }}</div>
+                                </div>
+
 
                                 <!-- Skills -->
                                 <div class="mb-3">
