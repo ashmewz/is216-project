@@ -17,9 +17,7 @@
                     <div class="carousel-main">
                         <img :src="currentImage" :alt="cat.name" v-if="currentImage" />
                         <div class="no-image" v-else>No image</div>
-                    </div>
 
-                    <div class="carousel-controls" v-if="images.length > 1">
                         <button class="ctrl prev" @click="prevImage" aria-label="Previous image">‹</button>
                         <button class="ctrl next" @click="nextImage" aria-label="Next image">›</button>
                     </div>
@@ -30,6 +28,7 @@
                     </div>
                 </div>
             </section>
+
 
             <!-- RIGHT: Details -->
             <section class="right">
@@ -80,7 +79,8 @@
                             <td v-if="cat.last_location">
                                 {{ latLngDisplay(cat.last_location) }}
                                 <div class="small muted">
-                                    <a :href="mapsLink(cat.last_location)" target="_blank" rel="noreferrer">(Open in onemap)</a>
+                                    <a :href="mapsLink(cat.last_location)" target="_blank" rel="noreferrer">(Open in
+                                        onemap)</a>
                                 </div>
                             </td>
                             <td v-else>—</td>
@@ -276,73 +276,87 @@ onMounted(() => {
 }
 
 .carousel {
-    border: 1px solid #eee;
-    padding: 8px;
-    border-radius: 8px;
-    background: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  outline: none;
 }
 
 .carousel-main {
-    width: 100%;
-    height: 320px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #fafafa;
-    border-radius: 6px;
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .carousel-main img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #fff;
+  border-radius: 16px;
 }
 
-.no-image {
-    color: #999;
-    font-size: 14px;
+.carousel .ctrl {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.carousel-controls .ctrl {
-    position: relative;
-    border: none;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    margin: 8px;
+.carousel .ctrl:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translateY(-50%) scale(1.1);
 }
 
-.carousel-controls {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
+.carousel .ctrl.prev {
+  left: 12px;
+}
+
+.carousel .ctrl.next {
+  right: 12px;
 }
 
 .thumbs {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-    overflow: auto;
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .thumbs img {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    opacity: 0.8;
-    border: 2px solid transparent;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
 }
 
 .thumbs img.active {
-    opacity: 1;
-    border-color: #2563eb;
+  opacity: 1;
+  outline: 2px solid #007bff;
+  transform: scale(1.05);
 }
 
 .details {
