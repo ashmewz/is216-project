@@ -37,7 +37,7 @@ const route = useRoute();
 <template>
   <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
     <div class="container-fluid">
-      <RouterLink class="navbar-brand d-flex align-items-center gap-2">
+      <RouterLink to="/" class="navbar-brand d-flex align-items-center gap-2">
         <img src="@/assets/pawsitive_updated.png" alt="Pawsitive Logo" class="navbar-logo" />
         <span class="fw-bold">Pawsitive</span>
       </RouterLink>
@@ -83,30 +83,12 @@ const route = useRoute();
               Services
             </RouterLink>
           </li>
-
-          <!-- AI Dropdown -->
-          <li class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" id="navbar-ai-dropdown" role="button"
-              data-bs-toggle="dropdown">
-              AI
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/ai/recog') }"
-                  to="/ai/recog/">
-                  <span class="underline">AI Recognition</span>
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/ai/guidebook') }"
-                  to="/ai/guidebook/">
-                  <span class="underline">AI Guidebook</span>
-                </RouterLink>
-              </li>
-            </ul>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/ai/recog') }" to="/ai/recog/">
+               AI Recognition
+            </RouterLink>
           </li>
         </ul>
-
         <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
           style="width:40px; height:40px;">
           <!-- Show profile photo if available -->

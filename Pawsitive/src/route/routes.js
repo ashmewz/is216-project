@@ -89,9 +89,11 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/ai/guidebook/',
-        component: AiGuidebookPage,
-        meta: { requiresAuth: true }
+    path: '/ai/guidebook',
+    name: 'AiGuideBook',
+    component: AiGuidebookPage,
+    meta: { requiresAuth: true },
+ 
     }
 ];
 
