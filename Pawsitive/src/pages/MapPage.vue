@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
+import { db } from '@/firebase'
+import { collection, getDocs } from 'firebase/firestore'
 
 const MAP_DIV_ID = 'mapdiv';
 let onemap;
@@ -15,6 +17,8 @@ let lastCenter = { lat: 0, lng: 0 };
 const MAX_ZOOM = 19;
 const DEFAULT_ZOOM = 17;
 const MIN_ZOOM = 15;
+
+var curCatPopup = null;
 
 const performSearch = async () => {
     const query = searchQuery.value.trim();
@@ -34,49 +38,53 @@ const performSearch = async () => {
         const zoom = DEFAULT_ZOOM;
         onemap.setView([lat, lng], zoom);
 
-        updateMapDiv(getCatData(lat, lng, zoom));
+        updateMapDiv(await getCatData(lat, lng, zoom));
     } catch (e) {
         console.error("Search error:", e);
         alert("Failed to fetch location.");
     }
 };
 
-function getCatData(lat, lng, zoom) {
-    return generateSimulatedData(lat, lng, zoom);
-}
+async function getCatData(lat, lng, zoom) {
+    const catsRef = collection(db, "cats");
+    const snapshot = await getDocs(catsRef);
+    const center = { lat, lng };
 
-// TODO: Replace this later with firebase
-function generateSimulatedData(lat, lng, zoomLevel) {
-    const MAX_POINTS = 20;
-    const MIN_POINTS = 2;
-    const numPoints = Math.min(
-        MAX_POINTS,
-        Math.max(
-            MIN_POINTS,
-            Math.floor((MAX_ZOOM - zoomLevel) * (MAX_POINTS / (MAX_ZOOM - MIN_ZOOM)))
-        )
-    ) // More zoom results in more data given
-    console.log("numPoints generated for fake data: " + numPoints);
+    // Adjust threshold dynamically by zoom level
+    const baseThreshold = 0.02; // ~2km radius rough
+    const threshold = baseThreshold / Math.pow(2, (zoom - 15));
 
-    const markers = []
-    for (let i = 0; i < numPoints; i++) {
-        const offsetLat = (Math.random() - 0.5) * (0.25 / zoomLevel)
-        const offsetLng = (Math.random() - 0.5) * (0.25 / zoomLevel)
-        markers.push({
-            name: `Simulated Cat ${i + 1}`,
-            coords: [lat + offsetLat, lng + offsetLng],
-            image: 'https://picsum.photos/80?random=' + i,
-            img: [
-                'https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg',
-                'https://cataas.com/cat',
-                'https://cataas.com/cat/gif',
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Six_weeks_old_cat_%28aka%29.jpg/1200px-Six_weeks_old_cat_%28aka%29.jpg',
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/250px-Cat_November_2010-1a.jpg',
-            ][i % 5],
-            desc: `Zoom Level: ${zoomLevel}. Randomly generated nearby cat profile.`,
-        })
-    }
-    return markers
+    const cats = [];
+    snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data.last_location) return;
+
+        const { _lat: catLat, _long: catLng } = data.last_location;
+        if (
+            Math.abs(catLat - center.lat) <= threshold &&
+            Math.abs(catLng - center.lng) <= threshold
+        ) {
+            cats.push({
+                id: doc.id,
+                name: data.name || "Unnamed Cat",
+                coords: [catLat, catLng],
+                img: data.photos?.[0] || "https://cataas.com/cat",
+                color: data.color || "Unknown",
+                gender: data.gender || "Unknown",
+                neutered: data.neutered || "Unknown",
+                species: data.species || "Unknown",
+                age: data.age || "Unknown",
+                status: data.status || "Unknown",
+                last_seen: data.last_seen
+                    ? new Date(data.last_seen.seconds * 1000).toLocaleString()
+                    : "Unknown",
+                desc: data.description || "No additional info",
+            });
+        }
+    });
+
+    console.log(`Loaded ${cats.length} cats from Firestore within threshold ${threshold.toFixed(4)}`);
+    return cats;
 }
 
 function updateMapDiv(catMapData) {
@@ -84,6 +92,8 @@ function updateMapDiv(catMapData) {
         console.error('Leaflet not loaded')
         return
     }
+    if (!catMapData) return;
+    console.log(catMapData);
 
     // Clear previous markers
     allMarkers.forEach(m => onemap.removeLayer(m));
@@ -98,28 +108,48 @@ function updateMapDiv(catMapData) {
         shadowSize: [41, 41]
     });
 
-    catMapData.forEach(data => {
+    catMapData.forEach((data) => {
         const popupContent = `
-            <div class="card" style="width: 18rem; border: none;">
-              <div class="row g-0 align-items-center">
-                <div class="col-4">
-                  <img src="${data.img}" class="img-fluid rounded-start me-1" alt="${data.name}">
-                </div>
-                <div class="col-8">
-                  <div class="card-body p-0 ps-2">
-                    <h6 class="card-title mb-1">${data.name}</h6>
-                    <p class="card-text small text-muted m-0">${data.desc}</p>
-                  </div>
-                </div>
-              </div>
-            </div>`;
+  <div class="popup-card shadow-sm rounded overflow-hidden" style="font-family: system-ui, sans-serif;">
+    <div class="popup-inner d-flex align-items-start">
+      <div class="popup-img-container me-2">
+        <img src="${data.img}" alt="${data.name}" class="popup-img" />
+      </div>
+      <div class="popup-info flex-grow-1">
+        <h6 class="popup-title fw-bold mb-1 text-primary">${data.name}</h6>
+        <div class="popup-meta small">
+          <span><strong>Species:</strong> ${data.species}</span><br>
+          <span><strong>Gender:</strong> ${data.gender}</span><br>
+          <span><strong>Age:</strong> ${data.age}</span><br>
+        </div>
+        <a href="/cat/${data.id}" 
+           onclick="window.open(this.href, '_blank'); return false;" 
+           class="popup-link d-inline-block mt-1">View full profile →</a>
+      </div>
+    </div>
+  </div>
+`;
+
+
 
         const marker = L.marker(data.coords, { icon: markerIcon })
             .addTo(onemap)
-            .bindPopup(popupContent, { maxWidth: 300, closeButton: true, autoClose: false });
+            .bindPopup(popupContent, {
+                maxWidth: 300,
+                closeButton: true,
+                autoClose: false,
+            });
 
-        marker.on('mouseover', function () { this.openPopup(); })
-        marker.on('mouseout', function () { this.closePopup(); })
+        marker.on("mouseover", function () {
+            if (curCatPopup != null) {
+                curCatPopup.closePopup();
+            }
+            curCatPopup = this;
+            curCatPopup.openPopup();
+        });
+        // marker.on("mouseout", function () {
+        //     this.closePopup();
+        // });
         allMarkers.push(marker);
     });
 }
@@ -163,7 +193,7 @@ onMounted(async () => {
         // NOTE: To not spam our firebase, we need to throttle cap the updates.
         onemap.on('moveend', () => {
             if (moveThrottleTimeout) clearTimeout(moveThrottleTimeout);
-            moveThrottleTimeout = setTimeout(() => {
+            moveThrottleTimeout = setTimeout(async () => {
                 const center = onemap.getCenter();
                 const zoom = onemap.getZoom();
                 if (Math.abs(lastCenter.lat - center.lat) <= POLL_TOLERANCE &&
@@ -172,14 +202,14 @@ onMounted(async () => {
                 console.log('Updating Map: Map moved prev:', lastCenter, ' → new center:', center, 'zoom:', zoom);
                 lastCenter.lat = center.lat;
                 lastCenter.lng = center.lng;
-                updateMapDiv(getCatData(center.lat, center.lng, zoom));
+                updateMapDiv(await getCatData(center.lat, center.lng, zoom));
             }, THROTTLE_INTERVAL);
         });
 
         // If we can get the user's device location.
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                pos => {
+                async pos => {
                     const { latitude, longitude } = pos.coords;
                     lastCenter.lat = latitude;
                     lastCenter.lng = longitude;
@@ -197,7 +227,7 @@ onMounted(async () => {
                         fillOpacity: 0.9
                     }).addTo(onemap);
 
-                    updateMapDiv(getCatData(latitude, longitude, zoom));
+                    updateMapDiv(await getCatData(latitude, longitude, zoom));
                 },
                 err => {
                     console.warn('Geolocation failed or denied:', err.message);
@@ -209,8 +239,6 @@ onMounted(async () => {
         }
     }
 });
-
-
 </script>
 
 <template>
@@ -222,7 +250,8 @@ onMounted(async () => {
         <div class="content">
             <div class="map-page-container">
                 <div class="search-overlay input-group">
-                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..." />
+                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..."
+                        @keyup.enter="performSearch" />
                     <button class="btn btn-primary" @click="performSearch">Search</button>
                 </div>
 
@@ -284,5 +313,78 @@ onMounted(async () => {
 :deep(.leaflet-control-attribution) {
     display: inline-flex !important;
     align-items: center !important;
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+  padding: 0 !important;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.leaflet-popup-content) {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 280px !important;
+}
+
+:deep(.popup-card) {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  padding: 0.5rem;
+}
+
+:deep(.popup-inner) {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+:deep(.popup-img-container) {
+  flex-shrink: 0;
+  width: 85px;
+  height: 85px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+:deep(.popup-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:deep(.popup-info) {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.popup-title) {
+  font-size: 0.95rem;
+  color: #0d6efd;
+}
+
+:deep(.popup-desc) {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+:deep(.popup-meta) {
+  line-height: 1.1;
+  font-size: 0.75rem;
+  color: #333;
+}
+
+:deep(.popup-link) {
+  font-size: 0.75rem;
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+:deep(.popup-link:hover) {
+  text-decoration: underline;
 }
 </style>
