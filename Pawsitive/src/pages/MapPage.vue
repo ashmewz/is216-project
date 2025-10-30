@@ -18,6 +18,8 @@ const MAX_ZOOM = 19;
 const DEFAULT_ZOOM = 17;
 const MIN_ZOOM = 15;
 
+var curCatPopup = null;
+
 const performSearch = async () => {
     const query = searchQuery.value.trim();
     if (!query) return alert("Please enter a location!");
@@ -139,7 +141,11 @@ function updateMapDiv(catMapData) {
             });
 
         marker.on("mouseover", function () {
-            this.openPopup();
+            if (curCatPopup != null) {
+                curCatPopup.closePopup();
+            }
+            curCatPopup = this;
+            curCatPopup.openPopup();
         });
         // marker.on("mouseout", function () {
         //     this.closePopup();
@@ -233,8 +239,6 @@ onMounted(async () => {
         }
     }
 });
-
-
 </script>
 
 <template>
