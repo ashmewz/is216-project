@@ -5,6 +5,9 @@ import { ref, onMounted } from "vue";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import defaultAvatar from '@/assets/avatar_placeholder.jpg'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.min.css'
+import * as bootstrap from 'bootstrap';
 
 const avatar = ref(null);
 const auth = getAuth();
@@ -26,6 +29,10 @@ onMounted(() => {
     } else {
       avatar.value = null;
     }
+  });
+  const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+  dropdownToggles.forEach(el => {
+    new bootstrap.Dropdown(el);
   });
 });
 
@@ -86,22 +93,21 @@ const route = useRoute();
 
           <!-- AI Dropdown -->
           <li class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" id="navbar-ai-dropdown" role="button"
-              data-bs-toggle="dropdown">
+            <a
+              href="#"
+              class="nav-link dropdown-toggle"
+              id="navbar-ai-dropdown"
+              role="button"
+              data-bs-toggle="dropdown"
+            >
               AI
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/ai/recog') }"
-                  to="/ai/recog/">
-                  <span class="underline">AI Recognition</span>
-                </RouterLink>
+                <RouterLink class="dropdown-item" to="/ai/recog/">AI Recognition</RouterLink>
               </li>
               <li>
-                <RouterLink class="dropdown-item" :class="{ active: route.path.startsWith('/ai/guidebook') }"
-                  to="/ai/guidebook/">
-                  <span class="underline">AI Guidebook</span>
-                </RouterLink>
+                <RouterLink class="dropdown-item" to="/ai/guidebook/">AI Guidebook</RouterLink>
               </li>
             </ul>
           </li>
