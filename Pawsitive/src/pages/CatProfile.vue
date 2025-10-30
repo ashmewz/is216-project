@@ -12,95 +12,86 @@
             </div> -->
             </div>
 
-            <div class="layout">
+            <div class="row layout justify-content-center align-items-start">
                 <!-- LEFT: Carousel -->
-                <section class="left">
-                    <div class="carousel" @keydown.left.prevent="prevImage" @keydown.right.prevent="nextImage"
-                        tabindex="0">
-                        <div class="carousel-main">
-                            <img :src="currentImage" :alt="cat.name" v-if="currentImage" />
-                            <div class="no-image" v-else>No image</div>
+                <div class="col-12 col-md-6 mb-4">
+                    <section>
+                        <div class="carousel" @keydown.left.prevent="prevImage" @keydown.right.prevent="nextImage"
+                            tabindex="0">
+                            <div class="carousel-main">
+                                <img :src="currentImage" :alt="cat.name" v-if="currentImage" />
+                                <div class="no-image" v-else>No image</div>
 
-                            <button class="ctrl prev" @click="prevImage" aria-label="Previous image">‹</button>
-                            <button class="ctrl next" @click="nextImage" aria-label="Next image">›</button>
+                                <button class="ctrl prev" @click="prevImage" aria-label="Previous image">‹</button>
+                                <button class="ctrl next" @click="nextImage" aria-label="Next image">›</button>
+                            </div>
+
+                            <div class="thumbs" v-if="images.length > 0">
+                                <img v-for="(src, i) in images" :key="i" :src="src" :class="{ active: i === index }"
+                                    @click="index = i" :alt="`thumbnail ${i + 1}`" />
+                            </div>
                         </div>
-
-                        <div class="thumbs" v-if="images.length > 0">
-                            <img v-for="(src, i) in images" :key="i" :src="src" :class="{ active: i === index }"
-                                @click="index = i" :alt="`thumbnail ${i + 1}`" />
-                        </div>
-                    </div>
-                </section>
-
+                    </section>
+                </div>
 
                 <!-- RIGHT: Details -->
-                <section class="right">
-                    <table class="details">
-                        <tbody>
-                            <tr>
-                                <th>Name</th>
-                                <td>{{ cat.name || '—' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Age</th>
-                                <td>{{ cat.age ?? 'unknown' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Color</th>
-                                <td>{{ cat.color || '—' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Gender</th>
-                                <td>{{ cat.gender || 'unknown' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Neutered</th>
-                                <td>{{ cat.neutered || 'unknown' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Species</th>
-                                <td>{{ cat.species || 'unknown' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Status</th>
-                                <td>{{ cat.status || '—' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Last seen</th>
-                                <td>{{ formatDate(cat.last_seen) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Created</th>
-                                <td>{{ formatDate(cat.created_at) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Updated</th>
-                                <td>{{ formatDate(cat.updated_at) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Last location</th>
-                                <td v-if="cat.last_location">
-                                    {{ latLngDisplay(cat.last_location) }}
-                                    <div class="small muted">
-                                        <a :href="mapsLink(cat.last_location)" target="_blank" rel="noreferrer">(Open in
-                                            onemap)</a>
-                                    </div>
-                                </td>
-                                <td v-else>—</td>
-                            </tr>
-                            <tr v-if="cat.description">
-                                <th>Description</th>
-                                <td>{{ cat.description }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="col-12 col-md-6">
+                    <section>
+                        <table class="details">
+                            <tbody>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ cat.name || '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Age</th>
+                                    <td>{{ cat.age ?? 'unknown' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Color</th>
+                                    <td>{{ cat.color || '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Gender</th>
+                                    <td>{{ cat.gender || 'unknown' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Neutered</th>
+                                    <td>{{ cat.neutered || 'unknown' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Species</th>
+                                    <td>{{ cat.species || 'unknown' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{{ cat.status || '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last seen</th>
+                                    <td v-if="cat.last_location">
+                                        {{ latLngDisplay(cat.last_location) }}
+                                        <div class="small muted">
+                                            <a :href="mapsLink(cat.last_location)" target="_blank"
+                                                rel="noreferrer">(Open in onemap)</a>
+                                        </div>
+                                    </td>
+                                    <td v-else>—</td>
+                                </tr>
+                                <tr v-if="cat.description">
+                                    <th>Description</th>
+                                    <td>{{ cat.description }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-
-                    <div class="actions">
-                        <!-- For now no actions -->
-                    </div>
-                </section>
+                        <div class="actions">
+                            <!-- For now no actions -->
+                        </div>
+                    </section>
+                </div>
             </div>
+
         </div>
 
         <div v-else class="loading container p-4">
@@ -267,22 +258,6 @@ onMounted(() => {
     font-size: 12px;
 }
 
-.layout {
-    display: flex;
-    gap: 24px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-}
-
-.left {
-    flex: 1 1 380px;
-    max-width: 480px;
-}
-
-.right {
-    flex: 1 1 360px;
-}
-
 .carousel {
     position: relative;
     display: flex;
@@ -408,5 +383,20 @@ onMounted(() => {
     border-radius: 6px;
     border: none;
     cursor: pointer;
+}
+
+.layout {
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .carousel-main {
+        height: 300px;
+        /* slightly smaller on mobile */
+    }
+
+    .details th {
+        width: 110px;
+    }
 }
 </style>
