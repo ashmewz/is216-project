@@ -74,7 +74,7 @@ function prevCat() {
 <style scoped>
 .adoption-bg {
     min-height: 100vh;
-    background: pink;
+    background: #f8e1e1;
     padding-top: 90px;
     padding-bottom: 70px;
     display: flex;
