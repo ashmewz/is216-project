@@ -141,6 +141,15 @@ const onFileChange = async (event) => {
 }
 
 
+const reportsSection = ref(null)
+
+// Scroll to reports function
+const scrollToReports = () => {
+  if (reportsSection.value) {
+    reportsSection.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
 
 </script>
 
@@ -169,7 +178,7 @@ const onFileChange = async (event) => {
 
       <!-- Right Column: Sidebar -->
 
-      <div class="col-12 col-lg-4 reports">
+      <div class="col-12 col-lg-4 reports " ref="reportsSection">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h4>Cat Reports</h4>
           <button class="btn btn-dark btn-sm" @click="openModal">Create Report</button>
@@ -279,9 +288,11 @@ const onFileChange = async (event) => {
   <BottomFooter />
 
   <!-- Floating Button (Mobile only) -->
-  <button class="btn report-floating-btn d-lg-none" @click="openModal" title="Create Report">
-    <i class="bi bi-pencil-square"></i>
+  <!-- Floating Button (Mobile only) -->
+  <button class="btn report-floating-btn d-lg-none" @click="scrollToReports" title="Go to Cat Reports">
+    Reports
   </button>
+
 
 </template>
 
@@ -291,13 +302,9 @@ const onFileChange = async (event) => {
   bottom: 2rem;
   right: 1.5rem;
   z-index: 2000;
-  border-radius: 50%;
-  width: 3.5rem;
-  height: 3.5rem;
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+   font-size: 1rem;
   background-color: #343a40;
   color: white;
   border: none;
@@ -307,6 +314,7 @@ const onFileChange = async (event) => {
 .report-floating-btn:hover {
   background-color: #495057;
 }
+
 
 @media (max-width: 992px) {
   .reports {
