@@ -102,6 +102,11 @@ Provide screenshots and captions showing how users interact with your app.
 5. **Volunteer Page**  
    <img src="photos/use-case/volunteerPage.png" width="600">  
    - Displays the public profile of a volunteer
+  
+6.**Adoption Page**  
+  <img width="393" height="806" alt="Adoption Page" src="https://github.com/user-attachments/assets/c1cc9238-6a3e-4bd3-b9ec-5335a5ac0450" />
+  - Displays cat listings available for adoption
+  - Volunteers can apply to adopt cats of their choosing
    
 
 
