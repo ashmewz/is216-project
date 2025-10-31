@@ -13,6 +13,22 @@ const loading = ref(false);
 const showCreatePostModal = ref(false);
 // newComment maps postId -> input string for that post
 const newComment = ref({});
+const showCommentModal = ref(false);
+const activeCommentPostId = ref(null);
+const newCommentText = ref('');
+
+const openCommentModal = (postId) => {
+  activeCommentPostId.value = postId;
+  newCommentText.value = '';
+  showCommentModal.value = true;
+};
+
+const closeCommentModal = () => {
+  showCommentModal.value = false;
+  activeCommentPostId.value = null;
+};
+
+
 
 const newPost = ref({
   author: "",
@@ -79,9 +95,11 @@ const fetchPosts = async () => {
   try {
     const snapshot = await getDocs(collection(db, "posts"));
     const postData = [];
+
     for (const docSnap of snapshot.docs) {
       const post = { id: docSnap.id, ...docSnap.data(), comments: [] };
-      // Post author username lookup
+
+      // Fetch and set post author username and avatar
       if (post.author) {
         const userDoc = await getDoc(doc(db, "volunteers", post.author));
         if (userDoc.exists()) {
@@ -93,23 +111,29 @@ const fetchPosts = async () => {
           post.avatar = null;
         }
       }
-      // Fetch comments for each post, resolve each author's username
+
+      // Fetch comments for the post, enrich with author username and avatar
       const commentsSnap = await getDocs(collection(db, "posts", docSnap.id, "comments"));
       post.comments = await Promise.all(commentsSnap.docs.map(async (c) => {
         const commentData = { id: c.id, ...c.data() };
-        // Lookup username for each comment author (UID)
         let userName = "Unknown";
+        let userAvatar = null;
         if (commentData.author) {
           const cUserDoc = await getDoc(doc(db, "volunteers", commentData.author));
           if (cUserDoc.exists()) {
-            userName = cUserDoc.data().username || "Unknown";
+            const userData = cUserDoc.data();
+            userName = userData.username || "Unknown";
+            userAvatar = userData.avatar || null;
           }
         }
         commentData.username = userName;
+        commentData.avatar = userAvatar;
         return commentData;
       }));
+
       postData.push(post);
     }
+
     posts.value = postData;
   } catch (err) {
     console.error("Error fetching posts:", err);
@@ -117,9 +141,10 @@ const fetchPosts = async () => {
   loading.value = false;
 };
 
+
 //create a comment in a post
-const addComment = async (postId) => {
-  const commentText = (newComment.value[postId] || "").trim();
+const addComment = async () => {
+  const commentText = newCommentText.value.trim();
   if (!commentText) {
     return alert("Please write a comment.");
   }
@@ -128,13 +153,14 @@ const addComment = async (postId) => {
     return alert("You must be logged in to comment.");
   }
   try {
-    await addDoc(collection(db, "posts", postId, "comments"), {
-      author: currentUser.uid,      // Save current user's UID
+    await addDoc(collection(db, "posts", activeCommentPostId.value, "comments"), {
+      author: currentUser.uid,
       comment: commentText,
       createdAt: serverTimestamp(),
     });
-    newComment.value[postId] = "";
+    newCommentText.value = '';
     await fetchPosts();
+    closeCommentModal();
   } catch (err) {
     console.error("Error adding comment:", err);
   }
@@ -321,30 +347,54 @@ onMounted(() => {
         </div>
 
       <!-- 💬 Comments -->
-      <div class="mt-3">
-        <h6>Comments ({{ post.comments.length }})</h6>
-          <ul class="list-group mb-2">
-          <li v-for="comment in post.comments" :key="comment.id" class="list-group-item d-flex justify-content-between">
-            <div>
-              <strong>{{ comment.username }}</strong>: {{ comment.comment }}
+      <div class="mt-3 comment-section">
+      <h6 class="mb-3">Comments ({{ post.comments.length }})</h6>
+      <ul class="list-group list-group-flush mb-3">
+        <li v-for="comment in post.comments" :key="comment.id" class="list-group-item d-flex align-items-start gap-3 py-2">
+          <img
+            :src="comment.avatar" 
+            alt="Profile"
+            class="comment-avatar"
+          />
+          <div class="comment-content flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <strong class="comment-username">{{ comment.username }}</strong>
+              <small class="text-muted comment-time">
+                {{ comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleString() : '' }}
+              </small>
             </div>
-            <small class="text-muted">
-              {{ comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleString() : '' }}
-            </small>
-          </li>
-        </ul>
-        <div class="input-group">
-      <input
-        v-model="newComment[post.id]"
-        placeholder="Add a comment..."
-        class="form-control"
-        @keyup.enter="addComment(post.id)"
-      />
-      <button class="btn btn-outline-secondary" @click="addComment(post.id)">Post</button>
+            <p class="comment-text mb-0">{{ comment.comment }}</p>
+          </div>
+        </li>
+      </ul>
+      <button class="btn btn-outline-secondary btn-sm" @click="openCommentModal(post.id)">
+        Add Comment
+      </button>
     </div>
-      </div>
+</div>
 
+      <!-- Comment Modal -->
+<div v-if="showCommentModal">
+  <div class="modal-backdrop fade show"></div>
+
+  <div class="modal d-flex align-items-center justify-content-center fade show" tabindex="-1" style="display: flex;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 600px; width: 100%;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Comment</h5>
+          <button type="button" class="btn-close" @click="closeCommentModal"></button>
+        </div>
+        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+          <textarea v-model="newCommentText" class="form-control" rows="4" placeholder="Write your comment here..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeCommentModal">Cancel</button>
+          <button class="btn btn-primary" @click="addComment">Submit</button>
+        </div>
       </div>
+    </div>
+  </div>
+</div>
     </main>
     <BottomFooter />
   </div>
@@ -440,5 +490,43 @@ body {
 .modal-body {
   max-height: 60vh;
   overflow-y: auto;
+}
+
+
+
+
+.comment-section {
+  background: #fefefe;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #ddd;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #ccc;
+}
+
+.comment-content {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.comment-username {
+  font-weight: 600;
+  color: #806e83;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.comment-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 </style>
