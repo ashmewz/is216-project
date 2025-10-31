@@ -1,10 +1,11 @@
 <script setup>
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { db } from "@/firebase"; // make sure you exported Firestore as db
 import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore'
 import { getAuth } from "firebase/auth";
+import { validatePost, validateComment } from '@/utils/validators';
 
 // State
 const auth = getAuth();
@@ -16,6 +17,7 @@ const newComment = ref({});
 const showCommentModal = ref(false);
 const activeCommentPostId = ref(null);
 const newCommentText = ref('');
+const fieldErrors = ref({});
 
 const openCommentModal = (postId) => {
   activeCommentPostId.value = postId;
@@ -35,6 +37,10 @@ const newPost = ref({
   description: "",
   image: "",
 });
+
+// Watch inputs to clear errors when user types
+watch(() => newPost.value.description, () => fieldErrors.value.description = '');
+watch(() => newCommentText.value, () => fieldErrors.value.comment = '');
 
 // File input ref (optional if you want trigger button)
 const fileInput = ref(null);
@@ -68,6 +74,14 @@ const handleImageUpload = async (e) => {
 
 // Create post with base64 image
 const createPost = async () => {
+
+  const errors = validatePost(newPost.value);
+  if (Object.keys(errors).length > 0) {
+    fieldErrors.value = errors;
+    return;
+  }
+
+
   const currentUser = auth.currentUser;
   if (!currentUser) {
     return alert("You must be logged in to create a post.");
@@ -144,10 +158,15 @@ const fetchPosts = async () => {
 
 //create a comment in a post
 const addComment = async () => {
-  const commentText = newCommentText.value.trim();
-  if (!commentText) {
-    return alert("Please write a comment.");
+
+  const errors = validateComment({ comment: newCommentText.value });
+  if (Object.keys(errors).length > 0) {
+    fieldErrors.value = errors;
+    return;
   }
+
+  const commentText = newCommentText.value.trim();
+ 
   const currentUser = auth.currentUser;
   if (!currentUser) {
     return alert("You must be logged in to comment.");
@@ -270,9 +289,12 @@ onMounted(() => {
             <textarea 
               v-model="newPost.description" 
               placeholder="Write something..." 
+              :class="{ 'is-invalid': fieldErrors.description }"
               class="form-control" 
               rows="4"
             ></textarea>
+            <div class="invalid-feedback">{{ fieldErrors.description }}</div>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="showCreatePostModal = false">Cancel</button>
@@ -385,7 +407,8 @@ onMounted(() => {
           <button type="button" class="btn-close" @click="closeCommentModal"></button>
         </div>
         <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-          <textarea v-model="newCommentText" class="form-control" rows="4" placeholder="Write your comment here..."></textarea>
+          <textarea v-model="newCommentText" class="form-control" rows="4"  :class="{ 'is-invalid': fieldErrors.comment }"  placeholder="Write your comment here..."></textarea>
+          <div class="invalid-feedback">{{ fieldErrors.comment }}</div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeCommentModal">Cancel</button>
