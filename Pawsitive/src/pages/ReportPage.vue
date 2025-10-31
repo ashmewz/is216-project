@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
+import Button from '@/components/resuables/Button.vue';
 
 // ✅ Import images properly
 import newscat1 from '@/assets/newscat1.jpg'
@@ -77,7 +78,8 @@ function goBack() {
             <div class="col-md-6">
               <h2 class="news-title">{{ article.title }}</h2>
               <p class="news-summary">{{ article.summary }}</p>
-              <button class="btn btn-dark" @click="openArticle(article)">Read More</button>
+              <Button @click="openArticle(article)">Read More</Button>
+              <!-- <button class="btn btn-dark" @click="openArticle(article)">Read More</button> -->
             </div>
             <div class="col-md-6 text-center">
               <img :src="article.image" :alt="article.title" class="img-fluid rounded shadow-sm" />
@@ -90,7 +92,10 @@ function goBack() {
             <div class="news-text mt-3">
               <h4 class="news-title">{{ article.title }}</h4>
               <p class="news-summary">{{ article.summary }}</p>
-              <button class="btn btn-outline-dark" @click="openArticle(article)">Read More</button>
+              
+              
+              <Button @click="openArticle(article)">Read More</Button>
+              <!-- <button class="btn btn-outline-dark" @click="openArticle(article)">Read More</button> -->
             </div>
           </template>
         </div>
@@ -121,7 +126,8 @@ function goBack() {
           <label class="form-label">Description</label>
           <textarea class="form-control" rows="3" placeholder="Describe the cat's condition..."></textarea>
         </div>
-        <button class="btn btn-dark w-100">Submit Report</button>
+        <!-- <button class="btn btn-dark w-100">Submit Report</button> -->
+        <Button class="w-100">Submit Report</Button>
       </form>
     </aside>
   </div>

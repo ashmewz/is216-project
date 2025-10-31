@@ -4,6 +4,8 @@ import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import GridSplit from '@/components/resuables/GridSplit.vue'
 import { Modal } from 'bootstrap'
+import ForumCard from '@/components/resuables/ForumCard.vue'  // your reusable post list component
+
 
 const posts = reactive([
   {
@@ -17,9 +19,30 @@ const posts = reactive([
     datePosted: '2025-10-23 18:00',
     expanded: false,
   },
-  { id: 'p2', username: 'Adorablecats123', profilePic: '/src/assets/profilepic2.jpg', caption: 'Look at this cutie 😻', image: '/src/assets/cutecats2.jpg', likes: 18, comments: [], datePosted: '2025-10-24 09:15', expanded: false },
-  { id: 'p3', username: 'CatCareTips', profilePic: '/src/assets/profilepic3.jpg', caption: 'Cats are wonderful companions, but caring for them goes beyond just feeding...', image: '', likes: 12, comments: [], datePosted: '2025-10-22 16:45', expanded: false },
+  {
+    id: 'p2',
+    username: 'Adorablecats123',
+    profilePic: '/src/assets/profilepic2.jpg',
+    caption: 'Look at this cutie 😻',
+    image: '/src/assets/cutecats2.jpg',
+    likes: 18,
+    comments: [],
+    datePosted: '2025-10-24 09:15',
+    expanded: false,
+  },
+  {
+    id: 'p3',
+    username: 'CatCareTips',
+    profilePic: '/src/assets/profilepic3.jpg',
+    caption: 'Cats are wonderful companions, but caring for them goes beyond just feeding...',
+    image: '',
+    likes: 12,
+    comments: [],
+    datePosted: '2025-10-22 16:45',
+    expanded: false,
+  },
 ])
+
 
 const searchQuery = ref('')
 const sortMode = ref('newest')
@@ -31,17 +54,19 @@ const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
 const newPost = reactive({ caption: '', image: null, imagePreview: null })
 
+
 const displayedPosts = computed(() => {
-  const filtered = posts.filter(p => 
-    !searchQuery.value || 
-    p.caption.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+  const filtered = posts.filter(p =>
+    !searchQuery.value ||
+    p.caption.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     p.username.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
-  
+
   if (sortMode.value === 'oldest') return [...filtered].reverse()
   if (sortMode.value === 'popular') return [...filtered].sort((a, b) => b.likes - a.likes)
   return filtered
 })
+
 
 const sortLabel = computed(() => ({
   newest: { text: 'Newest First', icon: 'bi-clock-history' },
@@ -49,27 +74,31 @@ const sortLabel = computed(() => ({
   popular: { text: 'Most Liked', icon: 'bi-heart-fill' }
 }[sortMode.value]))
 
+
 const getLikedPosts = () => JSON.parse(localStorage.getItem('likedPosts') || '[]')
 const setLikedPosts = arr => localStorage.setItem('likedPosts', JSON.stringify(arr))
 const hasLiked = id => getLikedPosts().includes(id)
+
 
 const formatDateTime = (date = new Date()) => {
   const d = new Date(date)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+
 function setSort(mode) {
   sortMode.value = mode
   dropdownOpen.value = false
 }
 
+
 function toggleLike(postId) {
   const post = posts.find(p => p.id === postId)
   if (!post) return
-  
+
   const liked = hasLiked(postId)
   post.likes += liked ? -1 : 1
-  
+
   if (liked) {
     setLikedPosts(getLikedPosts().filter(id => id !== postId))
   } else {
@@ -79,60 +108,69 @@ function toggleLike(postId) {
   }
 }
 
-function toggleExpand(post) {
+
+function toggleExpand(postId) {
+  const post = posts.find(p => p.id === postId)
+  if (!post) return
   post.expanded = !post.expanded
 }
+
 
 async function sharePost(postId) {
   const post = posts.find(p => p.id === postId)
   if (!post) return
-  
-  const shareData = { 
-    title: `Post by ${post.username}`, 
-    text: post.caption, 
-    url: `${location.href}#post-${postId}` 
+
+  const shareData = {
+    title: `Post by ${post.username}`,
+    text: post.caption,
+    url: `${location.href}#post-${postId}`
   }
-  
+
   if (navigator.share) {
-    try { 
+    try {
       await navigator.share(shareData)
-      return 
-    } catch(e) {}
+      return
+    } catch (e) { }
   }
-  
+
   await navigator.clipboard.writeText(shareData.url)
   alert('Link copied to clipboard! 📋')
 }
+
 
 function openComments(postId) {
   activePostId.value = postId
   new Modal(document.getElementById('commentsModal')).show()
 }
 
+
 function addComment() {
   const text = newComment.value.trim()
   if (!text) return alert('Please write a comment.')
-  
+
   const post = posts.find(p => p.id === activePostId.value)
   if (!post) return
-  
+
   post.comments.push({ user: 'You', text, time: formatDateTime() })
   newComment.value = ''
 }
+
 
 function openCreatePost() {
   new Modal(document.getElementById('createPostModal')).show()
 }
 
+
 function handleImageUpload(event) {
   const file = event.target.files[0]
   if (!file) return
-  
+
   newPost.image = file
   const reader = new FileReader()
   reader.onload = e => newPost.imagePreview = e.target.result
   reader.readAsDataURL(file)
 }
+
 
 function removeImage() {
   newPost.image = null
@@ -140,6 +178,7 @@ function removeImage() {
   const fileInput = document.getElementById('imageUpload')
   if (fileInput) fileInput.value = ''
 }
+
 
 function createPost() {
   const caption = newPost.caption.trim()
@@ -162,9 +201,11 @@ function createPost() {
   Modal.getInstance(document.getElementById('createPostModal'))?.hide()
 }
 
+
 function triggerImageUpload() {
   document.getElementById('imageUpload')?.click()
 }
+
 
 function handleClickOutside(event) {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
@@ -174,6 +215,7 @@ function handleClickOutside(event) {
 
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+
 </script>
 
 <template>
@@ -193,85 +235,18 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
         </div>
       </div>
 
-      <!-- Replaced manual grid with GridSplit component -->
       <GridSplit>
         <!-- Main content area (9/12 width) - Posts -->
         <template #main>
-          <div class="posts-container">
-            <div
-              v-for="(post, index) in displayedPosts"
-              :key="post.id"
-              class="post mb-4 p-4 border-0 rounded-4 shadow-sm animate-in"
-              :style="{ animationDelay: `${index * 0.1}s` }"
-            >
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="d-flex align-items-center">
-                  <div class="profile-pic-wrapper">
-                    <img
-                      :src="post.profilePic"
-                      alt="Profile"
-                      class="rounded-circle border-2"
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <span class="fw-bold text-accent d-block">{{ post.username }}</span>
-                    <small class="text-muted">
-                      <i class="bi bi-clock me-1"></i>{{ post.datePosted }}
-                    </small>
-                  </div>
-                </div>
-
-                <button class="btn btn-sm btn-light share-btn rounded-circle" @click="sharePost(post.id)">
-                  <i class="bi bi-share-fill"></i>
-                </button>
-              </div>
-
-              <div v-if="post.image" class="post-image-wrapper mb-3">
-                <img
-                  :src="post.image"
-                  alt="Post image"
-                  class="post-image rounded-3"
-                />
-              </div>
-
-              <p class="mb-3 post-caption">
-                {{ post.expanded || post.caption.length <= 150
-                  ? post.caption
-                  : post.caption.slice(0, 150) + '...' }}
-                <button
-                  v-if="post.caption.length > 150"
-                  class="btn btn-link p-0 text-accent read-more-btn"
-                  @click="toggleExpand(post)"
-                >
-                  {{ post.expanded ? 'Show less' : 'Read more' }}
-                </button>
-              </p>
-
-              <div class="d-flex gap-4 align-items-center interaction-bar pt-2 border-top">
-                <button 
-                  class="interaction-btn like-btn" 
-                  :class="{ 'liked': hasLiked(post.id), 'animating': likeAnimations[post.id] }"
-                  @click="toggleLike(post.id)"
-                >
-                  <i :class="['bi', hasLiked(post.id) ? 'bi-heart-fill' : 'bi-heart']"></i>
-                  <span class="ms-2">{{ post.likes }}</span>
-                  <span class="like-text ms-1">{{ post.likes === 1 ? 'Like' : 'Likes' }}</span>
-                </button>
-              
-                <button class="interaction-btn comment-btn" @click="openComments(post.id)">
-                  <i class="bi bi-chat-dots"></i>
-                  <span class="ms-2">{{ post.comments.length }}</span>
-                  <span class="comment-text ms-1">{{ post.comments.length === 1 ? 'Comment' : 'Comments' }}</span>
-                </button>
-              </div>
-            </div>
-
-            <div v-if="displayedPosts.length === 0" class="empty-state text-center py-5">
-              <div class="empty-icon mb-3">🔍</div>
-              <h4 class="mb-2">No posts found</h4>
-              <p class="text-muted">Try adjusting your search or create a new post!</p>
-            </div>
-          </div>
+          <ForumCard
+            :posts="displayedPosts"
+            :hasLiked="hasLiked"
+            :likeAnimations="likeAnimations"
+            @toggle-like="toggleLike"
+            @toggle-expand="toggleExpand"
+            @share="sharePost"
+            @open-comments="openComments"
+          />
         </template>
 
         <!-- Sidebar area (3/12 width) - Controls -->
@@ -286,7 +261,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
               />
             </div>
 
-            <button @click="openCreatePost" class="btn btn-primary create-btn text-nowrap w-100 mb-3">
+            <button @click="openCreatePost" class="create-btn text-nowrap w-100 mb-3">
               <i class="bi bi-plus-circle"></i>
               <span class="ms-2">Create Post</span>
             </button>
@@ -371,7 +346,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       </div>
     </div>
 
-    <!-- Added Create Post Modal -->
+    <!-- Create Post Modal -->
     <div class="modal fade" id="createPostModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow-lg border-0">

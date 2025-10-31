@@ -2,6 +2,7 @@
 import { ref } from 'vue'; // Vue's reactivity system
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
+import Button from '@/components/resuables/Button.vue';
 
 const cats = [
     {
@@ -66,6 +67,7 @@ function prevCat() {
             </div>
             <textarea v-model="adoptionReason" class="reason-input" rows="2"></textarea>
             <button type="submit" class="next-btn">Next</button>
+            <Button type="submit">Next</Button>
         </form>
     </div>
     </main>
