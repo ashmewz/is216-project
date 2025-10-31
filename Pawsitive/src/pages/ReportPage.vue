@@ -67,7 +67,6 @@ const fetchReports = async () => {
 
 onMounted(() => {
   fetchReports();
-  console.log(reports);
 });
 
 // Open modal
@@ -276,8 +275,34 @@ const onFileChange = async (event) => {
 
 
   <BottomFooter />
+
+  <!-- Floating Button (Mobile only) -->
+  <button class="btn report-floating-btn d-lg-none" @click="openModal" title="Create Report">
+    <i class="bi bi-pencil-square"></i>
+  </button>
+
 </template>
 
 <style scoped>
+.report-floating-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 1.5rem;
+  z-index: 2000;
+  border-radius: 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #343a40;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
+.report-floating-btn:hover {
+  background-color: #495057;
+}
 </style>
