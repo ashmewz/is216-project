@@ -1,4 +1,125 @@
-/* color palette from <https://github.com/vuejs/theme> */
+/*
+ base.css:
+ Contains core CSS resets and base styles.
+ Load before custom.css to ensure foundational styles are applied first.
+ Refer to custom.css for page/component-specific styling.
+ */
+
+ /* color palette from <https://github.com/vuejs/theme> */
+
+/* Colours: f8e1e1 (pink), 806E83 (purple), c1cfe6 (light blue), 99b4da (another blue), 6982B5 (dark blue), FFFDF7 (off white) */
+
+:root {
+  --pink: #f8e1e1;
+  --light-blue: #c1cfe6;
+  --blue: #C0CBE6;
+  --dark-blue: #6982B5; 
+  --purple: #806E83;
+  --white-off: #FFFDF7;
+}
+
+/* Reset */
+* { /* Universal Selector */
+  box-sizing: border-box; /* Width and height include content, padding, border */
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  font-size: 10px;
+  line-height: 1.15;
+  color: var(--dark-blue);
+  background-color: var(--pink);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Potta One', cursive;
+  font-weight: bold;
+  color: inherit; /* Inherit color from parent */
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+header, nav, main, footer {
+  width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--purple);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+ul, ol {
+  margin-left: 2em;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th, td {
+  border: 1px solid var(--light-blue);
+  padding: 0.5em;
+}
+
+.no-bullets {
+  list-style: none;
+}
+.hidden {
+  display: none;
+}
+.text-center {
+  text-align: center;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.background {
+  min-height: 100vh;
+  background: var(--pink);
+  padding-top: 90px;
+  padding-bottom: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button {
+  background: var(--white-off);
+  border: none;
+  border-radius: 50%;
+  font-size: 2rem;
+  height: 48px;
+  width: 48px;
+  margin: 0 12px;
+  color: var(--dark-blue);
+}
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+
+/* 
 :root {
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8f8f8;
@@ -19,10 +140,10 @@
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
+} */
 
 /* semantic color variables for this project */
-:root {
+/* :root {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
@@ -83,4 +204,4 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */

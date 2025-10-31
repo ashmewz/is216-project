@@ -3,80 +3,109 @@ import {
     createRouter
 } from "vue-router";
 
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 // TODO: Remove thse two when we're done.
 import RouterTest from '@/components/RouterTest.vue';
 
 // End of TODO
 
-import MapPage from "@/components/pages/MapPage.vue";
-import ForumPage from "@/components/pages/ForumPage.vue";
-import ReportPage from "@/components/pages/ReportPage.vue";
-import VolunteerSignupLoginPage from "@/components/pages/VolunteerSignupLoginPage.vue";
-import VolunteerProfilePage from "@/components/pages/VolunteerProfilePage.vue";
-import AdoptionListPage from "@/components/pages/AdoptionListPage.vue";
-import DonationPage from "@/components/pages/DonationPage.vue";
-import ServicesPage from "@/components/pages/ServicesPage.vue";
-import AiRecogPage from "@/components/pages/AiRecogPage.vue";
-import AiGuidebookPage from "@/components/pages/AiGuidebookPage.vue";
+import MapPage from "@/pages/MapPage.vue";
+import CatProfile from "@/pages/CatProfile.vue";
+import ForumPage from "@/pages/ForumPage.vue";
+import ReportPage from "@/pages/ReportPage.vue";
+import VolunteerSignupLoginPage from "@/pages/VolunteerSignupLoginPage.vue";
+import VolunteerProfilePage from "@/pages/VolunteerProfilePage.vue";
+import AdoptionListPage from "@/pages/AdoptionListPage.vue";
+import DonationPage from "@/pages/DonationPage.vue";
+import ServicesPage from "@/pages/ServicesPage.vue";
+import AiRecogPage from "@/pages/AiRecogPage.vue";
+import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
+import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
+// TEST ONLY
+import AdminAddCat from "@/pages/TEST_ADMIN_ONLY/AdminAddCat.vue";
 
 const history = createWebHistory();
 const routes = [
     {
         path: '/',
-        // TODO: New Landing Pagde
-        component: RouterTest
-    },
-    {
-        path: '/map/',
-        component: MapPage
-    },
-    {
-        path: '/forum/',
-        component: ForumPage
-    },
-    {
-        path: '/report/',
-        component: ReportPage
-    },
-    {
-        path: '/volunteer/signup/',
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
+    },
+    {
+        path: '/map/',
+        component: MapPage,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/cat/:id',
+        component: CatProfile,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/forum/',
+        component: ForumPage,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/report/',
+        component: ReportPage,
+        meta: { requiresAuth: true }
     },
     {
         path: '/volunteer/login/',
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
-        
-        //might need to setup something like a route guard? to prevent user to access /signup and /login routes if they are loggedin
+
     },
     {
-        path: '/volunteer/profile/',
+        path: '/volunteer/profile',
         // TODO: Inject profile data
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
-        component: VolunteerProfilePage
+        component: VolunteerProfilePage,
+        meta: { requiresAuth: true }
     },
+
+    {
+        path: '/volunteer/profile/:username',
+        name: 'VolunteerProfileView',
+        component: VolunteerProfileViewPage, //access this page by passing the volunteer username as route param
+        props: true, // this lets you access the param as a prop
+        meta: { requiresAuth: true }
+    },
+
     {
         path: '/adoption/',
-        component: AdoptionListPage
+        component: AdoptionListPage,
+        meta: { requiresAuth: true }
     },
     {
-        path: '/donation/',
-        component: DonationPage
+        path: '/donations/',
+        component: DonationPage,
+        meta: { requiresAuth: true }
     },
     {
         path: '/services/',
-        component: ServicesPage
+        component: ServicesPage,
+        meta: { requiresAuth: true }
     },
     {
         path: '/ai/recog/',
-        component: AiRecogPage
+        component: AiRecogPage,
+        meta: { requiresAuth: true }
     },
     {
-        path: '/ai/guidebook/',
-        component: AiGuidebookPage
+        path: '/ai/guidebook',
+        name: 'AiGuideBook',
+        component: AiGuidebookPage,
+        meta: { requiresAuth: true },
+    },
+
+    { // TEST ONLY
+        path: '/admin',
+        component: AdminAddCat,
     }
 ];
 
@@ -84,5 +113,21 @@ const router = createRouter({
     history,
     routes
 });
+
+router.beforeEach((to, from, next) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (to.meta.requiresAuth && !user) {
+        // user is not logged in but route requires auth
+        next('/'); // redirect to login
+    } else if (!to.meta.requiresAuth && user && (to.path === '/' || to.path === '/volunteer/login' || to.path === '/volunteer/login/')) {
+        // logged-in user trying to access login page (on root '/' and 'volunteer/login')
+        next('/map'); // redirect to /map
+    } else {
+        next(); // allow access
+    }
+});
+
 
 export default router;
