@@ -42,8 +42,11 @@ defineProps({
             </div>
 
             <!-- Report image -->
-            <img v-if="report.image" :src="report.image" alt="cat image" class="img-fluid rounded mb-2"
-                style="max-height:200px; width:100%; object-fit:cover;" />
+            <div style="max-height:500px; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+                <img v-if="report.image" :src="report.image" alt="cat image"
+                    style="max-height:100%; max-width:100%; border-radius: 5px; object-fit:contain;" />
+            </div>
+
 
             <!-- Timestamp -->
             <small class="text-muted d-block mt-2">

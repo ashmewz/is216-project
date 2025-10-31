@@ -155,19 +155,21 @@ const onFileChange = async (event) => {
     <div class="row">
 
       <!-- Left Column: RSS Feed -->
-      <div class="col-12 col-lg-8 mb-4">
+      <div class="col-12 col-lg-8">
         <div v-if="rssLoading" class="d-flex justify-content-center align-items-center" style="height: 400px;">
           <div class="spinner-border text-dark" role="status">
           </div>
         </div>
-        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%" height="2800px"
-          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0">
+
+        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%"
+          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" height="3800px" scrolling="no" frameborder="0">
         </iframe>
+
       </div>
 
       <!-- Right Column: Sidebar -->
 
-      <div class="col-12 col-lg-4">
+      <div class="col-12 col-lg-4 reports">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h4>Cat Reports</h4>
           <button class="btn btn-dark btn-sm" @click="openModal">Create Report</button>
@@ -304,5 +306,24 @@ const onFileChange = async (event) => {
 
 .report-floating-btn:hover {
   background-color: #495057;
+}
+
+@media (max-width: 992px) {
+  .reports {
+    margin-top: -15rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports {
+    margin-top: -50rem;
+    /* adjust smaller for smaller screen */
+  }
+}
+
+@media (max-width: 576px) {
+  .reports {
+    margin-top: -50rem;
+  }
 }
 </style>
