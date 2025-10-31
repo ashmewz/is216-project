@@ -1,141 +1,102 @@
 <script setup>
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { db } from "@/firebase";
+import VolunteerCard from '@/components/resuables/VolunteerCard.vue';
 
-const providers = ref([
-  {
-    id: 1,
-    name: "Luna Lim",
-    services: ["Pet Grooming", "Cat Sitting"],
-    experience: 5,
-    location: "Jurong East",
-    image: "https://randomuser.me/api/portraits/women/21.jpg",
-  },
-  {
-    id: 2,
-    name: "Marcus Tan",
-    services: ["Vet Consultation"],
-    experience: 8,
-    location: "Tampines",
-    image: "https://randomuser.me/api/portraits/men/42.jpg",
-  },
-  {
-    id: 3,
-    name: "Aisha Noor",
-    services: ["Pet Walking", "Pet Grooming"],
-    experience: 3,
-    location: "Woodlands",
-    image: "https://randomuser.me/api/portraits/women/18.jpg",
-  },
-  {
-    id: 4,
-    name: "Daniel Ong",
-    services: ["Pet Sitting"],
-    experience: 1,
-    location: "Clementi",
-    image: "https://randomuser.me/api/portraits/men/31.jpg",
-  },
-]);
 
+
+
+const volunteers = ref([]);
 const selectedService = ref("All");
-const minExperience = ref(0);
-const selectedLocation = ref("All");
+const selectedRegion = ref("All");
 
+//get volunteers from db and filter by whether they have services or not, if have, display else dont display
+onMounted(async () => {
+  const snapshot = await getDocs(collection(db, "volunteers"));
+
+  volunteers.value = snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() }))
+    .filter(v => v.services && v.services.length > 0);
+
+});
+
+// Compute available services for filter dropdown
 const availableServices = computed(() => {
-  const all = providers.value.flatMap((p) => p.services);
-  return ["All", ...new Set(all)];
+  const allServices = volunteers.value.flatMap(v => v.services.map(s => s.type));
+  return ["All", ...new Set(allServices)];
 });
 
-const availableLocations = computed(() => {
-  const all = providers.value.map((p) => p.location);
-  return ["All", ...new Set(all)];
+// Comput available regions for filter dropdown
+const availableRegions = computed(() => {
+  // Get all regions from volunteers
+  const allRegions = volunteers.value.map(v => v.region).filter(r => r && r.trim() !== '');
+  // Remove duplicates and sort
+  return ["All", ...Array.from(new Set(allRegions))];
 });
 
-const filteredProviders = computed(() => {
-  return providers.value.filter((p) => {
-    const matchService =
+
+// Filter volunteers by selected service and/or region
+const filteredVolunteers = computed(() => {
+  return volunteers.value.filter(v => {
+    if (!v.services || v.services.length === 0) return false;
+
+    const matchesService =
       selectedService.value === "All" ||
-      p.services.includes(selectedService.value);
+      v.services.some(s => s.type === selectedService.value);
 
-    const matchExperience = p.experience >= minExperience.value;
+    const matchesRegion =
+      selectedRegion.value === "All" || v.region === selectedRegion.value;
 
-    const matchLocation =
-      selectedLocation.value === "All" ||
-      p.location === selectedLocation.value;
-
-    return matchService && matchExperience && matchLocation;
+    return matchesService && matchesRegion;
   });
 });
+;
+
+
+
 </script>
 
 <template>
-  <Navbar />
-  <div class="container my-5">
-    <h2 class="fw-bold mb-4 text-center">Find a Pet Service Provider</h2>
+  <div class="d-flex flex-column min-vh-100">
+    <Navbar />
 
-    <div class="row g-3 mb-4 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Service Type</label>
-        <select v-model="selectedService" class="form-select">
-          <option v-for="service in availableServices" :key="service" :value="service">
-            {{ service }}
-          </option>
-        </select>
+
+    <main class="flex-grow-1 container my-5">
+      <h2 class="fw-bold mb-4 text-center">Find a Pet Service Provider</h2>
+
+      <div class="row g-3 mb-4 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Service Type</label>
+          <select v-model="selectedService" class="form-select">
+            <option v-for="service in availableServices" :key="service" :value="service">
+              {{ service }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Region</label>
+          <select v-model="selectedRegion" class="form-select">
+            <option v-for="r in availableRegions" :key="r" :value="r">{{ r }}</option>
+          </select>
+        </div>
+
       </div>
 
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Minimum Experience (Years)</label>
-        <input
-          v-model.number="minExperience"
-          type="number"
-          min="0"
-          class="form-control"
-          placeholder="e.g., 3"
-        />
-      </div>
+      <div class="row g-4">
+        <div v-for="v in filteredVolunteers" :key="v.id" class="col-12 col-sm-6 col-lg-4">
+          <VolunteerCard :volunteer="v" :onClick="goToVolunteer" />
+        </div>
 
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Location</label>
-        <select v-model="selectedLocation" class="form-select">
-          <option v-for="loc in availableLocations" :key="loc" :value="loc">
-            {{ loc }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row g-4">
-      <div
-        v-for="p in filteredProviders"
-        :key="p.id"
-        class="col-12 col-sm-6 col-lg-4"
-      >
-        <div class="card h-100 shadow-sm profile-card">
-          <img :src="p.image" class="card-img-top" alt="Profile image" />
-          <div class="card-body">
-            <h5 class="card-title fw-bold mb-1">{{ p.name }}</h5>
-            <p class="text-muted mb-2">{{ p.location }}</p>
-            <p class="mb-2 small">
-              <strong>Experience:</strong> {{ p.experience }} years
-            </p>
-            <div class="d-flex flex-wrap gap-1">
-              <span
-                v-for="s in p.services"
-                :key="s"
-                class="badge bg-secondary-subtle text-dark border"
-              >
-                {{ s }}
-              </span>
-            </div>
-          </div>
+        <div v-if="filteredVolunteers.length === 0" class="text-center mt-4">
+          <p class="text-muted">No volunteers match your filter.</p>
         </div>
       </div>
+    </main>
 
-      <div v-if="filteredProviders.length === 0" class="text-center mt-4">
-        <p class="text-muted">No providers match your filters.</p>
-      </div>
-    </div>
     <BottomFooter />
   </div>
 </template>
@@ -146,6 +107,7 @@ const filteredProviders = computed(() => {
   border-radius: 1rem;
   overflow: hidden;
 }
+
 .profile-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
