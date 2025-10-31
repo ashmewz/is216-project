@@ -7,7 +7,7 @@ defineProps({
 })
 </script>
 
-<template> 
+<template>
     <div class="card shadow-sm mb-3">
         <div class="card-body p-3 ">
 
@@ -29,20 +29,16 @@ defineProps({
 
 
 
-            <!-- Cat info using flex -->
-            <div class="d-flex mb-1">
-                <div style="width: 90px; font-weight: 600;">Name:</div>
+            <!-- Cat info using grid -->
+            <div class="mb-2 d-grid gap-1" style="grid-template-columns: 90px 1fr;">
+                <div style="font-weight: 600;">Name:</div>
                 <div>{{ report.name }}</div>
-            </div>
 
-            <div class="d-flex mb-1">
-                <div style="width: 90px; font-weight: 600;">Location:</div>
+                <div style="font-weight: 600;">Location:</div>
                 <div>{{ report.location }}</div>
-            </div>
 
-            <div class="d-flex mb-2">
-                <div style="width: 90px; font-weight: 600;">Details:</div>
-                <div>{{ report.description }}</div>
+                <div style="font-weight: 600;">Details:</div>
+                <div style="white-space: pre-wrap;">{{ report.description }}</div>
             </div>
 
             <!-- Report image -->
@@ -62,6 +58,4 @@ defineProps({
 .card {
     all: revert;
 }
-
-
 </style>
