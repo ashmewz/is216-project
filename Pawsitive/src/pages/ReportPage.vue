@@ -56,53 +56,9 @@ function goBack() {
   </Navbar>
 
   <div class="container my-5 news-layout">
-    <!-- Left: News Content -->
-    <div class="news-container">
-      <!-- Show all news if none selected -->
-      <div v-if="!selectedArticle">
-        <!-- Search Bar -->
-        <div class="mb-4">
-          <input type="text" class="form-control" placeholder="Search news..." />
-        </div>
 
-        <!-- Featured and older articles -->
-        <div
-          v-for="article in articles"
-          :key="article.id"
-          :class="article.isFeatured ? 'latest-news row align-items-center mb-5' : 'news-card text-start mb-5'"
-        >
-          <!-- Two-column featured article -->
-          <template v-if="article.isFeatured">
-            <div class="col-md-6">
-              <h2 class="news-title">{{ article.title }}</h2>
-              <p class="news-summary">{{ article.summary }}</p>
-              <button class="btn btn-dark" @click="openArticle(article)">Read More</button>
-            </div>
-            <div class="col-md-6 text-center">
-              <img :src="article.image" :alt="article.title" class="img-fluid rounded shadow-sm" />
-            </div>
-          </template>
-
-          <!-- Single-column older articles -->
-          <template v-else>
-            <img :src="article.image" :alt="article.title" class="img-fluid news-image rounded shadow-sm" />
-            <div class="news-text mt-3">
-              <h4 class="news-title">{{ article.title }}</h4>
-              <p class="news-summary">{{ article.summary }}</p>
-              <button class="btn btn-outline-dark" @click="openArticle(article)">Read More</button>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- Show selected article -->
-      <div v-else class="selected-article">
-        <button class="btn btn-outline-secondary mb-3" @click="goBack">← Back to All Articles</button>
-        <h2 class="news-title">{{ selectedArticle.title }}</h2>
-        <img :src="selectedArticle.image" :alt="selectedArticle.title" class="img-fluid rounded shadow-sm my-3" />
-        <p class="news-full">{{ selectedArticle.full }}</p>
-      </div>
-    </div>
+    <iframe width="800" height="1000" src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0"></iframe>
+  
 
     <!-- Right: Sidebar for reporting -->
     <aside class="sidebar">
