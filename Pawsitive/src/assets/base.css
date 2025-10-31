@@ -81,13 +81,8 @@ img {
 }
 
 .background {
-  min-height: 100vh;
   background: var(--pink);
-  padding-top: 90px;
-  padding-bottom: 70px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+
 }
 
 .button {

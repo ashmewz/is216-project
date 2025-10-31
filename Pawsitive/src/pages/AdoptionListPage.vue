@@ -44,7 +44,8 @@ function prevCat() {
             Adoption
         </template>
     </Navbar>
-
+    
+    <main class="background">
     <div class="adoption-bg">
         <div class="card-row">
             <button class="arrow-btn" @click="prevCat" :disabled="currentIndex === 0">&#8592;</button>
@@ -67,6 +68,8 @@ function prevCat() {
             <button type="submit" class="next-btn">Next</button>
         </form>
     </div>
+    </main>
+ 
 
     <BottomFooter></BottomFooter>
 </template>
@@ -74,7 +77,6 @@ function prevCat() {
 <style scoped>
 .adoption-bg {
     min-height: 100vh;
-    background: pink;
     padding-top: 90px;
     padding-bottom: 70px;
     display: flex;

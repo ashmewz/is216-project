@@ -54,14 +54,15 @@ function goBack() {
       Report
     </template>
   </Navbar>
+  <main class="background">
 
-  <div class="container my-5 news-layout">
+    <div class="container news-layout">
     <!-- Left: News Content -->
-    <div class="news-container">
+    <div class="news-container mt-4">
       <!-- Show all news if none selected -->
       <div v-if="!selectedArticle">
         <!-- Search Bar -->
-        <div class="mb-4">
+        <div class="mb-4 ">
           <input type="text" class="form-control" placeholder="Search news..." />
         </div>
 
@@ -105,7 +106,7 @@ function goBack() {
     </div>
 
     <!-- Right: Sidebar for reporting -->
-    <aside class="sidebar">
+    <aside class="sidebar mt-4">
       <h4 class="mb-3">Create a Cat Report</h4>
       <form class="report-form">
         <div class="mb-3">
@@ -124,6 +125,8 @@ function goBack() {
       </form>
     </aside>
   </div>
+  </main>
+  
 
   <BottomFooter />
 </template>
