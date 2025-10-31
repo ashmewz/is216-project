@@ -2,7 +2,7 @@
 import { ref, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore'
 import { validateCatReport } from '@/utils/validators';
 import { getAuth } from "firebase/auth";
 import CatReportCard from '@/components/resuables/CatReportCard.vue';
@@ -10,13 +10,11 @@ import CatReportCard from '@/components/resuables/CatReportCard.vue';
 
 const db = getFirestore()
 const auth = getAuth();
-
 const reportsLoading = ref(true)
 const rssLoading = ref(true)
-
 const fieldErrors = ref({})
-
 const showModal = ref(false)
+const reports = ref([])
 
 // Form state
 const form = ref({
@@ -27,7 +25,6 @@ const form = ref({
   status: 'Lost'
 
 })
-
 watch(() => form.value.status, () => fieldErrors.value.status = '')
 watch(() => form.value.name, () => fieldErrors.value.name = '')
 watch(() => form.value.location, () => fieldErrors.value.location = '')
@@ -35,18 +32,17 @@ watch(() => form.value.description, () => fieldErrors.value.description = '')
 watch(() => form.value.image, () => fieldErrors.value.image = '')
 
 
-
 // Fetch reports with user info
 const fetchReports = async () => {
-  reportsLoading.value = true
+  reportsLoading.value = true; // start spinner
   try {
-    const snapshot = await getDocs(collection(db, "catReports"));
-    const reportsData = [];
+    const q = query(collection(db, "catReports"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
 
+    const reportsData = [];
     for (const docSnap of snapshot.docs) {
       const report = { id: docSnap.id, ...docSnap.data() };
 
-      // fetch user info
       if (report.submittedBy) {
         const userDoc = await getDoc(doc(db, "volunteers", report.submittedBy));
         if (userDoc.exists()) {
@@ -58,31 +54,26 @@ const fetchReports = async () => {
           report.avatar = null;
         }
       }
-
       reportsData.push(report);
     }
-
     reports.value = reportsData;
   } catch (err) {
     console.error("Failed to fetch reports", err);
-  }
-  finally {
-    reportsLoading.value = false
+  } finally {
+    reportsLoading.value = false; // stop spinner
   }
 };
+
+
 onMounted(() => {
   fetchReports();
   console.log(reports);
 });
 
-
-// Example reports list
-const reports = ref([])
-
 // Open modal
 const openModal = () => showModal.value = true
 
-// Submit report: add to Firestore
+// Submit report
 const submitReport = async () => {
   const errors = validateCatReport(form.value);
   if (Object.keys(errors).length > 0) {
@@ -98,13 +89,14 @@ const submitReport = async () => {
   try {
     await addDoc(collection(db, "catReports"), {
       status: form.value.status,
-      name: form.value.name,
-      location: form.value.location,
-      description: form.value.description,
+      name: form.value.name.trim(),
+      location: form.value.location.trim(),
+      description: form.value.description.trim(),
       image: form.value.image || null,
       submittedBy: currentUser.uid,  // store user ID as foreign key
       createdAt: serverTimestamp()
     });
+
 
     form.value.status = '';
     form.value.name = '';
@@ -169,7 +161,8 @@ const onFileChange = async (event) => {
           <div class="spinner-border text-dark" role="status">
           </div>
         </div>
-        <iframe  v-show="!rssLoading" @load="rssLoading = false" width="100%" height="1000" src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0">
+        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%" height="4000px"
+          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0">
         </iframe>
       </div>
 
@@ -290,7 +283,5 @@ const onFileChange = async (event) => {
 </template>
 
 <style scoped>
-.card {
-  all: revert;
-}
+
 </style>
