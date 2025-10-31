@@ -59,7 +59,7 @@ function toggleAIDropdown() {
 <template>
   <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
     <div class="container-fluid">
-      <RouterLink class="navbar-brand d-flex align-items-center gap-2">
+      <RouterLink to="/" class="navbar-brand d-flex align-items-center gap-2">
         <img src="@/assets/pawsitive_updated.png" alt="Pawsitive Logo" class="navbar-logo" />
         <span class="fw-bold">Pawsitive</span>
       </RouterLink>
@@ -100,38 +100,17 @@ function toggleAIDropdown() {
               </RouterLink>
             </li>
 
-            <li class="nav-item">
-              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/services') }" to="/services/">
-                Services
-              </RouterLink>
-            </li>
-
-            <!-- AI Dropdown -->
-            <li class="nav-item dropdown" @mouseleave="aiDropdownOpen = false">
-              <button
-                class="nav-link dropdown-toggle"
-                type="button"
-                @click="toggleAIDropdown"
-                :aria-expanded="aiDropdownOpen"
-                style="margin-top: 5px;"
-              >
-                AI
-              </button>
-              <ul
-                class="dropdown-menu dropdown-menu-end"
-                ref="dropdownMenu"
-                :class="{ show: aiDropdownOpen }"
-              >
-                <li>
-                  <RouterLink class="dropdown-item" to="/ai/recog/">AI Recognition</RouterLink>
-                </li>
-                <li>
-                  <RouterLink class="dropdown-item" to="/ai/guidebook/">AI Guidebook</RouterLink>
-                </li>
-              </ul>
-            </li>
-          </ul>
-
+          <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/services') }" to="/services/">
+              Services
+            </RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/ai/recog') }" to="/ai/recog/">
+               AI Recognition
+            </RouterLink>
+          </li>
+        </ul>
         <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
           style="width:40px; height:40px;">
           <!-- Show profile photo if available -->

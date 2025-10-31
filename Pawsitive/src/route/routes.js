@@ -11,6 +11,7 @@ import RouterTest from '@/components/RouterTest.vue';
 // End of TODO
 
 import MapPage from "@/pages/MapPage.vue";
+import CatProfile from "@/pages/CatProfile.vue";
 import ForumPage from "@/pages/ForumPage.vue";
 import ReportPage from "@/pages/ReportPage.vue";
 import VolunteerSignupLoginPage from "@/pages/VolunteerSignupLoginPage.vue";
@@ -21,6 +22,8 @@ import ServicesPage from "@/pages/ServicesPage.vue";
 import AiRecogPage from "@/pages/AiRecogPage.vue";
 import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
 import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
+// TEST ONLY
+import AdminAddCat from "@/pages/TEST_ADMIN_ONLY/AdminAddCat.vue";
 
 const history = createWebHistory();
 const routes = [
@@ -33,6 +36,11 @@ const routes = [
     {
         path: '/map/',
         component: MapPage,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/cat/:id',
+        component: CatProfile,
         meta: { requiresAuth: true }
     },
     {
@@ -89,9 +97,15 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/ai/guidebook/',
+        path: '/ai/guidebook',
+        name: 'AiGuideBook',
         component: AiGuidebookPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true },
+    },
+
+    { // TEST ONLY
+        path: '/admin',
+        component: AdminAddCat,
     }
 ];
 
