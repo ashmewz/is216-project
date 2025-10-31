@@ -161,7 +161,7 @@ const onFileChange = async (event) => {
           <div class="spinner-border text-dark" role="status">
           </div>
         </div>
-        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%" height="4000px"
+        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%" height="2800px"
           src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0">
         </iframe>
       </div>
@@ -176,12 +176,8 @@ const onFileChange = async (event) => {
 
         <div v-if="reportsLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
           <div class="spinner-border text-dark" role="status">
-            <span class="visually-hidden">Loading...</span>
           </div>
         </div>
-
-
-        <div v-if="reports.length === 0">No reports yet.</div>
 
         <div v-if="reports.length === 0">No reports yet.</div>
 
