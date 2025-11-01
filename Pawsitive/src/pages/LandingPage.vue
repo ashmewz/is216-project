@@ -18,8 +18,8 @@
         <!-- Hero Section -->
         <section class="hero wrap">
             <div class="hero-grid">
-                <div>
-                    <h1>{{ typedText }}</h1>
+                <div class="hero-text-block">
+                    <h1 class="typed">{{ typedText }}</h1>
 
                     <div class="cta-row">
                         <router-link to="/login" class="no-hover">
@@ -27,8 +27,8 @@
                                 Now!</button>
                         </router-link>
                     </div>
-
                 </div>
+
 
                 <div class="mascot bounce">
                     <img src="/src/assets/pawsitive_gif_bgnone.gif" alt="Pawsitive mascot GIF" />
@@ -467,4 +467,52 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+/* Reserve vertical space for typed text so CTA doesn't move */
+.hero-text-block {
+  min-height: 200px;        /* start here; increase if necessary for your longest lines */
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: center;  /* keeps heading vertically centered inside the reserved area */
+  align-items: flex-start;  /* keep left alignment on wide screens */
+  width: 100%;
+}
+
+/* The typed heading inside the reserved box */
+h1.typed {
+  margin: 0;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.05;
+  display: block;
+  word-break: break-word;    /* allow wrapping cleanly */
+  hyphens: auto;
+  /* give enough internal height to absorb a line wrap without moving CTA */
+  min-height: calc(2.2em + 4px);
+}
+
+/* Pin the CTA to the bottom of the reserved block so it doesn't shift */
+.hero-text-block .cta-row {
+  margin-top: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 980px) {
+  .hero-text-block {
+    min-height: 160px;
+    align-items: center;  /* center on stacked layout */
+    text-align: center;
+  }
+  .hero-text-block .cta-row {
+    justify-content: center;
+  }
+}
+@media (max-width: 620px) {
+  .hero-text-block {
+    min-height: 140px;
+  }
+}
+
+
+
 </style>
