@@ -1,22 +1,16 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import CatReportCard from '@/components/resuables/CatReportCard.vue'
+import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore'
+import { getAuth } from "firebase/auth"
+import { validateCatReport } from '@/utils/validators' // your validation util
 
+const db = getFirestore()
+const auth = getAuth()
 
-const fileInput = ref(null)
-const sidebarOpen = ref(false)
-
-function toggleSidebar() {
-  sidebarOpen.value = !sidebarOpen.value
-}
-function removeImage() {
-  report.imageFile = null
-  report.imagePreview = null
-  if (fileInput.value) fileInput.value.value = null
-}
-
+// Reactive state for cat report form
 const report = reactive({
   status: '',
   condition: '',
@@ -25,42 +19,29 @@ const report = reactive({
   description: '',
   imageFile: null,
   imagePreview: null,
-  severity: 0  // add this inside your existing report reactive object
+  severity: 0
 })
 
-// Add this below your other refs/reactive objects
-const reports = ref([
-  {
-    id: 1,
-    username: 'Alice',
-    avatar: 'https://i.pravatar.cc/35',
-    status: 'Lost',
-    name: 'Siamese Cat',
-    location: '123 Main Street',
-    description: 'Found near the park, looks injured.',
-    image: 'https://placekitten.com/300/200',
-    createdAt: {
-      toDate: () => new Date()
-    }
-  },
-  {
-    id: 2,
-    username: 'Bob',
-    avatar: null,
-    status: 'Injured',
-    name: 'Persian Cat',
-    location: '456 Elm Street',
-    description: 'Limping on the right paw.',
-    image: 'https://placekitten.com/301/200',
-    createdAt: {
-      toDate: () => new Date()
-    }
-  }
-])
+const reports = ref([])
+const reportsLoading = ref(true)
+const fieldErrors = ref({})
+const showModal = ref(false)
+
+const sidebarOpen = ref(false)
+const fileInput = ref(null)
+
+// Functions from your original code
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+function removeImage() {
+  report.imageFile = null
+  report.imagePreview = null
+  if (fileInput.value) fileInput.value.value = null
+}
 function setSeverity(level) {
   report.severity = level
 }
-
 function handleFileUpload(event) {
   const file = event.target.files[0]
   if (file) {
@@ -72,21 +53,16 @@ function handleFileUpload(event) {
     reader.readAsDataURL(file)
   }
 }
-
-// --- New: getLocation function ---
 async function getLocation() {
   if (!navigator.geolocation) {
     alert('Geolocation is not supported by your browser')
     return
   }
-
   report.location = 'Fetching location...'
-
   navigator.geolocation.getCurrentPosition(
     async (position) => {
       const { latitude, longitude } = position.coords
       try {
-        // Reverse geocoding using OpenStreetMap Nominatim
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
         const data = await response.json()
         report.location = data.display_name || `${latitude}, ${longitude}`
@@ -102,42 +78,111 @@ async function getLocation() {
   )
 }
 
-// Optionally, auto-fetch on mount
-getLocation()
+// Validate form fields reactively to clear errors on change
+watch(() => report.status, () => fieldErrors.value.status = '')
+watch(() => report.catName, () => fieldErrors.value.catName = '')
+watch(() => report.location, () => fieldErrors.value.location = '')
+watch(() => report.description, () => fieldErrors.value.description = '')
+watch(() => report.imagePreview, () => fieldErrors.value.image = '')
 
-//firebase
+// Convert File object to Base64 string
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+  })
+}
+
+// Firebase: fetch all reports ordered by creation date
 const fetchReports = async () => {
-  reportsLoading.value = true;
+  reportsLoading.value = true
   try {
-    const q = query(collection(db, "catReports"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-
-    const reportsData = [];
+    const q = query(collection(db, "catReports"), orderBy("createdAt", "desc"))
+    const snapshot = await getDocs(q)
+    const reportsData = []
     for (const docSnap of snapshot.docs) {
-      const report = { id: docSnap.id, ...docSnap.data() };
-
-      if (report.submittedBy) {
-        const userDoc = await getDoc(doc(db, "volunteers", report.submittedBy));
+      const r = { id: docSnap.id, ...docSnap.data() }
+      if (r.submittedBy) {
+        const userDoc = await getDoc(doc(db, "volunteers", r.submittedBy))
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          report.username = userData.username || 'Unknown';
-          report.avatar = userData.avatar || null;
+          const userData = userDoc.data()
+          r.username = userData.username || 'Unknown'
+          r.avatar = userData.avatar || null
         } else {
-          report.username = 'Unknown';
-          report.avatar = null;
+          r.username = 'Unknown'
+          r.avatar = null
         }
       }
-      reportsData.push(report);
+      reportsData.push(r)
     }
-    reports.value = reportsData;
+    reports.value = reportsData
   } catch (err) {
-    console.error("Failed to fetch reports", err);
+    console.error("Failed to fetch reports", err)
   } finally {
-    reportsLoading.value = false;
+    reportsLoading.value = false
   }
-};
+}
 
+// Submit form to Firebase
+const submitReport = async () => {
+  // Assemble report object for validation
+  const toValidate = {
+    status: report.status,
+    name: report.catName,
+    location: report.location,
+    description: report.description,
+    image: report.imagePreview
+  }
+  const errors = validateCatReport(toValidate)
+  if (Object.keys(errors).length > 0) {
+    fieldErrors.value = errors
+    return
+  }
+  const currentUser = auth.currentUser
+  if (!currentUser) {
+    alert("You must be logged in to submit a report.")
+    return
+  }
+  try {
+    // Store the report in Firestore
+    await addDoc(collection(db, "catReports"), {
+      status: report.status,
+      name: report.catName.trim(),
+      location: report.location.trim(),
+      description: report.description.trim(),
+      image: report.imagePreview || null,
+      condition: report.condition,
+      severity: report.severity,
+      submittedBy: currentUser.uid,
+      createdAt: serverTimestamp()
+    })
+    // Reset form fields
+    report.status = ''
+    report.catName = ''
+    report.location = ''
+    report.description = ''
+    report.imageFile = null
+    report.imagePreview = null
+    report.condition = ''
+    report.severity = 0
+    fieldErrors.value = {}
+    fetchReports()
+    showModal.value = false
+    if (fileInput.value) fileInput.value.value = null
+  } catch (err) {
+    console.error(err)
+    alert("Failed to submit report. Try again.")
+  }
+}
+
+onMounted(() => {
+  fetchReports()
+  getLocation() // optionally auto-fetch location on mount
+})
 </script>
+
 
 
 <template>
