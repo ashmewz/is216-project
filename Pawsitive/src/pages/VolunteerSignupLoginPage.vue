@@ -206,7 +206,7 @@ const handleLogin = async () => {
   }
   try {
     await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password)
-    router.push('/map')
+    router.push('/report')
   } catch (e) {
     errorMessage.value = e.message
   }
