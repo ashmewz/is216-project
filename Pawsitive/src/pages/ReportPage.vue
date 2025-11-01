@@ -151,7 +151,12 @@ const scrollToReports = () => {
 }
 
 
+
+
+
 </script>
+
+
 
 <template>
   <Navbar>
@@ -161,7 +166,7 @@ const scrollToReports = () => {
   </Navbar>
   <div class="container my-5">
 
-    <div class="row">
+    <div class="row g-0">
 
       <!-- Left Column: RSS Feed -->
       <div class="col-12 col-lg-8">
@@ -170,8 +175,8 @@ const scrollToReports = () => {
           </div>
         </div>
 
-        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%"
-          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" height="3800px" scrolling="no" frameborder="0">
+        <iframe  v-show="!rssLoading" @load="rssLoading = false" width="100%"
+          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" height="3550px"  frameborder="0">
         </iframe>
 
       </div>
@@ -304,7 +309,7 @@ const scrollToReports = () => {
   z-index: 2000;
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
-   font-size: 1rem;
+  font-size: 1rem;
   background-color: #343a40;
   color: white;
   border: none;
@@ -315,23 +320,34 @@ const scrollToReports = () => {
   background-color: #495057;
 }
 
+/* Default (desktop) handled by your inline height="3550px" */
 
+/* Tablet */
 @media (max-width: 992px) {
-  .reports {
-    margin-top: -15rem;
+  iframe {
+    height: 3550px !important;
   }
 }
 
+/* Mobile */
 @media (max-width: 768px) {
-  .reports {
-    margin-top: -50rem;
-    /* adjust smaller for smaller screen */
+  iframe {
+    height: 3300px !important;
   }
 }
 
+/* Very small mobile */
 @media (max-width: 576px) {
-  .reports {
-    margin-top: -50rem;
+  iframe {
+    height: 3080px !important;
   }
 }
+
+/* Very small mobile */
+@media (max-width: 375px) {
+  iframe {
+    height: 2700px !important;
+  }
+}
+
 </style>
