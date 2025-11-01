@@ -34,6 +34,9 @@ export const validateRegistration = (form) => {
   else if (!isValidPhone(form.contactNumber))
     errors.contactNumber = 'Contact number must be 7-15 digits.';
 
+  if (!form.acceptTerms) errors.acceptTerms = 'You must accept the Terms and Conditions.';
+
+
   return errors;
 };
 

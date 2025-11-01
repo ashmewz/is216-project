@@ -469,4 +469,18 @@ main {
 .position-relative:hover .overlay {
     opacity: 1;
 }
+
+.modal.show {
+  display: block !important;
+  z-index: 2000; /* higher than navbar */
+}
+
+.modal-backdrop.show {
+  z-index: 1500;
+}
+
+.navbar {
+  z-index: 1000;
+}
+
 </style>
