@@ -7,6 +7,19 @@
   --white-off: #FFFDF7;
 }
 
+
+/* Scoped, high-priority overrides */
+.app * {
+  all: unset; /* optional: resets all inherited styles */
+}
+
+.app h1, .app h2, .app h3, .app p, .app button {
+  color: #0b2530 !important;
+  font-family: system-ui, sans-serif !important;
+  margin: 0 !important;
+}
+
+
 * {
   box-sizing: border-box; /* Width and height include content, padding, border */
   margin: 0;

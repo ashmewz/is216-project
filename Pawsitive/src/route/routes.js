@@ -22,8 +22,10 @@ import ServicesPage from "@/pages/ServicesPage.vue";
 import AiRecogPage from "@/pages/AiRecogPage.vue";
 import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
 import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
+import LandingPage from "@/pages/LandingPage.vue";
 // TEST ONLY
 import AdminAddCat from "@/pages/TEST_ADMIN_ONLY/AdminAddCat.vue";
+
 
 const history = createWebHistory();
 const routes = [
@@ -32,6 +34,10 @@ const routes = [
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
+    },
+    {
+        path: '/landing',
+        component: LandingPage
     },
     {
         path: '/map/',
