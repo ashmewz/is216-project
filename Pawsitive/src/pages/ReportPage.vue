@@ -3,9 +3,10 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import CatReportCard from '@/components/resuables/CatReportCard.vue'
-import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy, where } from 'firebase/firestore'
 import { getAuth } from "firebase/auth"
 import { validateCatReport } from '@/utils/validators' // your validation util
+import { Client } from "@gradio/client"
 
 const db = getFirestore()
 const auth = getAuth()
@@ -30,6 +31,181 @@ const showModal = ref(false)
 const sidebarOpen = ref(false)
 const fileInput = ref(null)
 
+
+
+// --- New refs for prediction ---
+const isLoading = ref(false)
+const breedResult = ref(null)
+const firstBreed = ref(null)
+const nearbyCats = ref([])
+
+// --- New reactive state for location display ---
+const locationStatus = ref('')
+const locationResult = ref('')
+const locationCoords = ref('')
+
+
+// Example: radius for nearby cats in meters
+// --- Constants ---
+const RADIUS_METERS = 1000;
+
+// --- Haversine / proximity functions ---
+function haversineMeters(lat1, lon1, lat2, lon2) {
+  const toRad = d => d * Math.PI / 180;
+  const R = 6371000; // Earth radius in meters
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function roughlySameArea(a, b, marginMeters, opts = {}) {
+  const getCoords = obj =>
+    Array.isArray(obj)
+      ? obj
+      : [obj.lat ?? obj.latitude ?? obj._lat, obj.lon ?? obj.longitude ?? obj._long];
+
+  const [lat1, lon1] = getCoords(a);
+  const [lat2, lon2] = getCoords(b);
+
+  if ([lat1, lon1, lat2, lon2].some(v => v == null)) 
+    return { within: false, meters: Infinity, threshold: marginMeters };
+
+  const dist = haversineMeters(lat1, lon1, lat2, lon2);
+  const extra = Math.max(0, opts.accuracyA || 0, opts.accuracyB || 0);
+  const threshold = marginMeters + extra;
+  return { within: dist <= threshold, meters: dist, threshold };
+}
+
+// --- Extract first breed safely ---
+function extractFirstBreed(breedResult) {
+  if (!breedResult) return null;
+  let text = Array.isArray(breedResult) ? breedResult[0] : breedResult;
+  const match = text.match(/^\d+\.\s*([^(]+)/m);
+  return match ? match[1].trim() : null;
+}
+
+// --- Fetch cats by breed from Firebase ---
+async function fetchCatsByBreed(breedName) {
+  if (!breedName) return [];
+  try {
+    const q = query(collection(db, "cats"), where("species", "==", breedName));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (err) {
+    console.error("Firebase query failed:", err);
+    return [];
+  }
+}
+
+// --- Filter cats by proximity with clear logging ---
+function filterCatsByProximity(cats, myLocation, radiusMeters = RADIUS_METERS) {
+  const nearby = cats
+    .map(cat => {
+      const loc = cat.last_location;
+      if (!loc) return null;
+
+      const catLocation = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
+      if (catLocation.some(v => v == null)) return null;
+
+      const proximity = roughlySameArea(myLocation, catLocation, radiusMeters);
+
+      // Logging each cat's distance
+      console.log(`Cat: ${cat.catName || cat.id}, Location: [${catLocation.join(", ")}], Distance: ${proximity.meters.toFixed(2)}m, Within radius: ${proximity.within}`);
+
+      return { ...cat, distanceMeters: proximity.meters, withinRadius: proximity.within };
+    })
+    .filter(cat => cat && cat.withinRadius);
+
+  console.log(`\n✅ Total nearby cats within ${radiusMeters} meters: ${nearby.length}`);
+  return nearby;
+}
+
+// --- Get current user location ---
+function getLocation() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation not supported, using fallback coordinates");
+      resolve([1.3659902777726316, 103.95350544240026]);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      position => resolve([position.coords.latitude, position.coords.longitude]),
+      err => {
+        console.error("Geolocation failed:", err);
+        resolve([1.3659902777726316, 103.95350544240026]);
+      }
+    );
+  });
+}
+
+// --- Main workflow: predict breed and find nearby cats ---
+async function identifyBreed(imageBlob) {
+  try {
+    isLoading.value = true;
+
+    // 1️⃣ Get current location
+    const myLocation = await getLocation();
+    console.log("📍 User location:", myLocation);
+
+    // 2️⃣ Predict breed via Gradio
+    const client = await Client.connect("kevansoon/cat-breed-detector");
+    const result = await client.predict("/predict", { image: imageBlob });
+
+    if (!result.data) {
+      breedResult.value = "Prediction returned no data.";
+      return;
+    }
+
+    const breedText = Array.isArray(result.data) ? result.data[0] : result.data;
+    breedResult.value = breedText;
+
+    // 3️⃣ Extract first breed
+    const breed = extractFirstBreed(breedText);
+    firstBreed.value = breed;
+    if (!breed) {
+      console.warn("No breed extracted from prediction.");
+      return;
+    }
+
+    report.catName = firstBreed.value;
+
+    // 4️⃣ Fetch cats by breed from Firebase
+    const cats = await fetchCatsByBreed(breed);
+    console.log(`🐱 Total cats of breed "${breed}":`, cats.length);
+
+    // 5️⃣ Filter cats by proximity
+    nearbyCats.value = filterCatsByProximity(cats, myLocation, RADIUS_METERS);
+
+  } catch (err) {
+    console.error("❌ Identify breed workflow failed:", err);
+    breedResult.value = "Failed to process image or location.";
+  } finally {
+    isLoading.value = false;
+  }
+}
+// --- File upload handler (modified) ---
+function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (file) {
+    report.imageFile = file
+    const reader = new FileReader()
+    reader.onload = e => {
+      report.imagePreview = e.target.result
+    }
+    reader.readAsDataURL(file)
+
+    // ✅ Immediately send image for breed detection
+    identifyBreed(file)
+  }
+}
+
+
 // Functions from your original code
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
@@ -42,41 +218,8 @@ function removeImage() {
 function setSeverity(level) {
   report.severity = level
 }
-function handleFileUpload(event) {
-  const file = event.target.files[0]
-  if (file) {
-    report.imageFile = file
-    const reader = new FileReader()
-    reader.onload = e => {
-      report.imagePreview = e.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-}
-async function getLocation() {
-  if (!navigator.geolocation) {
-    alert('Geolocation is not supported by your browser')
-    return
-  }
-  report.location = 'Fetching location...'
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const { latitude, longitude } = position.coords
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-        const data = await response.json()
-        report.location = data.display_name || `${latitude}, ${longitude}`
-      } catch (err) {
-        console.error(err)
-        report.location = `${latitude}, ${longitude}`
-      }
-    },
-    (err) => {
-      console.error(err)
-      report.location = 'Unable to fetch location'
-    }
-  )
-}
+
+
 
 // Validate form fields reactively to clear errors on change
 watch(() => report.status, () => fieldErrors.value.status = '')
@@ -209,6 +352,24 @@ onMounted(() => {
       <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
     </div>
 
+      <div class="mb-3">
+      <label class="form-label">Estimated Age</label>
+      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
+    </div>
+
+      <div class="mb-3">
+      <label class="form-label">Gender</label>
+      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
+    </div>
+
+      <div class="mb-3">
+      <label class="form-label">Neutered</label>
+      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
+    </div>
+
+     
+
+
     <!-- Location (auto-detect) -->
     <div class="mb-3">
       <label class="form-label">Location</label>
@@ -218,17 +379,25 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Image Upload -->
-      <div class="mb-3">
-        <label class="form-label">Upload Image</label>
-        <input 
-        type="file" 
-        class="form-control" 
-        ref="fileInput"
-        @change="handleFileUpload" 
-        accept="image/*"
-      />
+  <!-- Image Upload -->
+<div class="mb-3">
+  <label class="form-label">Upload Image</label>
+  <input 
+    type="file" 
+    class="form-control" 
+    ref="fileInput"
+    @change="handleFileUpload" 
+    accept="image/*"
+  />
 
+        <!-- 🐾 Breed Prediction Result -->
+      <div v-if="isLoading" class="text-muted mt-2">
+        Analyzing image for breed...
+      </div>
+
+      <div v-else-if="breedResult" class="mt-2 alert alert-info">
+        <strong>Detected Breed:</strong> {{ breedResult }}
+      </div>
 
 
         <!-- Preview Section -->
@@ -243,7 +412,6 @@ onMounted(() => {
           </button>
         </div>
       </div>
-
     
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
@@ -307,10 +475,39 @@ onMounted(() => {
   <div class="sidebar" v-if="sidebarOpen">
 
     <!-- My Reports Section -->
-    <h5 style="margin-top: 30px">My Reports</h5>
-    <div v-for="reportItem in reports.filter(r => r.username === 'Alice')" :key="reportItem.id">
-      <CatReportCard :report="reportItem" />
+    <h5 style="margin-top: 30px">Similar Reports</h5>
+
+    <!-- Nearby Cats Section -->
+<h5>Nearby Cats (< 0.5 km)</h5>
+<div v-if="nearbyCats.length === 0" class="text-muted">
+  No nearby cats found.
+</div>
+<div v-else class="nearby-cats-container">
+  <div 
+    v-for="cat in nearbyCats" 
+    :key="cat.id" 
+    class="nearby-cat-card card mb-3 p-2"
+  >
+    <div class="d-flex gap-2">
+      <img 
+        v-if="cat.photos && cat.photos.length" 
+        :src="cat.photos[0]" 
+        alt="cat photo" 
+        class="card-img" 
+        style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"
+      />
+      <div>
+        <h6 class="mb-1">{{ cat.name || 'Unnamed Cat' }}</h6>
+        <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ? cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
+        <p class="mb-1"><strong>Last Location:</strong> 
+          {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ", " + cat.last_location._long }}
+        </p>
+        <p class="mb-0"><strong>Distance:</strong> {{ cat.distanceMeters.toFixed(2) }} m</p>
+      </div>
     </div>
+  </div>
+</div>
+
     <hr />
 
     <!-- Others' Reports Section -->
@@ -341,6 +538,17 @@ onMounted(() => {
 </template>
 
 <style>
+.nearby-cats-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.nearby-cat-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
