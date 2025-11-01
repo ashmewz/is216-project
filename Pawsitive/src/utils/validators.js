@@ -93,3 +93,15 @@ export const validateProfileUpdate = (form) => {
 
   return errors;
 };
+
+export const validateCatReport = (form) => {
+  const errors = {};
+
+  if (isEmpty(form.name)) errors.name = "Cat name cannot be empty.";
+  if (isEmpty(form.location)) errors.location = "Location cannot be empty.";
+  if (isEmpty(form.description)) errors.description = "Description cannot be empty.";
+  if (!form.status) errors.status = "Please select Lost or Found.";
+
+  // Optional: image is not required
+  return errors;
+};

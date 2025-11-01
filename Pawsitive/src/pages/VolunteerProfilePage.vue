@@ -177,6 +177,7 @@ const onSaveProfile = async () => {
         });
         await fetchUserDetails()
         showModal.value = false;
+        window.location.reload();
 
     } catch (error) {
         errorMessage.value = 'Failed to save profile. Please try again'
