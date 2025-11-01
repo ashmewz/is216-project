@@ -42,6 +42,7 @@ const goToVolunteer = (username) => {
 
 .card {
   all: revert;
+  background-color: white;
 }
 
 .profile-card {

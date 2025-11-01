@@ -5,6 +5,7 @@ import { auth, db } from "@/firebase"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
 import { doc, setDoc, serverTimestamp, getDoc, deleteDoc } from "firebase/firestore"
 import { validateRegistration, validateLogin } from '@/utils/validators'
+import PawCanvas from '@/components/resuables/PawCanvas.vue'
 
 const router = useRouter()
 
@@ -150,9 +151,8 @@ const handleRegister = async () => {
 
 
 <template>
-    <!-- Main container with dynamic background color transition -->
+    <PawCanvas />
     <div class="main-container" :class="{ 'show-login-bg': showLogin }">
-        <!-- Landing Page View -->
         <div v-if="!showLogin" class="landing-page" :class="{ 'fade-out': isFadingOut }">
             <div class="tip-column tip-left" :class="{ 'fade-out-element': isFadingOut }">
                 <div class="tip-text">{{ leftTipDisplay }}</div>
@@ -215,12 +215,12 @@ const handleRegister = async () => {
 
                                         <div v-if="errorMessage" class="alert alert-danger"
                                             style="white-space: pre-line;">{{ errorMessage }}</div>
-                                        <button type="submit" class="btn w-100"
+                                        <button type="submit" class="btn login-btn"
                                             style="background-color: #7a5cfb; color: #fff;">Login</button>
 
                                         <p class="text-center mt-3">
                                             Not a volunteer?
-                                            <a href="javascript:void(0)" class="text-primary"
+                                            <a href="javascript:void(0)" class=""
                                                 @click.prevent="toggleForm">Register here</a>
                                         </p>
                                     </form>
@@ -307,7 +307,6 @@ const handleRegister = async () => {
 </template>
 
 <style scoped>
-/* Main container with smooth background transition */
 .main-container {
     min-height: 100vh;
     background-color: var(--blue);
@@ -318,7 +317,6 @@ const handleRegister = async () => {
     background: var(--dark-blue);
 }
 
-/* Landing page styles */
 .landing-page {
     height: 100vh;
     display: grid;
@@ -527,7 +525,6 @@ const handleRegister = async () => {
     }
 }
 
-/* Login container styles */
 .login-container {
     min-height: 100vh;
     display: flex;
@@ -558,5 +555,157 @@ const handleRegister = async () => {
 .card-entrance.card-visible {
     opacity: 1;
     transform: translateY(0) scale(1);
+}
+
+.login-container .card {
+    display: flex;
+    flex-direction: row;
+    width: 90%;
+    max-width: 900px;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0 !important;
+    height: 40px;
+    display: block;
+}
+
+.login-container .card .col-md-6.bg-secondary {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.login-container .card .col-12.col-md-6 {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .login-container .card {
+        flex-direction: column;
+    }
+    .login-container .card .col-md-6.bg-secondary {
+        display: none;
+    }
+    .login-container .card .col-12.col-md-6 {
+        width: 100%;
+        padding: 1.5rem;
+    }
+}
+
+.login-container .w-100 {
+    width: 100%;
+    max-width: 30rem;
+}
+@media (max-width: 576px) {
+    .login-container .w-100 {
+        max-width: 100%;
+    }
+}
+
+.form-control {
+    font-size: 1rem;
+    padding: 0.65rem 0.75rem;
+}
+@media (max-width: 576px) {
+    .form-control {
+        font-size: 0.95rem;
+        padding: 0.55rem 0.65rem;
+    }
+    .form-label {
+        font-size: 0.9rem;
+    }
+}
+
+.btn {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+@media (max-width: 576px) {
+    .btn {
+        font-size: 0.95rem;
+        padding: 0.65rem 0.9rem;
+    }
+}
+
+.landing-page {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: "left content right" "content content content";
+    justify-items: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+@media (max-width: 992px) {
+    .landing-page {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "content"
+            "left"
+            "right";
+        gap: 15px;
+    }
+    .tip-column {
+        justify-self: center;
+    }
+}
+
+/* Landing page center content adjustments for mobile */
+.center-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .center-content {
+        gap: 1.5rem;
+    }
+    .gif {
+        width: 200px;
+        height: 200px;
+    }
+    .speech-bubble-box {
+        font-size: 1rem;
+        max-width: 95%;
+        padding: 0.6rem 1rem;
+    }
+}
+
+.access-button {
+    font-size: 1.2rem;
+    padding: 1rem 2rem;
+}
+@media (max-width: 576px) {
+    .access-button {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .tip-column {
+        display: none;
+    }
+}
+
+.landing-video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 50%;
 }
 </style>

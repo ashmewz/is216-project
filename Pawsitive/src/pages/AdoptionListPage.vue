@@ -228,6 +228,7 @@ function handleSubmit(event) {
             <!-- Form Input Passed Here -->
             <textarea v-model="adoptionReason" class="reason-input" rows="2"></textarea>
             <button type="submit" class="next-btn">Next</button>
+            <Button type="submit">Next</Button>
         </form>
     </div>
 

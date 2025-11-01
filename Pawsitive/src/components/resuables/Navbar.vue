@@ -5,6 +5,9 @@ import { ref, onMounted } from "vue";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import defaultAvatar from '@/assets/avatar_placeholder.jpg'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.min.css'
+import * as bootstrap from 'bootstrap';
 
 const avatar = ref(null);
 const auth = getAuth();
@@ -27,10 +30,29 @@ onMounted(() => {
       avatar.value = null;
     }
   });
+  const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+  dropdownToggles.forEach(el => {
+    new bootstrap.Dropdown(el);
+  });
 });
-
-
 const route = useRoute();
+
+import { nextTick } from "vue";
+const aiDropdownOpen = ref(false);
+const dropdownMenu = ref(null);
+function toggleAIDropdown() {
+  aiDropdownOpen.value = !aiDropdownOpen.value;
+  nextTick(() => {
+    if (dropdownMenu.value) {
+      const rect = dropdownMenu.value.getBoundingClientRect();
+      if (rect.right > window.innerWidth) {
+        dropdownMenu.value.style.left = `-${rect.right - window.innerWidth + 5}px`;
+      } else {
+        dropdownMenu.value.style.left = '';
+      }
+    }
+  });
+}
 
 </script>
 
@@ -47,36 +69,36 @@ const route = useRoute();
       </button>
 
       <div class="collapse navbar-collapse" id="pawsitive-navbar">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/map') }" to="/map/">
-              Map
-            </RouterLink>
-          </li>
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/map') }" to="/map/">
+                Map
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/forum') }" to="/forum/">
-              Forum
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/forum') }" to="/forum/">
+                Forum
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/donations') }" to="/donations/">
-              Donations
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/donations') }" to="/donations/">
+                Donations
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
-              Report
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
+                Report
+              </RouterLink>
+            </li>
 
-          <li class="nav-item">
-            <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/adoption') }" to="/adoption/">
-              Adoption
-            </RouterLink>
-          </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/adoption') }" to="/adoption/">
+                Adoption
+              </RouterLink>
+            </li>
 
           <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/services') }" to="/services/">
@@ -106,60 +128,92 @@ const route = useRoute();
 </template>
 
 <style scoped>
-.nav-link.active,
-.dropdown-item.active,
-.nav-link:hover,
-.dropdown-item:hover {
-  color: inherit !important;
-  background-color: transparent !important;
-  border-bottom: none !important;
+/* Neutralize Bootstrap and Vue link colors */
+.navbar a,
+.navbar a:hover,
+.navbar .nav-link,
+.navbar .dropdown-item {
+  color: inherit;
+  text-decoration: none;
+  background: none;
 }
 
-.nav-item.dropdown .nav-link.dropdown-toggle {
-  color: inherit !important;
+/* Ensure Bootstrap hover variables don't override */
+.navbar .nav-link:hover,
+.navbar .dropdown-item:hover {
+  background-color: var(--light-blue);
+  color: inherit;
+  text-decoration: none;
 }
 
+/* Remove Bootstrap active link highlight */
+.navbar .nav-link.active,
+.navbar .dropdown-item.active {
+  color: inherit;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+/* Custom underline for active items */
+.nav-link.active {
+  border-bottom: 3px solid var(--dark-blue);
+  border-radius: 0;
+}
+
+/* Dropdown item active underline */
+.dropdown-item.active > span.underline {
+  border-bottom: 3px solid var(--dark-blue);
+  border-radius: 0;
+  padding: 2px 4px;
+}
+
+/* Navbar base styling */
 .navbar {
   z-index: 10100;
+  background-color: var(--white, #fff);
 }
 
+/* Brand logo */
 .navbar-logo {
   height: 50px;
   object-fit: contain;
 }
 
-.nav-link {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.nav-link.active {
-  border-bottom: 3px solid var(--dark-blue) !important;
-}
-
+/* Dropdown appearance */
 .dropdown-menu {
   padding: 5px 15px 5px 5px;
   width: fit-content;
+  border-radius: 10px;
 }
 
+/* Dropdown items layout */
 .dropdown-item {
   padding: 5px;
-  margin: 5px 0;
-  margin-left: 5px;
+  margin: 5px 0 5px 5px;
   border-radius: 10px;
   width: 100%;
   text-align: center;
 }
 
-.dropdown-item.active>span.underline {
-  border-bottom: 3px solid var(--dark-blue) !important;
-  border-radius: 0 !important;
-  padding: 2px 4px;
+/* Remove Bootstrap’s blue outline on toggle */
+.nav-item.dropdown .nav-link.dropdown-toggle:focus,
+.nav-item.dropdown .nav-link.dropdown-toggle:active {
+  outline: none;
+  box-shadow: none;
 }
 
-
-.dropdown-item:hover,
-.nav-link:hover {
-  background-color: var(--light-blue) !important;
+/* Fix link radius only on top corners */
+.nav-link {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
+
+/* Profile button image consistency */
+.btn.rounded-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 </style>
