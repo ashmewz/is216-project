@@ -7,25 +7,29 @@
       :style="{ animationDelay: `${index * 0.1}s` }"
     >
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center">
+        <RouterLink
+          :to="`/volunteer/profile/${post.author}`"
+          class="d-flex align-items-center text-decoration-none text-dark"
+          style="cursor: pointer; background-color: transparent;"
+        >
           <div class="profile-pic-wrapper">
             <img
-              :src="post.profilePic"
+              :src="post.avatar || defaultAvatar"
               alt="Profile"
               class="rounded-circle border-2"
             />
           </div>
           <div class="ms-3">
-            <span class="fw-bold text-accent d-block">{{ post.username }}</span>
+            <span class="fw-bold text-accent d-block">{{ post.author }}</span>
             <small class="text-muted">
-              <i class="bi bi-clock me-1"></i>{{ post.datePosted }}
+              <i class="bi bi-clock me-1"></i>{{ post.createdAt?.toDate ? post.createdAt.toDate().toLocaleString() : '' }}
             </small>
           </div>
-        </div>
+        </RouterLink>
 
-        <button class="btn btn-sm btn-light share-btn rounded-circle" @click="$emit('share', post.id)">
+        <!-- <button class="btn btn-sm btn-light share-btn rounded-circle" @click="$emit('share', post.id)">
           <i class="bi bi-share-fill"></i>
-        </button>
+        </button> -->
       </div>
 
       <div v-if="post.image" class="post-image-wrapper mb-3">
@@ -37,45 +41,22 @@
       </div>
 
       <p class="mb-3 post-caption">
-        {{ post.expanded || post.caption.length <= 150 ? post.caption : post.caption.slice(0, 150) + '...' }}
-        <button
-          v-if="post.caption.length > 150"
-          class="btn btn-link p-0 text-accent read-more-btn"
-          @click="$emit('toggle-expand', post.id)"
-        >
-          {{ post.expanded ? 'Show less' : 'Read more' }}
-        </button>
+        {{ post.description }}
       </p>
 
       <div class="d-flex gap-4 align-items-center interaction-bar pt-2 border-top">
-        <button
-          class="interaction-btn like-btn"
-          :class="{ liked: hasLiked(post.id), animating: likeAnimations[post.id] }"
-          @click="$emit('toggle-like', post.id)"
-        >
-          <i :class="['bi', hasLiked(post.id) ? 'bi-heart-fill' : 'bi-heart']"></i>
-          <span class="ms-2">{{ post.likes }}</span>
-          <span class="like-text ms-1">{{ post.likes === 1 ? 'Like' : 'Likes' }}</span>
-        </button>
-
         <button class="interaction-btn comment-btn" @click="$emit('open-comments', post.id)">
           <i class="bi bi-chat-dots"></i>
-          <span class="ms-2">{{ post.comments.length }}</span>
-          <span class="comment-text ms-1">{{ post.comments.length === 1 ? 'Comment' : 'Comments' }}</span>
         </button>
       </div>
-    </div>
-
-    <div v-if="posts.length === 0" class="empty-state text-center py-5">
-      <div class="empty-icon mb-3">🔍</div>
-      <h4 class="mb-2">No posts found</h4>
-      <p class="text-muted">Try adjusting your search or create a new post!</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps, defineEmits } from 'vue'
+import { RouterLink } from 'vue-router'
+import defaultAvatar from '@/assets/avatar_placeholder.jpg'
 
 const props = defineProps({
   posts: { type: Array, required: true },
