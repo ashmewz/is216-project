@@ -26,9 +26,6 @@ defineProps({
                 </span>
             </div>
 
-
-
-
             <!-- Cat info using grid -->
             <div class="mb-2 d-grid gap-1" style="grid-template-columns: 90px 1fr;">
                 <div style="font-weight: 600;">Name:</div>
@@ -47,8 +44,15 @@ defineProps({
 
             <!-- Timestamp -->
             <small class="text-muted d-block mt-2">
-                {{ report.createdAt?.toDate ? report.createdAt.toDate().toLocaleString() : '' }}
+            {{ report.createdAt?.toDate ? report.createdAt.toDate().toLocaleString([], { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                }) : '' }}
             </small>
+
         </div>
     </div>
 </template>
