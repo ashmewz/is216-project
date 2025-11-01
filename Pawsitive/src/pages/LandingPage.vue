@@ -130,48 +130,33 @@ onMounted(() => {
 })
 </script>
 
-<style>
-:root {
-    --bg-1: #ffb86b;
-    --bg-2: #ff6bcb;
-    --bg-3: #8be9fd;
-    --bg-4: #a4ff9f;
-    --ink: #1b1b1f;
-    --surface: #ffffff;
-    --accent: #ff8a00;
-    --cta: #00c2ff;
-    --shadow: 0 12px 30px rgba(0, 0, 0, .14);
-    --radius: 16px;
-}
-
+<style scoped>
 body,
 .landing-page {
     margin: 0;
     font-family: system-ui, sans-serif;
-    background: linear-gradient(120deg, var(--bg-1), var(--bg-2), var(--bg-3), var(--bg-4));
+    background: linear-gradient(120deg, #ffb86b, #ff6bcb, #8be9fd, #a4ff9f);
     background-size: 300% 300%;
     animation: bgShift 18s ease-in-out infinite;
-    color: var(--ink);
+    color: #1b1b1f;
 }
 
 @keyframes bgShift {
     0% {
-        background-position: 0% 50%
+        background-position: 0% 50%;
     }
-
     50% {
-        background-position: 100% 50%
+        background-position: 100% 50%;
     }
-
     100% {
-        background-position: 0% 50%
+        background-position: 0% 50%;
     }
 }
 
 .wrap {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 0 20px
+    padding: 0 20px;
 }
 
 /* Navbar */
@@ -179,7 +164,7 @@ body,
     position: sticky;
     top: 0;
     z-index: 20;
-    backdrop-filter: blur(6px)
+    backdrop-filter: blur(6px);
 }
 
 .nav {
@@ -188,7 +173,6 @@ body,
     justify-content: space-between;
     padding: 16px 0;
     flex-wrap: wrap;
-    /* allow items to wrap */
     gap: 12px;
 }
 
@@ -206,9 +190,9 @@ body,
     height: 36px;
     display: grid;
     place-items: center;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: var(--shadow)
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
 }
 
 .links {
@@ -219,106 +203,103 @@ body,
 
 .links a {
     font-weight: 600;
-    color: #111;
+    color: #111111;
     text-decoration: none;
-    opacity: .9
+    opacity: 0.9;
 }
 
 .btn.ghost {
-    flex-shrink: 0
+    flex-shrink: 0;
 }
 
 /* Hero */
 .hero {
-    padding: 72px 0 96px
+    padding: 72px 0 96px;
 }
 
 .hero-grid {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 32px;
-    align-items: center
+    align-items: center;
 }
 
 .kicker {
     font-size: 12px;
     font-weight: 800;
-    letter-spacing: .22em;
+    letter-spacing: 0.22em;
     color: #0b2530;
-    opacity: .85
+    opacity: 0.85;
 }
 
 h1 {
     font-size: clamp(36px, 5vw, 64px);
     line-height: 1.05;
     margin: 12px 0 10px;
-    letter-spacing: .2px
+    letter-spacing: 0.2px;
 }
 
 .lead {
     font-size: clamp(16px, 2.2vw, 20px);
     color: #0b2530;
-    opacity: .92;
-    margin: 0 0 18px
+    opacity: 0.92;
+    margin: 0 0 18px;
 }
 
 .cta-row {
     display: flex;
     gap: 12px;
-    flex-wrap: wrap
+    flex-wrap: wrap;
 }
 
 /* Cards / mascot */
 .card {
-    background: rgba(255, 255, 255, .9);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
     padding: 18px;
     display: flex;
     align-items: center;
     gap: 14px;
-    margin-top: 16px
+    margin-top: 16px;
 }
 
 .mascot {
     aspect-ratio: 1/1;
     width: min(420px, 80%);
-    margin: 0 auto
+    margin: 0 auto;
 }
 
 .bounce {
-    animation: bounce 2.6s ease-in-out infinite
+    animation: bounce 2.6s ease-in-out infinite;
 }
 
 @keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0)
+    0%, 100% {
+        transform: translateY(0);
     }
-
     50% {
-        transform: translateY(-8px)
+        transform: translateY(-8px);
     }
 }
 
 /* Features */
 .features {
-    padding: 12px 0 56px
+    padding: 12px 0 56px;
 }
 
 .grid {
     display: grid;
     gap: 18px;
-    grid-template-columns: repeat(3, 1fr)
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .feature {
-    background: #fff;
-    border-radius: var(--radius);
+    background: #ffffff;
+    border-radius: 16px;
     padding: 18px;
-    box-shadow: var(--shadow);
-    border: 1px solid rgba(0, 0, 0, .05)
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .tag {
@@ -326,7 +307,7 @@ h1 {
     font-size: 12px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #eef6ff
+    background: #eef6ff;
 }
 
 /* Split panels */
@@ -334,24 +315,24 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 22px;
-    padding: 56px 0
+    padding: 56px 0;
 }
 
 .panel {
-    background: rgba(255, 255, 255, .9);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
     padding: 22px;
-    border: 1px solid rgba(0, 0, 0, .05)
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .input {
     padding: 12px 14px;
     border-radius: 999px;
-    border: 1px solid rgba(0, 0, 0, .1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     width: 100%;
     font: inherit;
-    margin-bottom: 12px
+    margin-bottom: 12px;
 }
 
 /* Buttons */
@@ -361,29 +342,29 @@ h1 {
     font-weight: 700;
     padding: 12px 18px;
     border-radius: 999px;
-    transition: transform .15s ease, box-shadow .2s ease
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow)
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
 }
 
 .btn.primary {
-    background: var(--cta);
-    color: #00233a
+    background: #00c2ff;
+    color: #00233a;
 }
 
 /* Scroll reveal */
 .reveal {
     opacity: 0;
     transform: translateY(18px);
-    transition: opacity .6s ease, transform .6s ease
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .reveal.show {
     opacity: 1;
-    transform: translateY(0)
+    transform: translateY(0);
 }
 
 /* Footer */
@@ -391,32 +372,30 @@ footer {
     padding: 40px 0 80px;
     text-align: center;
     color: #0b2530;
-    opacity: .8
+    opacity: 0.8;
 }
 
 /* Responsive */
 @media(max-width:980px) {
     .hero-grid {
         grid-template-columns: 1fr;
-        text-align: center
+        text-align: center;
     }
-
     .split {
-        grid-template-columns: 1fr
+        grid-template-columns: 1fr;
     }
-
     .grid {
-        grid-template-columns: 1fr 1fr
+        grid-template-columns: 1fr 1fr;
     }
-
     .links {
-        display: none
+        display: none;
     }
 }
 
 @media(max-width:620px) {
     .grid {
-        grid-template-columns: 1fr
+        grid-template-columns: 1fr;
     }
 }
+
 </style>
