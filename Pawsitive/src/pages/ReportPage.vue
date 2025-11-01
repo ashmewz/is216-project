@@ -16,6 +16,9 @@ const report = reactive({
   status: '',
   condition: '',
   catName: '',
+  estimatedAge: '',
+  gender: '',
+  neutered: '',
   location: '',
   description: '',
   imageFile: null,
@@ -47,7 +50,7 @@ const locationCoords = ref('')
 
 // Example: radius for nearby cats in meters
 // --- Constants ---
-const RADIUS_METERS = 1000;
+const RADIUS_METERS = 20000;
 
 // --- Haversine / proximity functions ---
 function haversineMeters(lat1, lon1, lat2, lon2) {
@@ -92,12 +95,26 @@ function extractFirstBreed(breedResult) {
 // --- Fetch cats by breed from Firebase ---
 async function fetchCatsByBreed(breedName) {
   if (!breedName) return [];
+
   try {
+    // 🔹 1. Simple query — only by species
     const q = query(collection(db, "cats"), where("species", "==", breedName));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // 🔹 2. Filter client-side for last 24h
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const recentCats = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(cat => {
+        const createdAt = cat.created_at?.toDate ? cat.created_at.toDate() : null;
+        return createdAt && createdAt >= oneDayAgo;
+      });
+
+    return recentCats;
   } catch (err) {
-    console.error("Firebase query failed:", err);
+    console.error("Client-side filter failed:", err);
     return [];
   }
 }
@@ -336,6 +353,40 @@ onMounted(() => {
 
   <form class="report-form" @submit.prevent="submitReport">
 
+
+      <!-- Image Upload -->
+      <div class="mb-3">
+        <label class="form-label">Upload Image</label>
+        <input 
+          type="file" 
+          class="form-control" 
+          ref="fileInput"
+          @change="handleFileUpload" 
+          accept="image/*"
+        />
+        <!-- 🐾 Breed Prediction Result -->
+      <div v-if="isLoading" class="text-muted mt-2">
+        Analyzing image for breed...
+      </div>
+      <div v-else-if="breedResult" class="mt-2 alert alert-info">
+        <strong>Detected Breed:</strong> {{ breedResult }}
+      </div>
+
+        <!-- Preview Section -->
+        <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
+          <img :src="report.imagePreview" class="img-preview rounded" />
+          <button 
+            type="button" 
+            class="btn btn-sm btn-danger remove-image-btn" 
+            @click="removeImage"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    
+
+
     <!-- Status Dropdown -->
     <div class="mb-3">
       <label class="form-label">Status</label>
@@ -352,21 +403,39 @@ onMounted(() => {
       <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
     </div>
 
-      <div class="mb-3">
-      <label class="form-label">Estimated Age</label>
-      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
-    </div>
+   <!-- Estimated Age -->
+<div class="form-group">
+  <label class="form-label">Estimated Age</label>
+  <input 
+    type="number" 
+    class="form-control input-field" 
+    v-model="report.estimatedAge" 
+    placeholder="e.g. 2 (years)" 
+    min="0"
+  />
+</div>
 
-      <div class="mb-3">
-      <label class="form-label">Gender</label>
-      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
-    </div>
+<!-- Gender -->
+<div class="form-group">
+  <label class="form-label">Gender</label>
+  <select class="form-select input-field" v-model="report.gender">
+    <option value="" disabled>Select gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Unknown">Unknown</option>
+  </select>
+</div>
 
-      <div class="mb-3">
-      <label class="form-label">Neutered</label>
-      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
-    </div>
-
+<!-- Neutered -->
+<div class="form-group">
+  <label class="form-label">Neutered</label>
+  <select class="form-select input-field" v-model="report.neutered">
+    <option value="" disabled>Select status</option>
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+    <option value="Unknown">Unknown</option>
+  </select>
+</div>
      
 
 
@@ -379,40 +448,6 @@ onMounted(() => {
       </div>
     </div>
 
-  <!-- Image Upload -->
-<div class="mb-3">
-  <label class="form-label">Upload Image</label>
-  <input 
-    type="file" 
-    class="form-control" 
-    ref="fileInput"
-    @change="handleFileUpload" 
-    accept="image/*"
-  />
-
-        <!-- 🐾 Breed Prediction Result -->
-      <div v-if="isLoading" class="text-muted mt-2">
-        Analyzing image for breed...
-      </div>
-
-      <div v-else-if="breedResult" class="mt-2 alert alert-info">
-        <strong>Detected Breed:</strong> {{ breedResult }}
-      </div>
-
-
-        <!-- Preview Section -->
-        <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
-          <img :src="report.imagePreview" class="img-preview rounded" />
-          <button 
-            type="button" 
-            class="btn btn-sm btn-danger remove-image-btn" 
-            @click="removeImage"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-    
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
       <label class="form-label">Condition of the cat (optional)</label>
@@ -538,33 +573,115 @@ onMounted(() => {
 </template>
 
 <style>
-.nearby-cats-container {
+/* ---- Container Layout ---- */
+.main-container {
   display: flex;
-  flex-direction: column;
+  justify-content: center;  /* center form by default */
+  transition: all 0.3s ease;
+  padding: 1rem;
 }
 
-.nearby-cat-card {
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.main-content {
+  transition: margin-right 0.3s ease;
+  margin-right: 0; /* centered by default */
+  max-width: 500px; /* same width as your form */
+  width: 100%; /* responsive */
+  padding-top: 30px;
 }
 
+/* ---- Sidebar ---- */
+.sidebar {
+  width: 300px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  padding: 1rem;
+  padding-top: 70px; /* space for navbar */
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+/* Sidebar open state */
+.sidebar-open .sidebar {
+  transform: translateX(0);
+}
+
+/* Push form left when sidebar open (desktop only) */
+.sidebar-open .main-content {
+  margin-right: 300px;
+}
+
+/* ---- Sidebar Toggle Button ---- */
+.sidebar-toggle {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1100;
+  background-color: #343a40;
+  color: #fff;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* When sidebar is open, move toggle left */
+.sidebar-open-btn {
+  right: 300px; /* matches sidebar width */
+  border-radius: 4px;
+}
+
+/* ---- Responsive Sidebar ---- */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    transform: translateX(100%);
+  }
+  .sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+  .sidebar-open .main-content {
+    margin-right: 0; /* no shift on mobile */
+  }
+  .sidebar-open-btn {
+    right: 0; /* stays visible */
+  }
+}
+
+/* ==============================
+   Report Form Styles
+   ============================== */
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
 }
+
 .report-form input,
 .report-form textarea,
 .report-form select {
   font-size: 0.95rem;
   border-radius: 8px;
 }
+
+/* ---- Header ---- */
 .report-header {
   text-align: center;
   padding-top: 20px;
-  margin-bottom: 1.5rem; /* spacing below header */
-  font-weight: 600;       /* optional: make it stand out */
+  margin-bottom: 1.5rem;
+  font-weight: 600;
 }
+
+/* ==============================
+   Severity Selector
+   ============================== */
 .severity-container {
   display: flex;
   gap: 0.5rem;
@@ -596,16 +713,19 @@ onMounted(() => {
   border-color: #495057;
 }
 
+/* ==============================
+   Image Preview
+   ============================== */
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
 .img-preview {
   max-width: 100%;
   height: auto;
   border-radius: 10px;
   display: block;
-}
-
-.image-preview-container {
-  position: relative;
-  display: inline-block;
 }
 
 .remove-image-btn {
@@ -617,104 +737,21 @@ onMounted(() => {
   border-radius: 50%;
   line-height: 1;
 }
-.main-container {
+
+/* ==============================
+   Nearby Cats Section
+   ============================== */
+.nearby-cats-container {
   display: flex;
-  justify-content: center;  /* center form by default */
-  transition: all 0.3s ease;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nearby-cat-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1rem;
 }
-
-.main-content {
-  transition: margin-right 0.3s ease;
-  max-width: 500px; /* keeps form size consistent */
-  width: 100%; /* allows it to shrink on small screens */
-  padding-top:30px;
-}
-
-/* When sidebar is open, push form left */
-.sidebar-open .main-content {
-  margin-right: 300px; /* width of sidebar */
-}
-
-/* Sidebar */
-.sidebar {
-  width: 300px;
-  position: fixed;
-  right: 0;
-  top: 0; /* change from 60px to 0 */
-  bottom: 0;
-  background-color: #fff; /* ensures full white background */
-  box-shadow: -2px 0 8px rgba(0,0,0,0.1);
-  overflow-y: auto;
-  padding: 1rem;
-  padding-top: 70px; /* space for navbar height so content doesn’t overlap */
-  z-index: 1000;
-  transition: transform 0.3s ease;
-}
-
-.sidebar, h5{
-  /* margin-top: 20px; */
-}
-
-/* Responsive: on smaller screens, make sidebar full width overlay */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    transform: translateX(100%);
-  }
-  .sidebar-open .sidebar {
-    transform: translateX(0);
-  }
-  .sidebar-open .main-content {
-    margin-right: 0; /* main content doesn’t shift on small screens */
-  }
-}
-
-
-.main-content {
-  transition: margin-right 0.3s ease;
-  margin-right: 0; /* centered by default */
-  max-width: 500px; /* same width as your form */
-}
-
-/* when sidebar is open, push main content left */
-.sidebar {
-  transform: translateX(100%);
-}
-.sidebar-open .sidebar {
-  transform: translateX(0);
-}
-
-
-/* default toggle (right edge) */
-.sidebar-toggle {
-  position: fixed;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1100;
-  background-color: #343a40;
-  color: #fff;
-  border: none;
-  border-radius: 4px 0 0 4px;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* when sidebar is open, move toggle to left of sidebar */
-.sidebar-open-btn {
-  right: 300px; /* same as sidebar width */
-  border-radius: 4px 4px 4px 4px; /* optional: round all sides */
-}
-
-/* Responsive for mobile */
-@media (max-width: 768px) {
-  .sidebar-open-btn {
-    right: 0; /* toggle stays on screen since sidebar overlays */
-  }
-}
-
 
 </style>
