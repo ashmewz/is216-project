@@ -22,7 +22,7 @@
                     <h1 class="typed">{{ typedText }}</h1>
 
                     <div class="cta-row">
-                        <router-link to="/login" class="no-hover">
+                        <router-link :to="{ path: '/login', query: { form: 'register' } }">
                             <button class="btn primary" @click="alert('Welcome to Pawsitive! 🐾')">Register
                                 Now!</button>
                         </router-link>
@@ -38,7 +38,7 @@
 
         <!-- Feature Section -->
         <section id="features" class="features wrap">
-            <h2 class="reveal">Why Pawsitive</h2>
+            <h2 class="reveal mb-5">Why Use Pawsitive</h2>
             <div class="grid">
                 <article class="feature reveal">
                     <h3>Quick Reporting</h3>
@@ -181,6 +181,9 @@ body,
     animation: bgShift 18s ease-in-out infinite;
     color: #1b1b1f;
     min-height: 100vh;
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
 
 }
 
@@ -277,6 +280,10 @@ router-link:hover {
 .hero {
     padding: 72px 0 96px;
 }
+
+
+
+
 
 .hero-grid {
     display: grid;
@@ -470,49 +477,53 @@ footer {
 
 /* Reserve vertical space for typed text so CTA doesn't move */
 .hero-text-block {
-  min-height: 200px;        /* start here; increase if necessary for your longest lines */
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  justify-content: center;  /* keeps heading vertically centered inside the reserved area */
-  align-items: flex-start;  /* keep left alignment on wide screens */
-  width: 100%;
+    min-height: 200px;
+    /* start here; increase if necessary for your longest lines */
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    justify-content: center;
+    /* keeps heading vertically centered inside the reserved area */
+    align-items: flex-start;
+    /* keep left alignment on wide screens */
+    width: 100%;
 }
 
 /* The typed heading inside the reserved box */
 h1.typed {
-  margin: 0;
-  font-size: clamp(36px, 5vw, 64px);
-  line-height: 1.05;
-  display: block;
-  word-break: break-word;    /* allow wrapping cleanly */
-  hyphens: auto;
-  /* give enough internal height to absorb a line wrap without moving CTA */
-  min-height: calc(2.2em + 4px);
+    margin: 0;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 1.05;
+    display: block;
+    word-break: break-word;
+    /* allow wrapping cleanly */
+    hyphens: auto;
+    /* give enough internal height to absorb a line wrap without moving CTA */
+    min-height: calc(2.2em + 4px);
 }
 
 /* Pin the CTA to the bottom of the reserved block so it doesn't shift */
 .hero-text-block .cta-row {
-  margin-top: auto;
+    margin-top: auto;
 }
 
 /* Responsive adjustments */
 @media (max-width: 980px) {
-  .hero-text-block {
-    min-height: 160px;
-    align-items: center;  /* center on stacked layout */
-    text-align: center;
-  }
-  .hero-text-block .cta-row {
-    justify-content: center;
-  }
+    .hero-text-block {
+        min-height: 160px;
+        align-items: center;
+        /* center on stacked layout */
+        text-align: center;
+    }
+
+    .hero-text-block .cta-row {
+        justify-content: center;
+    }
 }
+
 @media (max-width: 620px) {
-  .hero-text-block {
-    min-height: 140px;
-  }
+    .hero-text-block {
+        min-height: 140px;
+    }
 }
-
-
-
 </style>
