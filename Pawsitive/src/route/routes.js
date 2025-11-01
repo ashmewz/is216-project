@@ -93,11 +93,6 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/services/',
-        component: ServicesPage,
-        meta: { requiresAuth: true }
-    },
-    {
         path: '/ai/recog/',
         component: AiRecogPage,
         meta: { requiresAuth: true }
