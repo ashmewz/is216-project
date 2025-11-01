@@ -1,40 +1,113 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-import Navbar from '@/components/resuables/Navbar.vue';
-import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore'
-import { validateCatReport } from '@/utils/validators';
-import { getAuth } from "firebase/auth";
-import CatReportCard from '@/components/resuables/CatReportCard.vue';
+import { ref, reactive } from 'vue'
+import Navbar from '@/components/resuables/Navbar.vue'
+import BottomFooter from '@/components/resuables/BottomFooter.vue'
+import CatReportCard from '@/components/resuables/CatReportCard.vue'
 
 
-const db = getFirestore()
-const auth = getAuth();
-const reportsLoading = ref(true)
-const rssLoading = ref(true)
-const fieldErrors = ref({})
-const showModal = ref(false)
-const reports = ref([])
+const fileInput = ref(null)
+const sidebarOpen = ref(false)
 
-// Form state
-const form = ref({
-  name: '',
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+function removeImage() {
+  report.imageFile = null
+  report.imagePreview = null
+  if (fileInput.value) fileInput.value.value = null
+}
+
+const report = reactive({
+  status: '',
+  condition: '',
+  catName: '',
   location: '',
   description: '',
-  image: null,
-  status: 'Lost'
-
+  imageFile: null,
+  imagePreview: null,
+  severity: 0  // add this inside your existing report reactive object
 })
-watch(() => form.value.status, () => fieldErrors.value.status = '')
-watch(() => form.value.name, () => fieldErrors.value.name = '')
-watch(() => form.value.location, () => fieldErrors.value.location = '')
-watch(() => form.value.description, () => fieldErrors.value.description = '')
-watch(() => form.value.image, () => fieldErrors.value.image = '')
 
+// Add this below your other refs/reactive objects
+const reports = ref([
+  {
+    id: 1,
+    username: 'Alice',
+    avatar: 'https://i.pravatar.cc/35',
+    status: 'Lost',
+    name: 'Siamese Cat',
+    location: '123 Main Street',
+    description: 'Found near the park, looks injured.',
+    image: 'https://placekitten.com/300/200',
+    createdAt: {
+      toDate: () => new Date()
+    }
+  },
+  {
+    id: 2,
+    username: 'Bob',
+    avatar: null,
+    status: 'Injured',
+    name: 'Persian Cat',
+    location: '456 Elm Street',
+    description: 'Limping on the right paw.',
+    image: 'https://placekitten.com/301/200',
+    createdAt: {
+      toDate: () => new Date()
+    }
+  }
+])
+function setSeverity(level) {
+  report.severity = level
+}
 
-// Fetch reports with user info
+function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (file) {
+    report.imageFile = file
+    const reader = new FileReader()
+    reader.onload = e => {
+      report.imagePreview = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+// --- New: getLocation function ---
+async function getLocation() {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser')
+    return
+  }
+
+  report.location = 'Fetching location...'
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords
+      try {
+        // Reverse geocoding using OpenStreetMap Nominatim
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+        const data = await response.json()
+        report.location = data.display_name || `${latitude}, ${longitude}`
+      } catch (err) {
+        console.error(err)
+        report.location = `${latitude}, ${longitude}`
+      }
+    },
+    (err) => {
+      console.error(err)
+      report.location = 'Unable to fetch location'
+    }
+  )
+}
+
+// Optionally, auto-fetch on mount
+getLocation()
+
+//firebase
 const fetchReports = async () => {
-  reportsLoading.value = true; // start spinner
+  reportsLoading.value = true;
   try {
     const q = query(collection(db, "catReports"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
@@ -60,224 +133,335 @@ const fetchReports = async () => {
   } catch (err) {
     console.error("Failed to fetch reports", err);
   } finally {
-    reportsLoading.value = false; // stop spinner
+    reportsLoading.value = false;
   }
 };
-
-
-onMounted(() => {
-  fetchReports();
-  console.log(reports);
-});
-
-// Open modal
-const openModal = () => showModal.value = true
-
-// Submit report
-const submitReport = async () => {
-  const errors = validateCatReport(form.value);
-  if (Object.keys(errors).length > 0) {
-    fieldErrors.value = errors;
-    return;
-  }
-
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-    return alert("You must be logged in to submit a report.");
-  }
-
-  try {
-    await addDoc(collection(db, "catReports"), {
-      status: form.value.status,
-      name: form.value.name.trim(),
-      location: form.value.location.trim(),
-      description: form.value.description.trim(),
-      image: form.value.image || null,
-      submittedBy: currentUser.uid,  // store user ID as foreign key
-      createdAt: serverTimestamp()
-    });
-
-
-    form.value.status = '';
-    form.value.name = '';
-    form.value.location = '';
-    form.value.description = '';
-    form.value.image = null;
-    fieldErrors.value = {};
-    fetchReports();
-    showModal.value = false;
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to submit report. Try again.");
-  }
-};
-
-// Trigger file input
-const fileInput = ref(null)
-const triggerFileInput = () => {
-  fileInput.value.click()
-}
-
-// Convert file to base64
-const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = error => reject(error)
-  })
-}
-
-// Handle file change
-const onFileChange = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-  try {
-    const base64 = await fileToBase64(file)
-    form.value.image = base64
-  } catch (err) {
-    console.error('Failed to convert image:', err)
-  }
-}
-
-
 
 </script>
 
+
 <template>
   <Navbar>
-    <template v-slot:navbar-title>
-      Report
-    </template>
+    <template v-slot:navbar-title>Report</template>
   </Navbar>
-  <div class="container my-5">
+  <h2 class="report-header">Report a Cat</h2>
 
-    <div class="row">
+  <form class="report-form" @submit.prevent="submitReport">
 
-      <!-- Left Column: RSS Feed -->
-      <div class="col-12 col-lg-8 mb-4">
-        <div v-if="rssLoading" class="d-flex justify-content-center align-items-center" style="height: 400px;">
-          <div class="spinner-border text-dark" role="status">
-          </div>
+    <!-- Status Dropdown -->
+    <div class="mb-3">
+      <label class="form-label">Status</label>
+      <select v-model="report.status" class="form-select">
+        <option value="" disabled>Select status</option>
+        <option value="Lost">Lost</option>
+        <option value="Injured">Injured</option>
+      </select>
+    </div>
+
+    <!-- Cat Breed -->
+    <div class="mb-3">
+      <label class="form-label">Cat Breed</label>
+      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
+    </div>
+
+    <!-- Location (auto-detect) -->
+    <div class="mb-3">
+      <label class="form-label">Location</label>
+      <div class="d-flex gap-2 align-items-center">
+        <input type="text" class="form-control" v-model="report.location" readonly placeholder="Fetching location..." />
+        <button type="button" class="btn btn-outline-secondary btn-sm" @click="getLocation">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Image Upload -->
+      <div class="mb-3">
+        <label class="form-label">Upload Image</label>
+        <input 
+        type="file" 
+        class="form-control" 
+        ref="fileInput"
+        @change="handleFileUpload" 
+        accept="image/*"
+      />
+
+
+
+        <!-- Preview Section -->
+        <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
+          <img :src="report.imagePreview" class="img-preview rounded" />
+          <button 
+            type="button" 
+            class="btn btn-sm btn-danger remove-image-btn" 
+            @click="removeImage"
+          >
+            ✕
+          </button>
         </div>
-        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%" height="2800px"
-          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0">
-        </iframe>
       </div>
 
-      <!-- Right Column: Sidebar -->
+    
+    <!-- Condition Dropdown (always shown) -->
+    <div class="mb-3">
+      <label class="form-label">Condition of the cat (optional)</label>
+      <select v-model="report.condition" class="form-select">
+        <option value="" disabled>Select condition</option>
+        <option value="Bleeding">Bleeding</option>
+        <option value="Limping">Limping</option>
+        <option value="Vomiting / Diarrhea">Vomiting / Diarrhea</option>
+        <option value="Weak / Lethargic">Weak / Lethargic</option>
+        <option value="Fracture / Broken bone">Fracture / Broken bone</option>
+        <option value="Eye injury / Infection">Eye injury / Infection</option>
+        <option value="Open wound / Cut">Open wound / Cut</option>
+        <option value="Swelling / Bruising">Swelling / Bruising</option>
+        <option value="Difficulty breathing">Difficulty breathing</option>
+        <option value="Seizures">Seizures</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
 
-      <div class="col-12 col-lg-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4>Cat Reports</h4>
-          <button class="btn btn-dark btn-sm" @click="openModal">Create Report</button>
+    <!-- Severity Selector -->
+    <div class="mb-3">
+      <label class="form-label">Severity of Condition</label>
+      <div class="severity-container">
+        <div 
+          v-for="level in 5" 
+          :key="level"
+          class="severity-box"
+          :class="{ selected: report.severity >= level }"
+          @click="setSeverity(level)"
+        >
+          {{ level }}
         </div>
-
-        <div v-if="reportsLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
-          <div class="spinner-border text-dark" role="status">
-          </div>
-        </div>
-
-        <div v-if="reports.length === 0">No reports yet.</div>
-
-        <div class="d-flex flex-column gap-3">
-          <CatReportCard v-for="report in reports" :key="report.id" :report="report" />
-        </div>
-
       </div>
+      <small class="text-muted">1 = Mild, 5 = Very Severe</small>
+    </div>
 
+
+    <!-- Description -->
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" rows="3" v-model="report.description" placeholder="Describe the cat's condition..."></textarea>
+    </div>
+
+    <button class="btn btn-dark w-100" type="submit">Submit Report</button>
+  </form>
+  <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
+  
+  <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
+  
+  <!-- Main content (report form) -->
+  <div class="flex-grow-1 main-content">
+
+    <form class="report-form" @submit.prevent="submitReport">
+      <!-- existing form code here -->
+      <!-- Status, Cat Breed, Location, Image Upload, Condition, Severity, Description, Submit button -->
+    </form>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" v-if="sidebarOpen">
+
+    <!-- My Reports Section -->
+    <h5 style="margin-top: 30px">My Reports</h5>
+    <div v-for="reportItem in reports.filter(r => r.username === 'Alice')" :key="reportItem.id">
+      <CatReportCard :report="reportItem" />
+    </div>
+    <hr />
+
+    <!-- Others' Reports Section -->
+    <h5>Others' Reports</h5>
+    <div v-for="reportItem in reports.filter(r => r.username !== 'Alice')" :key="reportItem.id">
+      <CatReportCard :report="reportItem" />
     </div>
 
   </div>
 
 
-  <!-- Modal -->
-  <div v-if="showModal">
-    <!-- Backdrop -->
-    <div class="modal-backdrop fade show"></div>
 
-    <div class="modal d-flex align-items-center justify-content-center fade show" tabindex="-1">
-      <!-- Modal dialog: responsive -->
-      <div class="modal-dialog modal-dialog-centered" :style="{ maxWidth: '', width: '100%' }">
-        <div class="modal-content">
-          <form @submit.prevent="submitReport">
-            <div class="modal-header">
-              <h5 class="modal-title">Create a Cat Report</h5>
-              <button type="button" class="btn-close" @click="showModal = false"></button>
-            </div>
+  <!-- Toggle button -->
+    <button 
+      class="sidebar-toggle" 
+      :class="{ 'sidebar-open-btn': sidebarOpen }" 
+      @click="toggleSidebar"
+    >
+      {{ sidebarOpen ? '⮞' : '⮜' }}
+    </button>
 
-            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
-
-              <!-- Status -->
-              <div class="mb-3">
-                <label class="form-label">Status</label>
-                <select v-model="form.status" class="form-select" :class="{ 'is-invalid': fieldErrors.status }">
-                  <option value="" disabled>Select status</option>
-                  <option value="Lost">Lost</option>
-                  <option value="Found">Found</option>
-                </select>
-                <div class="invalid-feedback">{{ fieldErrors.status }}</div>
-              </div>
+</div>
 
 
-              <!-- Cat Name -->
-              <div class="mb-3">
-                <label class="form-label">Cat Name</label>
-                <input v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.name }"
-                  placeholder="Enter cat name" />
-                <div class="invalid-feedback">{{ fieldErrors.name }}</div>
-              </div>
-
-              <!-- Location -->
-              <div class="mb-3">
-                <label class="form-label">Location</label>
-                <input v-model="form.location" type="text" class="form-control"
-                  :class="{ 'is-invalid': fieldErrors.location }" placeholder="Where was the cat found/lost?" />
-                <div class="invalid-feedback">{{ fieldErrors.location }}</div>
-              </div>
-
-              <!-- Description -->
-              <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea v-model="form.description" class="form-control"
-                  :class="{ 'is-invalid': fieldErrors.description }" rows="3"
-                  placeholder="Describe the cat's condition..."></textarea>
-                <div class="invalid-feedback">{{ fieldErrors.description }}</div>
-              </div>
-
-              <!-- Image Upload -->
-              <div class="mb-3">
-                <label class="form-label">Upload Image</label>
-                <div class="d-flex gap-2 align-items-center">
-                  <button type="button" class="btn btn-outline-primary btn-sm" @click="triggerFileInput">
-                    Choose Image
-                  </button>
-                </div>
-                <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" style="display:none" />
-                <div v-if="form.image" class="mt-2">
-                  <img :src="form.image" alt="Preview" style="max-width: 100%; border-radius: 4px;" />
-                </div>
-              </div>
-
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary btn-sm" @click="showModal = false">Cancel</button>
-              <button type="submit" class="btn btn-dark btn-sm">Submit</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-
+</div>
 
   <BottomFooter />
 </template>
 
-<style scoped>
+<style>
+.report-form {
+  max-width: 500px;
+  margin: 2rem auto;
+}
+.report-form input,
+.report-form textarea,
+.report-form select {
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+.report-header {
+  text-align: center;
+  padding-top: 20px;
+  margin-bottom: 1.5rem; /* spacing below header */
+  font-weight: 600;       /* optional: make it stand out */
+}
+.severity-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.severity-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.severity-box.selected {
+  background-color: #343a40;
+  color: white;
+  border-color: #343a40;
+}
+
+.severity-box:hover {
+  background-color: #495057;
+  color: white;
+  border-color: #495057;
+}
+
+.img-preview {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  line-height: 1;
+}
+.main-container {
+  display: flex;
+  justify-content: center;  /* center form by default */
+  transition: all 0.3s ease;
+  padding: 1rem;
+}
+
+.main-content {
+  transition: margin-right 0.3s ease;
+  max-width: 500px; /* keeps form size consistent */
+  width: 100%; /* allows it to shrink on small screens */
+  padding-top:30px;
+}
+
+/* When sidebar is open, push form left */
+.sidebar-open .main-content {
+  margin-right: 300px; /* width of sidebar */
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  position: fixed;
+  right: 0;
+  top: 0; /* change from 60px to 0 */
+  bottom: 0;
+  background-color: #fff; /* ensures full white background */
+  box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  padding: 1rem;
+  padding-top: 70px; /* space for navbar height so content doesn’t overlap */
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.sidebar, h5{
+  /* margin-top: 20px; */
+}
+
+/* Responsive: on smaller screens, make sidebar full width overlay */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    transform: translateX(100%);
+  }
+  .sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+  .sidebar-open .main-content {
+    margin-right: 0; /* main content doesn’t shift on small screens */
+  }
+}
+
+
+.main-content {
+  transition: margin-right 0.3s ease;
+  margin-right: 0; /* centered by default */
+  max-width: 500px; /* same width as your form */
+}
+
+/* when sidebar is open, push main content left */
+.sidebar {
+  transform: translateX(100%);
+}
+.sidebar-open .sidebar {
+  transform: translateX(0);
+}
+
+
+/* default toggle (right edge) */
+.sidebar-toggle {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1100;
+  background-color: #343a40;
+  color: #fff;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* when sidebar is open, move toggle to left of sidebar */
+.sidebar-open-btn {
+  right: 300px; /* same as sidebar width */
+  border-radius: 4px 4px 4px 4px; /* optional: round all sides */
+}
+
+/* Responsive for mobile */
+@media (max-width: 768px) {
+  .sidebar-open-btn {
+    right: 0; /* toggle stays on screen since sidebar overlays */
+  }
+}
+
 
 </style>
