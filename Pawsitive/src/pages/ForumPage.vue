@@ -1,213 +1,243 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import GridSplit from '@/components/resuables/GridSplit.vue'
-import { Modal } from 'bootstrap'
 import ForumCard from '@/components/resuables/ForumCard.vue'
 import ForumSideBar from '@/components/resuables/ForumSideBar.vue'
+import { Modal } from 'bootstrap'
 
-const posts = reactive([
-  {
-    id: 'p1',
-    username: 'Meowie',
-    profilePic: '/src/assets/profilepic1.jpg',
-    caption:
-      "I love this cat soooo much! 😻 This is Whiskers, and she's been with me since I rescued her from the void deck. She loves cuddles, chasing string toys, and stealing my seat whenever I get up for just 2 seconds!",
-    image: '/src/assets/cutecats1.jpg',
-    likes: 22,
-    comments: [{ user: 'Sia', text: 'So cute!', time: '2025-10-24 14:30' }],
-    datePosted: '2025-10-23 18:00',
-    expanded: false,
-  },
-  {
-    id: 'p2',
-    username: 'Adorablecats123',
-    profilePic: '/src/assets/profilepic2.jpg',
-    caption: 'Look at this cutie 😻',
-    image: '/src/assets/cutecats2.jpg',
-    likes: 18,
-    comments: [],
-    datePosted: '2025-10-24 09:15',
-    expanded: false,
-  },
-  {
-    id: 'p3',
-    username: 'CatCareTips',
-    profilePic: '/src/assets/profilepic3.jpg',
-    caption:
-      'Cats are wonderful companions, but caring for them goes beyond just feeding...',
-    image: '',
-    likes: 12,
-    comments: [],
-    datePosted: '2025-10-22 16:45',
-    expanded: false,
-  },
-])
+import { db } from '@/firebase'
+import { getAuth } from "firebase/auth"
+import {
+  collection, addDoc, getDoc, doc, getDocs, serverTimestamp
+} from 'firebase/firestore'
+import { validatePost, validateComment } from '@/utils/validators'
+
+// Firebase Auth & Firestore State
+const auth = getAuth()
+const posts = ref([])
+const loading = ref(false)
+
+const showWelcome = ref(true)
+const showCreatePostModal = ref(false)
 
 const searchQuery = ref('')
 const sortMode = ref('newest')
-const activePostId = ref(null)
-const newComment = ref('')
-const showWelcome = ref(true)
-const likeAnimations = reactive({})
-const dropdownOpen = ref(false)
-const dropdownRef = ref(null)
-const newPost = reactive({ caption: '', image: null, imagePreview: null })
+const activeCommentPostId = ref(null)
+const newCommentText = ref('')
+const fieldErrors = reactive({})
 
-const displayedPosts = computed(() => {
-  const filtered = posts.filter(
-    (p) =>
-      !searchQuery.value ||
-      p.caption.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      p.username.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-
-  if (sortMode.value === 'oldest') return [...filtered].reverse()
-  if (sortMode.value === 'popular') return [...filtered].sort((a, b) => b.likes - a.likes)
-  return filtered
+const newPost = reactive({
+  description: '',
+  image: '',
 })
 
-const sortLabel = computed(
-  () =>
-    ({
-      newest: { text: 'Newest First', icon: 'bi-clock-history' },
-      oldest: { text: 'Oldest First', icon: 'bi-clock' },
-      popular: { text: 'Most Liked', icon: 'bi-heart-fill' },
-    }[sortMode.value])
-)
+// Modal instances refs
+let createPostModalInstance = null
+let commentModalInstance = null
 
-const getLikedPosts = () => JSON.parse(localStorage.getItem('likedPosts') || '[]')
-const setLikedPosts = (arr) => localStorage.setItem('likedPosts', JSON.stringify(arr))
-const hasLiked = (id) => getLikedPosts().includes(id)
+// Computed label for sorting dropdown
+// Adjusted computed label for sorting dropdown (removed 'popular')
+const sortLabel = computed(() => {
+  return {
+    newest: { text: 'Newest First', icon: 'bi-clock-history' },
+    oldest: { text: 'Oldest First', icon: 'bi-clock' },
+  }[sortMode.value]
+})
 
-const formatDateTime = (date = new Date()) => {
-  const d = new Date(date)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate()
-  ).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(
-    d.getMinutes()
-  ).padStart(2, '0')}`
-}
+// Posts filtered and sorted based on UI controls using createdAt timestamp
+const displayedPosts = computed(() => {
+  let filtered = posts.value.filter(p =>
+    !searchQuery.value ||
+    (p.description && p.description.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+    (p.author && p.author.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  )
 
-function setSort(mode) {
-  sortMode.value = mode
-  dropdownOpen.value = false
-}
-
-function toggleLike(postId) {
-  const post = posts.find((p) => p.id === postId)
-  if (!post) return
-
-  const liked = hasLiked(postId)
-  post.likes += liked ? -1 : 1
-
-  if (liked) {
-    setLikedPosts(getLikedPosts().filter((id) => id !== postId))
-  } else {
-    setLikedPosts([...getLikedPosts(), postId])
-    likeAnimations[postId] = true
-    setTimeout(() => (likeAnimations[postId] = false), 600)
+  if (sortMode.value === 'oldest') {
+    return [...filtered].sort((a, b) => {
+      // Sort ascending by createdAt timestamp (oldest first)
+      const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0
+      const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0
+      return aTime - bTime
+    })
   }
-}
+  // Default to newest first
+  return [...filtered].sort((a, b) => {
+    const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0
+    const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0
+    return bTime - aTime
+  })
+})
 
-function toggleExpand(postId) {
-  const post = posts.find((p) => p.id === postId)
-  if (!post) return
-  post.expanded = !post.expanded
-}
 
-async function sharePost(postId) {
-  const post = posts.find((p) => p.id === postId)
-  if (!post) return
+// Fetch posts and related data from Firestore
+const fetchPosts = async () => {
+  loading.value = true
+  try {
+    const postSnapshot = await getDocs(collection(db, "posts"))
+    const postData = []
 
-  const shareData = {
-    title: `Post by ${post.username}`,
-    text: post.caption,
-    url: `${location.href}#post-${postId}`,
+    for (const docSnap of postSnapshot.docs) {
+      const post = { id: docSnap.id, ...docSnap.data(), comments: [] }
+
+      // Fetch author details from 'volunteers' collection
+      if (post.author) {
+        const userDoc = await getDoc(doc(db, "volunteers", post.author))
+        if (userDoc.exists()) {
+          const userData = userDoc.data()
+          post.author = userData.username || "Unknown"
+          post.avatar = userData.avatar || null
+        } else {
+          post.author = "Unknown"
+          post.avatar = null
+        }
+      }
+
+      // Fetch comments for the post, enriched with usernames and avatars
+      const commentsSnap = await getDocs(collection(db, "posts", docSnap.id, "comments"))
+      post.comments = await Promise.all(commentsSnap.docs.map(async (c) => {
+        const commentData = { id: c.id, ...c.data() }
+        let userName = "Unknown"
+        let userAvatar = null
+        if (commentData.author) {
+          const cUserDoc = await getDoc(doc(db, "volunteers", commentData.author))
+          if (cUserDoc.exists()) {
+            const uData = cUserDoc.data()
+            userName = uData.username || "Unknown"
+            userAvatar = uData.avatar || null
+          }
+        }
+        commentData.username = userName
+        commentData.avatar = userAvatar
+        return commentData
+      }))
+
+      // Provide fallback for likes field
+      if (post.likes === undefined) post.likes = 0
+
+      postData.push(post)
+    }
+
+    posts.value = postData
+  } catch (err) {
+    console.error("Error fetching posts:", err)
   }
-
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData)
-      return
-    } catch (e) {}
-  }
-
-  await navigator.clipboard.writeText(shareData.url)
-  alert('Link copied to clipboard! 📋')
+  loading.value = false
 }
 
-function openComments(postId) {
-  activePostId.value = postId
-  new Modal(document.getElementById('commentsModal')).show()
-}
+// Watchers to clear validation errors on input
+watch(() => newPost.description, () => (fieldErrors.description = ''))
+watch(() => newCommentText.value, () => (fieldErrors.comment = ''))
 
-function addComment() {
-  const text = newComment.value.trim()
-  if (!text) return alert('Please write a comment.')
+// Helper: convert File to Base64
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(reader.result)
+  reader.onerror = () => reject(new Error('File read error'))
+  reader.readAsDataURL(file)
+})
 
-  const post = posts.find((p) => p.id === activePostId.value)
-  if (!post) return
-
-  post.comments.push({ user: 'You', text, time: formatDateTime() })
-  newComment.value = ''
-}
-
-function openCreatePost() {
-  new Modal(document.getElementById('createPostModal')).show()
-}
-
-function handleImageUpload(event) {
+// Handle image upload input for new post
+async function handleImageUpload(event) {
   const file = event.target.files[0]
   if (!file) return
-
-  newPost.image = file
-  const reader = new FileReader()
-  reader.onload = (e) => (newPost.imagePreview = e.target.result)
-  reader.readAsDataURL(file)
-}
-
-function removeImage() {
-  newPost.image = null
-  newPost.imagePreview = null
-  const fileInput = document.getElementById('imageUpload')
-  if (fileInput) fileInput.value = ''
-}
-
-function createPost() {
-  const caption = newPost.caption.trim()
-  if (!caption) return alert('Please write a caption for your post.')
-
-  posts.unshift({
-    id: `p${Date.now()}`,
-    username: 'You',
-    profilePic: '/src/assets/profilepic1.jpg',
-    caption,
-    image: newPost.imagePreview || '',
-    likes: 0,
-    comments: [],
-    datePosted: formatDateTime(),
-    expanded: false,
-  })
-
-  newPost.caption = ''
-  removeImage()
-  Modal.getInstance(document.getElementById('createPostModal'))?.hide()
-}
-
-function triggerImageUpload() {
-  document.getElementById('imageUpload')?.click()
-}
-
-function handleClickOutside(event) {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    dropdownOpen.value = false
+  try {
+    newPost.image = await fileToBase64(file)
+  } catch (err) {
+    console.error('Image upload error:', err)
   }
 }
 
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+// Open Create Post Modal using Bootstrap's Modal API
+function openCreatePost() {
+  showCreatePostModal.value = true
+  const modalEl = document.getElementById('createPostModal')
+  createPostModalInstance = new Modal(modalEl)
+  createPostModalInstance.show()
+}
+
+// Close Create Post Modal and reset
+function closeCreatePostModal() {
+  createPostModalInstance?.hide()
+  showCreatePostModal.value = false
+  newPost.description = ''
+  newPost.image = ''
+  fieldErrors.description = ''
+}
+
+// Create a new post in Firestore
+async function createPost() {
+  const errors = validatePost(newPost)
+  if (Object.keys(errors).length) {
+    Object.assign(fieldErrors, errors)
+    return
+  }
+  const currentUser = auth.currentUser
+  if (!currentUser) return alert("You must be logged in to create a post.")
+  try {
+    await addDoc(collection(db, "posts"), {
+      author: currentUser.uid,
+      description: newPost.description,
+      image: newPost.image || null,
+      createdAt: serverTimestamp(),
+      likes: 0, // default likes
+    })
+    await fetchPosts()
+    closeCreatePostModal()
+  } catch (err) {
+    console.error("Error creating post:", err)
+  }
+}
+
+// Comments modal open and close logic
+function openCommentModal(postId) {
+  activeCommentPostId.value = postId
+  newCommentText.value = ''
+  const modalEl = document.getElementById('commentsModal')
+  commentModalInstance = new Modal(modalEl)
+  commentModalInstance.show()
+}
+
+function closeCommentModal() {
+  commentModalInstance?.hide()
+  activeCommentPostId.value = null
+  newCommentText.value = ''
+  fieldErrors.comment = ''
+}
+
+// Add comment to Firestore subcollection
+async function addComment() {
+  const errors = validateComment({ comment: newCommentText.value })
+  if (Object.keys(errors).length) {
+    Object.assign(fieldErrors, errors)
+    return
+  }
+  const currentUser = auth.currentUser
+  if (!currentUser) return alert("You must be logged in to comment.")
+  if (!activeCommentPostId.value) return
+
+  try {
+    await addDoc(collection(db, "posts", activeCommentPostId.value, "comments"), {
+      author: currentUser.uid,
+      comment: newCommentText.value.trim(),
+      createdAt: serverTimestamp(),
+    })
+    await fetchPosts()
+    closeCommentModal()
+  } catch (err) {
+    console.error("Error adding comment:", err)
+  }
+}
+
+// Sort mode change handler
+function setSort(mode) {
+  sortMode.value = mode
+}
+
+onMounted(() => {
+  fetchPosts()
+})
 </script>
 
 <template>
@@ -236,12 +266,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
         <template #main>
           <ForumCard
             :posts="displayedPosts"
-            :hasLiked="hasLiked"
-            :likeAnimations="likeAnimations"
-            @toggle-like="toggleLike"
-            @toggle-expand="toggleExpand"
-            @share="sharePost"
-            @open-comments="openComments"
+            @open-comments="openCommentModal"
           />
         </template>
 
@@ -257,56 +282,56 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     </main>
 
     <!-- Comments Modal -->
-    <div class="modal fade" id="commentsModal" tabindex="-1">
+    <div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content rounded-4 shadow-lg border-0">
           <div class="modal-header border-bottom-0 pb-2">
             <h5 class="modal-title fw-bold">
               💬 Comments
-              <span v-if="activePostId" class="badge bg-light text-dark ms-2">{{
-                posts.find((p) => p.id === activePostId)?.comments?.length || 0
-              }}</span>
+              <span class="badge bg-light text-dark ms-2">
+                {{
+                  posts.find(p => p.id === activeCommentPostId)?.comments?.length || 0
+                }}
+              </span>
             </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button
+              type="button"
+              class="btn-close"
+              @click="closeCommentModal"
+            ></button>
           </div>
 
-          <div class="modal-body">
-            <template v-if="activePostId">
-              <div
-                v-for="(c, i) in [...(posts.find((p) => p.id === activePostId)?.comments || [])].reverse()"
-                :key="i"
-                class="comment-item d-flex align-items-start mb-3 p-3 bg-light rounded-3"
-              >
-                <img
-                  src="/src/assets/profilepic1.jpg"
-                  alt="Profile"
-                  class="rounded-circle me-3 comment-avatar"
-                />
-                <div class="flex-grow-1">
-                  <strong class="d-block mb-1 text-accent">{{ c.user }}</strong>
-                  <p class="mb-2">{{ c.text }}</p>
-                  <small class="text-muted">
-                    <i class="bi bi-clock me-1"></i>{{ c.time }}
-                  </small>
-                </div>
+          <div class="modal-body" v-if="activeCommentPostId">
+            <!-- comment items, newest first -->
+            <div
+              v-for="(comment, index) in [...(posts.find(p => p.id === activeCommentPostId)?.comments || [])].reverse()"
+              :key="comment.id || index"
+              class="comment-item d-flex align-items-start mb-3 p-3 bg-light rounded-3"
+            >
+              <img
+                :src="comment.avatar || '/src/assets/profilepic1.jpg'"
+                alt="Profile"
+                class="rounded-circle me-3 comment-avatar"
+              />
+              <div class="flex-grow-1">
+                <strong class="d-block mb-1 text-accent">{{ comment.username }}</strong>
+                <p class="mb-2">{{ comment.comment }}</p>
+                <small class="text-muted"
+                  ><i class="bi bi-clock me-1"></i>{{ comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleString() : '-' }}</small
+                >
               </div>
+            </div>
 
-              <div
-                v-if="!posts.find((p) => p.id === activePostId)?.comments?.length"
-                class="empty-comments text-center py-5"
-              >
-                <div class="empty-icon mb-3">💭</div>
-                <p class="text-muted mb-0">No comments yet. Be the first to share your thoughts!</p>
-              </div>
-            </template>
+            <div v-if="!(posts.find(p => p.id === activeCommentPostId)?.comments?.length)" class="empty-comments text-center py-5">
+              <div class="empty-icon mb-3">💭</div>
+              <p class="text-muted mb-0">No comments yet. Be the first to share your thoughts!</p>
+            </div>
           </div>
 
-          <div
-            class="modal-footer border-top-0 pt-0 d-flex align-items-center gap-2"
-          >
+          <div class="modal-footer border-top-0 pt-0 d-flex align-items-center gap-2">
             <input
-              v-model="newComment"
-              class="form-control rounded-pill px-4 py-2 comment-input"
+              v-model="newCommentText"
+              :class="['form-control', 'rounded-pill', 'px-4', 'py-2', 'comment-input', fieldErrors.comment ? 'is-invalid' : '']"
               placeholder="Share your thoughts..."
               @keyup.enter="addComment"
             />
@@ -316,29 +341,32 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
             >
               <i class="bi bi-send-fill"></i>
             </button>
+            <div v-if="fieldErrors.comment" class="invalid-feedback">{{ fieldErrors.comment }}</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Create Post Modal -->
-    <div class="modal fade" id="createPostModal" tabindex="-1">
+    <div class="modal fade" id="createPostModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow-lg border-0">
           <div class="modal-header border-bottom-0 pb-2">
             <h5 class="modal-title fw-bold">✨ Create New Post</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button type="button" class="btn-close" @click="closeCreatePostModal"></button>
           </div>
 
           <div class="modal-body p-4">
             <div class="mb-3">
               <label class="form-label fw-semibold">Caption</label>
               <textarea
-                v-model="newPost.caption"
+                v-model="newPost.description"
                 class="form-control create-post-textarea"
                 rows="4"
                 placeholder="Share your thoughts, stories, or tips about cats..."
+                :class="fieldErrors.description ? 'is-invalid' : ''"
               ></textarea>
+              <div v-if="fieldErrors.description" class="invalid-feedback">{{ fieldErrors.description }}</div>
             </div>
 
             <div class="mb-3">
@@ -351,35 +379,31 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
                   class="d-none"
                   @change="handleImageUpload"
                 />
-
                 <div
-                  v-if="!newPost.imagePreview"
+                  v-if="!newPost.image"
                   class="upload-placeholder"
-                  @click="triggerImageUpload"
+                  @click="$refs.fileInput.click()"
                 >
                   <i class="bi bi-cloud-upload fs-1 text-muted mb-2"></i>
                   <p class="text-muted mb-0">Click to upload an image</p>
                   <small class="text-muted">JPG, PNG, or GIF</small>
                 </div>
-
-                <div
-                  v-else
-                  class="image-preview-container position-relative"
-                >
+                <div v-else class="image-preview-container position-relative">
                   <img
-                    :src="newPost.imagePreview"
+                    :src="newPost.image"
                     alt="Preview"
                     class="img-fluid rounded-3"
                   />
                   <button
                     type="button"
                     class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
-                    @click="removeImage"
+                    @click="newPost.image = ''; document.getElementById('imageUpload').value = ''"
                   >
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
               </div>
+              <input ref="fileInput" type="file" class="d-none" accept="image/*" @change="handleImageUpload" />
             </div>
           </div>
 
@@ -387,7 +411,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
             <button
               type="button"
               class="btn btn-light rounded-pill px-4"
-              data-bs-dismiss="modal"
+              @click="closeCreatePostModal"
             >
               Cancel
             </button>
@@ -406,6 +430,23 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     <BottomFooter />
   </div>
 </template>
+
+<style scoped>
+/* Paste your previous scoped styles here unchanged */
+/* ... (as provided in your original style section) ... */
+
+/* Example for some crucial modal and input states for validation */
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+</style>
 
 <style scoped>
 /* Welcome banner with gradient background */
