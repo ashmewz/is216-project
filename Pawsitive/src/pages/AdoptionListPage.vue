@@ -2,6 +2,7 @@
 import { ref } from 'vue'; // Vue's reactivity system
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
+import Button from '@/components/resuables/Button.vue';
 
 const cats = [
     {
@@ -44,7 +45,8 @@ function prevCat() {
             Adoption
         </template>
     </Navbar>
-
+    
+    <main class="background">
     <div class="adoption-bg">
         <div class="card-row">
             <button class="arrow-btn" @click="prevCat" :disabled="currentIndex === 0">&#8592;</button>
@@ -65,8 +67,11 @@ function prevCat() {
             </div>
             <textarea v-model="adoptionReason" class="reason-input" rows="2"></textarea>
             <button type="submit" class="next-btn">Next</button>
+            <Button type="submit">Next</Button>
         </form>
     </div>
+    </main>
+ 
 
     <BottomFooter></BottomFooter>
 </template>
@@ -74,7 +79,6 @@ function prevCat() {
 <style scoped>
 .adoption-bg {
     min-height: 100vh;
-    background: pink;
     padding-top: 90px;
     padding-bottom: 70px;
     display: flex;

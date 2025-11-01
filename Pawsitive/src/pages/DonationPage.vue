@@ -63,10 +63,10 @@ async function createPaymentIntent() {
 </script>
 
 <template>
-  <div class="donation-page">
-    <NavBar />
 
-    <div class="donation-container">
+    <NavBar />
+    <div class="donation-page background">
+    <div class="donation-container ">
       <!-- Hero Section -->
       <div class="hero-section">
         <h1 class="hero-title">
@@ -196,16 +196,16 @@ async function createPaymentIntent() {
         </div>
       </div>
     </div>
-
+      </div>
     <BottomFooter />
-  </div>
+
 </template>
 
 <style scoped>
 /* Updated all styles to match landing/login page aesthetic */
 .donation-page {
   min-height: 100vh;
-  background: var(--blue);
+
 }
 
 .donation-container {
@@ -224,13 +224,13 @@ async function createPaymentIntent() {
   font-size: 3.5rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  color: #ffffff;
+  color: #806e83;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .hero-description {
   font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #806e83;
   max-width: 42rem;
   margin: 0 auto;
   line-height: 1.6;

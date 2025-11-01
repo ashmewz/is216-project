@@ -60,13 +60,10 @@ const filteredVolunteers = computed(() => {
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
-    <Navbar />
-
-
-    <main class="flex-grow-1 container my-5">
+  <Navbar />
+  <div class="d-flex flex-column min-vh-100 background">
+    <main class="flex-grow-1 container my-5 ">
       <h2 class="fw-bold mb-4 text-center">Find a Pet Service Provider</h2>
-
       <div class="row g-3 mb-4 align-items-end">
         <div class="col-md-4">
           <label class="form-label fw-semibold">Service Type</label>
@@ -76,29 +73,24 @@ const filteredVolunteers = computed(() => {
             </option>
           </select>
         </div>
-
         <div class="col-md-4">
           <label class="form-label fw-semibold">Region</label>
           <select v-model="selectedRegion" class="form-select">
             <option v-for="r in availableRegions" :key="r" :value="r">{{ r }}</option>
           </select>
         </div>
-
       </div>
-
       <div class="row g-4">
         <div v-for="v in filteredVolunteers" :key="v.id" class="col-12 col-sm-6 col-lg-4">
           <VolunteerCard :volunteer="v" :onClick="goToVolunteer" />
         </div>
-
         <div v-if="filteredVolunteers.length === 0" class="text-center mt-4">
           <p class="text-muted">No volunteers match your filter.</p>
         </div>
       </div>
     </main>
-
-    <BottomFooter />
   </div>
+   <BottomFooter />
 </template>
 
 <style scoped>
