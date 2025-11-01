@@ -1,860 +1,240 @@
 <script setup>
-import Navbar from '@/components/resuables/Navbar.vue';
-import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import { onMounted, ref } from 'vue';
-import { Client } from "@gradio/client";
+import Navbar from '@/components/resuables/Navbar.vue'
+import BottomFooter from '@/components/resuables/BottomFooter.vue'
+import { ref, watch } from 'vue'
+import { Client } from "@gradio/client"
 import { useCatStore } from '@/stores/catDataStore'
 import { useRouter } from 'vue-router'
 
 const catStore = useCatStore()
-
-
-//Routes to AI Guide Book Passing the image
 const router = useRouter()
-function goToGuidebook() {
-  if (!catStore.imageData || !catStore.breedData) {
-    alert('Please run the prediction first!')
-    return
+
+// --- Reactive States ---
+const selectedFile = ref(null)
+const imagePreview = ref('') // Displays preview (upload or photo)
+const isCameraOpen = ref(false)
+const isPhotoTaken = ref(false)
+const isLoading = ref(false)
+const camera = ref(null)
+const canvas = ref(null)
+const breedResult = ref('Waiting for prediction...')
+
+// --- Watch for file change ---
+watch(selectedFile, async (newFile) => {
+  if (newFile) {
+    imagePreview.value = URL.createObjectURL(newFile)
+    await identifyBreed(newFile)
   }
+})
 
-  router.push({ name: 'AiGuideBook' })
-}
-
-// File input
-const preview = ref(null);
-const fileInput = ref(null);
-const selectedFile = ref(null);
-
-// Camera
-const isCameraOpen = ref(false);
-const isPhotoTaken = ref(false);
-const isShotPhoto = ref(false);
-const isLoading = ref(false);
-const link = ref('#');
-const camera = ref(null);
-const canvas = ref(null);
-
-// File input change
-function onFileChange(event) {
-  const files = event.target.files;
-  if (files && files.length > 0) {
-    selectedFile.value = files[0];
-    preview.value.src = URL.createObjectURL(selectedFile.value);
-  }
-}
-
-// Calling cat breed identifier API
-async function uploadFile() {
-  if (!selectedFile.value && !canvas.value) {
-    alert('Please select or capture an image first.')
-    return
-  }
-
-  const imageBlob = selectedFile.value || await new Promise((resolve) =>
-    canvas.value.toBlob(resolve, 'image/jpeg')
-  )
-
+// --- Identify Cat Breed ---
+async function identifyBreed(imageBlob) {
   try {
+    isLoading.value = true
     const client = await Client.connect("kevansoon/cat-breed-detector")
     const result = await client.predict("/predict", { image: imageBlob })
-
     if (result.data) {
       console.log("Prediction result:", result.data)
-
-      // Store data in Pinia
-      catStore.setCatData(canvas.value.toDataURL('image/jpeg'), result.data)
-      document.getElementById("catBreedInfo").innerText = result.data;
-
-      
+      breedResult.value = result.data
+      catStore.setCatData(imageBlob, result.data)
     }
-  } catch (error) {
-    alert('Upload and prediction failed.')
-    console.error(error)
+  } catch (err) {
+    console.error("Prediction failed:", err)
+    breedResult.value = "Upload or prediction failed."
+    alert("Failed to process the image.")
+  } finally {
+    isLoading.value = false
   }
 }
 
-
-// Upload button to convert camera screenshot for uploadFile()
-function uploadCanvasImage() {
-  if (!canvas.value) {
-    alert("No photo captured yet!");
-    return;
-  }
-
-  canvas.value.toBlob((blob) => {
-    if (!blob) return;
-    const file = new File([blob], "captured-photo.jpg", { type: "image/jpeg" });
-    selectedFile.value = file;
-    uploadFile();
-  }, "image/jpeg");
+// --- Handle File Upload ---
+function onFileChange(event) {
+  const file = event.target.files[0]
+  if (file) selectedFile.value = file
 }
 
-
-
-
-// Camera controls
-function toggleCamera() {
-  if (isCameraOpen.value) {
-    isCameraOpen.value = false;
-    isPhotoTaken.value = false;
-    isShotPhoto.value = false;
-    stopCameraStream();
-  } else {
-    isCameraOpen.value = true;
-    createCameraElement();
+// --- Toggle Camera ---
+async function toggleCamera() {
+  try {
+    if (!isCameraOpen.value) {
+      isLoading.value = true
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      camera.value.srcObject = stream
+      isCameraOpen.value = true
+    } else {
+      const stream = camera.value.srcObject
+      if (stream) stream.getTracks().forEach(track => track.stop())
+      isCameraOpen.value = false
+    }
+  } catch (err) {
+    console.error("Camera access denied:", err)
+    alert("Unable to access camera.")
+  } finally {
+    isLoading.value = false
   }
 }
 
-function createCameraElement() {
-  isLoading.value = true;
-  const constraints = { audio: false, video: true };
-
-  navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then(stream => {
-      isLoading.value = false;
-      camera.value.srcObject = stream;
-    })
-    .catch(() => {
-      isLoading.value = false;
-      alert("Browser may not support camera access or there is an error");
-    });
-}
-
-function stopCameraStream() {
-  const tracks = camera.value?.srcObject?.getTracks?.();
-  if (tracks) {
-    tracks.forEach(track => track.stop());
-  }
-}
-
+// --- Take Photo ---
 function takePhoto() {
-  if (!isPhotoTaken.value) {
-    isShotPhoto.value = true;
-    const FLASH_TIMEOUT = 50;
-    setTimeout(() => {
-      isShotPhoto.value = false;
-    }, FLASH_TIMEOUT);
-  }
+  if (!camera.value || !canvas.value) return
+  const context = canvas.value.getContext('2d')
+  context.drawImage(camera.value, 0, 0, canvas.value.width, canvas.value.height)
 
-  isPhotoTaken.value = !isPhotoTaken.value;
-  const context = canvas.value.getContext('2d');
-  context.drawImage(camera.value, 0, 0, 450, 337.5);
+  // Convert canvas to file
+  canvas.value.toBlob(blob => {
+    if (blob) {
+      const photoFile = new File([blob], "captured-photo.jpg", { type: "image/jpeg" })
+      selectedFile.value = photoFile
+      isPhotoTaken.value = true
+    }
+  }, "image/jpeg")
 }
 
-function downloadImage() {
-  const download = document.getElementById("downloadPhoto");
-  const canvasData = document
-    .getElementById("photoTaken")
-    .toDataURL("image/jpeg")
-    .replace("image/jpeg", "image/octet-stream");
-
-  download.setAttribute("href", canvasData);
+// --- Navigate to Guidebook ---
+function goToGuidebook() {
+  router.push("/cat-guide")
 }
 </script>
 
 <template>
   <Navbar>
-    <template v-slot:navbar-title>AI Recognition</template>
+    <template #navbar-title>AI Recognition</template>
   </Navbar>
 
   <div class="page-wrapper background">
     <div class="stream-layout">
-      <!-- Left: Main Frame -->
+      <!-- ===== Left Panel ===== -->
       <div class="main-display">
-       <h3>Webcam</h3>
-       <div class="video-container">
-            <video ref="camera" autoplay></video>
-       </div>
-        <button class="btn camera-toggle" @click="toggleCamera" :disabled="isLoading">
-          <span v-if="isLoading">Starting...</span>
-          <span v-else>{{ isCameraOpen ? "Turn Off Camera" : "Turn On Camera" }}</span>
-        </button>
-        <br></br>
-        <!-- Take Photo Button: only visible when camera is on -->
-        <button v-if="isCameraOpen" class="btn" @click="takePhoto">Take Photo</button>
+        <h3>Upload or Take a Photo</h3>
 
-    
+        <!-- Upload Area -->
+        <div
+          class="drag-drop-area"
+          @click="$refs.fileInput.click()"
+        >
+          <p v-if="!imagePreview">Click to upload or use camera below</p>
+          <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="preview-img" />
+        </div>
+
+        <!-- Hidden Input -->
+        <input
+          type="file"
+          accept="image/*"
+          ref="fileInput"
+          @change="onFileChange"
+          style="display:none"
+        />
+
+        <!-- Camera Controls -->
+        <div class="camera-section mt-4">
+          <h3>Camera</h3>
+          <video ref="camera" autoplay v-show="isCameraOpen" class="camera-feed"></video>
+
+          <button class="btn camera-toggle mt-2" @click="toggleCamera" :disabled="isLoading">
+            <span v-if="isLoading">Loading...</span>
+            <span v-else>{{ isCameraOpen ? "Turn Off Camera" : "Turn On Camera" }}</span>
+          </button>
+
+          <button v-if="isCameraOpen" class="btn mt-2" @click="takePhoto">📸 Take Photo</button>
+        </div>
       </div>
 
-      <!-- Right: Webcam + Chat -->
+      <!-- ===== Right Panel ===== -->
       <div class="side-panels">
         <div class="panel webcam">
-        <!-- Canvas to show captured photo -->
-          <canvas ref="canvas" id="photoTaken" width="450" height="337.5" style="display: block; margin-top: 1rem;"></canvas>
-          <button v-if="isPhotoTaken" class="btn" @click="uploadCanvasImage" style="margin-top: 1rem;">
-            Detect Cat Breed!
-          </button>
-            <h3 class="mb-3">What is the cat breed?</h3> 
-          <div id="catBreedInfo">Waiting for prediction...</div>
-        </div>
-        <div class="panel live-chat">
- 
-            <!-- Cat Spinner UI -->
-             <div class="cat-spinner-container">
-                <div id="wrapper">
-                <div id="cat-mask">
-                  <div id="cat">
-                    <div class="body-up"></div>
-                    <div class="body-down"></div>
-                    <div class="body-inside"></div>
-                    <div class="body-mask"></div>
-                    <div class="body-inside-wrapper">
-                      <div class="body-inside-fix"></div>
-                    </div>
-                    <div class="body-inside-wrapper-end">
-                      <div class="body-inside-fix end"></div>
-                    </div>
-                    <div class="inner-mask"></div>
+          <canvas ref="canvas" width="450" height="337.5" class="photo-canvas"></canvas>
 
-                    <div class="shape-mask"></div>
-                    <div class="shape-mask second"></div>
-                    <div class="cat-ass-wrapper">
-                      <div class="cat-tail"></div>
-                      <div class="cat-ass"></div>
-                      <div class="cat-leg"></div>
-                      <div class="cat-leg right"></div>
-                    </div>
-                    <div class="cat-head-wrapper">
-                      <div class="cat-head">
-                        <div class="cat-eye"></div>
-                        <div class="cat-eye right"></div>
-                        <div class="cat-mouth-wrapper">
-                        <div class="cat-mouth"></div>
-                        <div class="cat-mouth-up"></div>
-                        <div class="cat-mouth-up right"></div>
-                          <div class="cat-beard up"></div>
-                          <div class="cat-beard"></div>
-                          <div class="cat-beard down"></div>
-                          <div class="cat-beard right up"></div>
-                          <div class="cat-beard right"></div>
-                          <div class="cat-beard right down"></div>
-                        </div>
-                      </div>
-                      <div class="cat-ear"></div>
-                      <div class="cat-ear right"></div>
-                      <div class="cat-hand"></div>
-                      <div class="cat-hand right"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-             </div>
-           
-           <!-- END: Cat Spinner UI-->
+          <h3 class="mt-3 mb-2">Cat Breed Prediction</h3>
+          <div id="catBreedInfo" class="breed-info">
+            {{ isLoading ? "Detecting breed..." : breedResult }}
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Buttons -->
+    <!-- Generate Button -->
     <div class="bottom-buttons">
-      <button class="btn" @click="goToGuidebook" >Generate GenAI Cat Guide</button>
+      <button class="btn" @click="goToGuidebook">Generate GenAI Cat Guide</button>
     </div>
   </div>
-
-  
 
   <BottomFooter />
 </template>
 
 <style scoped>
 .page-wrapper {
-  /* background: linear-gradient(135deg, #c1cfe6, #f8e1e1); */
-  min-height: 100vh;
-  padding: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 1rem;
 }
 
 .stream-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-gap: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
   width: 100%;
-  max-width: 1200px;
-  align-items: start;
+  max-width: 1000px;
 }
 
 .main-display {
-  background: #6982B5 ; /* purple */
-  border-radius: 20px;
-  padding: 1rem;
-  border: 3px solid #FFFDF7; /* off white */
-  color: #FFFDF7; /* off white text */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.main-preview {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid #FFFDF7; /* optional border for preview */
-}
-
-.side-panels {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.panel {
-  background: #6982B5; /* dark blue */
-  border: 3px solid #FFFDF7; /* off white */
-  border-radius: 20px;
-  color: #FFFDF7; /* off white text */
-  padding: 1rem;
+  flex: 1;
   text-align: center;
 }
 
-.panel.live-chat {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* centers horizontally */
-  justify-content: center; /* centers vertically */
-  min-height: 350px; /* optional: ensures there's enough height for centering */
-  position: relative; /* ensures it doesn’t affect other positioning */
+.drag-drop-area {
+  border: 2px dashed #99b4da;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
-.video-container {
-  position: relative;
+.drag-drop-area:hover {
+  background: #eef4ff;
+}
+
+.preview-img {
+  max-width: 100%;
+  border-radius: 12px;
+  border: 2px solid #99b4da;
+  margin-top: 0.5rem;
+}
+
+.camera-feed {
   width: 100%;
-  aspect-ratio: 4 / 3; /* Maintain a fixed shape */
-  overflow: hidden;
+  max-width: 450px;
   border-radius: 12px;
   border: 2px solid #99b4da;
 }
 
-.video-container video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Fill the box without overflow */
+.photo-canvas {
   display: block;
-  border-radius: 12px;
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 2px solid #99b4da;
 }
 
-.webcam video {
-  width: 100%;
-  border-radius: 12px;
-  border: 2px solid #99b4da; /* lighter blue border */
+.breed-info {
+  padding: 1rem;
+  background: #f6f8ff;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .btn {
-  background:  #806E83  ;
-  color: #FFFDF7; /* off white text */
-  border: 2px solid #FFFDF7; /* off white border */
-  padding: 0.75rem 1.5rem;
-  border-radius: 30px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  background: #99b4da;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
-
 .btn:hover {
-  background: #FFFDF7; /* off white hover bg */
-  color: #806E83; /* purple text on hover */
+  opacity: 0.8;
 }
-
-.camera-toggle {
-  margin-top: 1rem;
-  border-color: #f8e1e1; /* pink */
-  color: #f8e1e1; /* pink text */
-}
-
-.camera-toggle:hover {
-  background: #f8e1e1; /* pink hover bg */
-  color: #6982B5; /* dark blue text */
-}
-
 .bottom-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-/* Optional: cat breed info cards */
-#catBreedInfo, #catBreedGenAiInfo {
-  background: #99b4da; /* lighter blue for info panel */
-  color: #FFFDF7;
-  border-radius: 12px;
-  padding: 1rem;
   margin-top: 1rem;
 }
-
-
-.cat-spinner-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 100%;
-  height: 350px;
-  background: transparent;
-}
-
-/*Cat Loading Spinner*/
-@keyframes rotating {
-  0% {
-    transform: rotate(45deg);
-  }
-  10% {
-    transform: rotate(45deg);
-  }
-  100% {
-    transform: rotate(765deg);
-  }
-}
-
-@keyframes rotating-ass {
-  0% {
-    transform: rotate(-65deg);
-  }
-  90% {
-    transform: rotate(655deg);
-  }
-  100% {
-    transform: rotate(655deg);
-  }
-}
-
-@keyframes mouth {
-  0% {
-    height: 0px;
-    border-weight: 0;
-  }
-  16% {
-    height: 0px;
-    border-weight: 0;
-  }
-  30% {
-    height: 2px;
-    border-weight: 3px;
-  }
-  50% {
-    height: 2px;
-    border-weight: 3px;
-  }
-  100% {
-    height: 0px;
-    border-weight: 0;
-  }
-}
-
-
-#wrapper {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 300px;
-  height: 300px;
-  padding: 50px;
-  background: #6982B5;
-  transform: translate(-50%, -50%);
- 
-}
-
-#cat-mask {
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
-}
-
-#cat {
-  position: relative;
-  width: 250px;
-  height: 250px;
-  border: 5px solid rgb(50, 50, 70);
-  border-radius: 50%;
-}
-#cat .shape-mask {
-  position: absolute;
-  width: 270px;
-  height: 135px;
-  top: -10px;
-  left: -10px;
-  border-radius: 135px 135px 0 0;
-  background: #6982B5;
-  transform-origin: center bottom;
-  transform: rotate(-65deg);
-  animation-name: rotating-ass;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .shape-mask.second {
-  transform: rotate(45deg);
-  animation-name: rotating;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .body-up,
-#cat .body-down {
-  width: 250px;
-  height: 125px;
-  border-radius: 125px 125px 0 0;
-  background: rgb(230, 165, 100);
-}
-#cat .body-down {
-  transform: rotate(180deg);
-}
-#cat .body-inside {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: rgb(240, 190, 120);
-}
-#cat .body-inside-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-65deg);
-  animation-name: rotating-ass;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .body-inside-wrapper-end {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(45deg);
-  animation-name: rotating;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .body-inside-fix {
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  width: 50px;
-  height: 50px;
-  transform: translateY(-50%);
-  background: rgb(230, 165, 100);
-}
-#cat .body-inside-fix.end {
-  left: auto;
-  right: 10px;
-}
-#cat .body-inside-fix.end:after {
-  left: auto;
-  right: 9px;
-}
-#cat .body-inside-fix:after {
-  content: " ";
-  position: absolute;
-  top: 36px;
-  left: 9px;
-  display: block;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background: rgb(240, 190, 120);
-}
-#cat .body-mask {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 170px;
-  height: 170px;
-  border-radius: 50%;
-  background: rgb(230, 165, 100);
-}
-#cat .cat-head-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(45deg);
-  animation-name: rotating;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .cat-head {
-  position: absolute;
-  top: 91px;
-  right: -5px;
-  width: 55px;
-  height: 30px;
-  border: 5px solid rgb(50, 50, 70);
-  border-bottom: none;
-  border-radius: 5px 5px 0 0;
-  background: rgb(230, 165, 100);
-}
-#cat .cat-ear {
-  position: absolute;
-  top: 81px;
-  right: 43px;
-  width: 7px;
-  height: 10px;
-  border: 5px solid rgb(50, 50, 70);
-  border-bottom: none;
-  border-radius: 5px 20px 0 0;
-  background: rgb(230, 165, 100);
-}
-#cat .cat-ear.right {
-  right: -5px;
-  border-radius: 20px 5px 0 0;
-}
-#cat .cat-eye {
-  position: absolute;
-  top: 10px;
-  left: 11px;
-  width: 5px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgb(50, 50, 70);
-}
-#cat .cat-eye.right {
-  left: 39px;
-}
-#cat .cat-mouth-wrapper {
-  position: absolute;
-  top: 23px;
-  left: 23px;
-}
-#cat .cat-mouth {
-  position: absolute;
-  top: 0px;
-  left: 2px;
-  width: 2px;
-  height: 3px;
-  border: 2px solid rgb(50, 50, 70);
-  border-top: none;
-  border-radius: 0 0 5px 5px;
-  animation-name: mouth;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .cat-mouth-up {
-  position: absolute;
-  top: -3px;
-  left: 0;
-  width: 1px;
-  height: 2px;
-  border: 2px solid rgb(50, 50, 70);
-  border-top: none;
-  border-radius: 0 0 5px 5px;
-}
-#cat .cat-mouth-up.right {
-  left: 5px;
-}
-#cat .cat-beard {
-  position: absolute;
-  top: 0;
-  left: -33px;
-  height: 1px;
-  width: 15px;
-  border-top: 2px solid rgb(50, 50, 70);
-  border-radius: 15px;
-  background: black;
-}
-#cat .cat-beard.right {
-  left: auto;
-  right: -43px;
-}
-#cat .cat-beard.up {
-  top: -5px;
-  transform: rotate(5deg);
-}
-#cat .cat-beard.up.right {
-  transform: rotate(-5deg);
-}
-#cat .cat-beard.down {
-  top: 5px;
-  transform: rotate(-5deg);
-}
-#cat .cat-beard.down.right {
-  transform: rotate(5deg);
-}
-#cat .cat-hand {
-  position: absolute;
-  top: 155px;
-  right: 5px;
-  width: 13px;
-  height: 30px;
-  transform: rotate(21deg);
-  border: 5px solid rgb(50, 50, 70);
-  border-top: none;
-  border-radius: 0 5px 15px 15px;
-  background: rgb(230, 165, 100);
-}
-#cat .cat-hand.right {
-  top: 140px;
-  right: 45px;
-}
-#cat .cat-ass-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-65deg);
-  animation-name: rotating-ass;
-  animation-duration: 2.79s;
-  animation-direction: reverse;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-#cat .cat-leg {
-  position: absolute;
-  top: 95px;
-  left: -5px;
-  width: 13px;
-  height: 30px;
-  border: 5px solid rgb(50, 50, 70);
-  border-bottom: none;
-  border-radius: 15px 15px 0 0;
-  background: rgb(230, 165, 100);
-}
-#cat .cat-leg.right {
-  left: auto;
-  right: 190px;
-}
-#cat .cat-ass {
-  position: absolute;
-  top: 115px;
-  left: 13px;
-  width: 18px;
-  height: 5px;
-  border: 5px solid rgb(50, 50, 70);
-  border-bottom: none;
-  border-radius: 30px 30px 0 0;
-  background: rgb(230, 165, 100);
-}
-#cat .cat-tail {
-  position: absolute;
-  top: 75px;
-  left: 17px;
-  width: 12px;
-  height: 40px;
-  border: 5px solid rgb(50, 50, 70);
-  border-bottom: none;
-  border-radius: 20px 20px 0 0;
-  background: rgb(190, 130, 80);
-}
-#cat .inner-mask {
-  position: absolute;
-  box-sizing: border-box;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140px;
-  height: 140px;
-  border: 5px solid rgb(50, 50, 70);
-  border-radius: 50%;
-  background: #6982B5;
-}
-
-
-
-/* Responsive Design for Mobile Devices */
-@media (max-width: 768px) {
-  /* cat spinner wrapper */
-
-  .cat-spinner-container {
-    height: 280px;
-  }
-
-    #wrapper {
-    width: 180px;
-    height: 180px;
-    padding: 25px;
-  }
-
-  .stream-layout {
-    grid-template-columns: 1fr; /* stack main + side panels */
-    grid-gap: 1rem;
-  }
-
-  .main-display,
-  .panel {
-    width: 100%;
-    padding: 1rem;
-  }
-
-  video,
-  canvas {
-    width: 100% !important; /* make sure they don’t overflow */
-    height: auto;
-    border-radius: 12px;
-  }
-
-
-  .bottom-buttons {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .btn {
-    width: 100%;
-    font-size: 0.9rem;
-    padding: 0.6rem 1rem;
-  }
-
-  .page-wrapper {
-    padding: 1rem;
-  }
-
-  h3 {
-    font-size: 1.1rem;
-  }
-
-  #catBreedInfo, #catBreedGenAiInfo {
-    font-size: 0.9rem;
-  }
-}
-
-/* Extra small devices */
-@media (max-width: 480px) {
-
-   .cat-spinner-container {
-    height: 300px;
-  }
-  
-    #wrapper {
-    width: 140px;
-    height: 140px;
-    padding: 15px;
-  }
-
-  .panel.live-chat {
-    min-height: 250px;
-  }
-
-  h3 {
-    font-size: 1rem;
-  }
-}
-
-
-
-
-
 </style>
