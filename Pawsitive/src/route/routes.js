@@ -30,13 +30,13 @@ import AdminAddCat from "@/pages/TEST_ADMIN_ONLY/AdminAddCat.vue";
 const history = createWebHistory();
 const routes = [
     {
-        path: '/',
+        path: '/login',
         // TODO: Inject data for the mode to be in
         // See: https://router.vuejs.org/guide/essentials/dynamic-matching
         component: VolunteerSignupLoginPage
     },
     {
-        path: '/landing',
+        path: '/',
         component: LandingPage
     },
     {

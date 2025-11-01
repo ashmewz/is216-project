@@ -1,4 +1,5 @@
 <template>
+    <PawCanvas />
     <div class="landing-page">
         <!-- Header -->
         <header class="nav-wrap">
@@ -7,8 +8,10 @@
                     <div class="logo" aria-hidden="true">🐾</div>
                     <span>Pawsitive</span>
                 </div>
+                <router-link to="/login" class="no-hover">
+                    <button class="btn ghost">Login</button>
+                </router-link>
 
-                <button class="btn ghost" @click="scrollTo('#join')">Get started</button>
             </div>
         </header>
 
@@ -16,13 +19,13 @@
         <section class="hero wrap">
             <div class="hero-grid">
                 <div>
-                    <p class="kicker">Pets • People • Joy</p>
-                    <h1>Make every step Pawsitive</h1>
-                    <p class="lead">A cheerful hub for pets and their humans - tips, tools, and a caring community that
-                        helps tails wag and hearts feel light.</p>
+                    <h1>{{ typedText }}</h1>
+
                     <div class="cta-row">
-                        <button class="btn primary" @click="alert('Welcome to Pawsitive! 🐾')">Try a happy demo</button>
-                        <button class="btn ghost" @click="scrollTo('#features')">Explore features</button>
+                        <router-link to="/login" class="no-hover">
+                            <button class="btn primary" @click="alert('Welcome to Pawsitive! 🐾')">Register
+                                Now!</button>
+                        </router-link>
                     </div>
 
                 </div>
@@ -38,28 +41,24 @@
             <h2 class="reveal">Why Pawsitive</h2>
             <div class="grid">
                 <article class="feature reveal">
-                    <span class="tag">Community</span>
-                    <h3>Friendly guidance</h3>
-                    <p>Curated tips and stories from pet lovers like you. Learn, share, and celebrate every small win.
+                    <h3>Quick Reporting</h3>
+                    <p>Found a lost or injured cat? Submit a report in seconds and alert your community immediately.</p>
+                </article>
+                <article class="feature reveal">
+                    <h3>Community Updates</h3>
+                    <p>Stay informed about cats in your area. Receive notifications and updates from fellow cat lovers.
                     </p>
                 </article>
                 <article class="feature reveal">
-                    <span class="tag">Wellness</span>
-                    <h3>Happy routines</h3>
-                    <p>Track walks, meals, and playtime. Build joyful habits with gentle reminders and simple charts.
-                    </p>
-                </article>
-                <article class="feature reveal">
-                    <span class="tag">Care</span>
-                    <h3>Trusted resources</h3>
-                    <p>Vet-approved checklists, first aid basics, and training pointers to keep paws safe and spirits
-                        bright.</p>
+                    <h3>Trusted Guidance</h3>
+                    <p>Access tips on helping injured cats safely, from first aid to local shelter contacts.</p>
                 </article>
             </div>
+
         </section>
 
         <!-- How it works & Newsletter -->
-        <section id="how" class="wrap split">
+        <!-- <section id="how" class="wrap split">
             <div class="panel reveal">
                 <ol>
                     <li><strong>Create a profile</strong> for you and your pet.</li>
@@ -76,7 +75,7 @@
                     <p style="margin-top:10px; font-weight:700">{{ signed }}</p>
                 </form>
             </div>
-        </section>
+        </section> -->
 
 
         <!-- Footer -->
@@ -88,7 +87,49 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import PuppyMascot from '@/components/PuppyMascot.vue'
+import PawCanvas from '@/components/resuables/PawCanvas.vue';
+
+const messages = [
+    "Found An Injured Cat And You Don't Know What To Do?",
+    "Lost Cat And You Too Are Lost?",
+    "Want To Inform The Community About It? Spread The Word For Quick Resolution"
+];
+
+
+const typedText = ref('')
+let currentMessageIndex = 0
+let charIndex = 0
+let typingSpeed = 50 // ms per character
+let pauseTime = 2000 // wait before switching to next message
+
+function typeMessage() {
+    const currentMessage = messages[currentMessageIndex]
+    if (charIndex < currentMessage.length) {
+        typedText.value += currentMessage[charIndex]
+        charIndex++
+        setTimeout(typeMessage, typingSpeed)
+    } else {
+        // Wait before deleting / switching
+        setTimeout(() => {
+            deleteMessage()
+        }, pauseTime)
+    }
+}
+
+function deleteMessage() {
+    if (charIndex > 0) {
+        typedText.value = typedText.value.slice(0, -1)
+        charIndex--
+        setTimeout(deleteMessage, typingSpeed / 2)
+    } else {
+        currentMessageIndex = (currentMessageIndex + 1) % messages.length
+        setTimeout(typeMessage, typingSpeed)
+    }
+}
+
+onMounted(() => {
+    typeMessage()
+})
 
 const email = ref('')
 const signed = ref('')
@@ -135,7 +176,7 @@ body,
 .landing-page {
     margin: 0;
     font-family: system-ui, sans-serif;
-    background: linear-gradient(120deg, #ffb86b, #ff6bcb, #8be9fd, #a4ff9f);
+    background: linear-gradient(120deg, #4da6ff, #3399ff, #66ccff, #99ddff);
     background-size: 300% 300%;
     animation: bgShift 18s ease-in-out infinite;
     color: #1b1b1f;
@@ -145,13 +186,31 @@ body,
     0% {
         background-position: 0% 50%;
     }
+
     50% {
         background-position: 100% 50%;
     }
+
     100% {
         background-position: 0% 50%;
     }
 }
+
+
+/* Make all router-links “neutral” */
+router-link {
+    color: inherit;
+    /* take parent color */
+    text-decoration: none;
+    /* remove underline */
+}
+
+/* Prevent hover color changes */
+router-link:hover {
+    color: inherit;
+    /* keep same color on hover */
+}
+
 
 .wrap {
     max-width: 1120px;
@@ -264,6 +323,9 @@ h1 {
     margin-top: 16px;
 }
 
+
+
+
 .mascot {
     aspect-ratio: 1/1;
     width: min(420px, 80%);
@@ -275,9 +337,12 @@ h1 {
 }
 
 @keyframes bounce {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-8px);
     }
@@ -381,12 +446,15 @@ footer {
         grid-template-columns: 1fr;
         text-align: center;
     }
+
     .split {
         grid-template-columns: 1fr;
     }
+
     .grid {
         grid-template-columns: 1fr 1fr;
     }
+
     .links {
         display: none;
     }
@@ -397,5 +465,4 @@ footer {
         grid-template-columns: 1fr;
     }
 }
-
 </style>
