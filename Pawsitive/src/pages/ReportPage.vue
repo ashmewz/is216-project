@@ -1,52 +1,148 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
-import Button from '@/components/resuables/Button.vue';
+import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore'
+import { validateCatReport } from '@/utils/validators';
+import { getAuth } from "firebase/auth";
+import CatReportCard from '@/components/resuables/CatReportCard.vue';
 
-// ✅ Import images properly
-import newscat1 from '@/assets/newscat1.jpg'
-import newscat2 from '@/assets/newscat2.jpg'
-import newscat3 from '@/assets/newscat3.jpg'
 
-// Track selected article
-const selectedArticle = ref(null)
+const db = getFirestore()
+const auth = getAuth();
+const reportsLoading = ref(true)
+const rssLoading = ref(true)
+const fieldErrors = ref({})
+const showModal = ref(false)
+const reports = ref([])
 
-// ✅ Article data
-const articles = [
-  {
-    id: 'latest',
-    title: 'Latest News Headline',
-    summary: 'This is a short summary of the latest news article. It gives an overview of what the article is about and encourages users to read more.',
-    full: 'Here’s the full article content for the latest news. You can include more detailed text, background info, quotes, or related updates about the story.',
-    image: newscat1,
-    isFeatured: true
-  },
-  {
-    id: 'older1',
-    title: 'Older News Title',
-    summary: 'A brief description of this older news article, providing a quick look into the topic covered.',
-    full: 'This is the extended version of the older news article. You can provide more context or related updates here.',
-    image: newscat2,
-    isFeatured: false
-  },
-  {
-    id: 'older2',
-    title: 'Another News Title',
-    summary: 'Another short summary of a different news article. The image fits nicely within this post and is centered.',
-    full: 'This is more detail about the second older news article. Add further information or links here.',
-    image: newscat3,
-    isFeatured: false
+// Form state
+const form = ref({
+  name: '',
+  location: '',
+  description: '',
+  image: null,
+  status: 'Lost'
+
+})
+watch(() => form.value.status, () => fieldErrors.value.status = '')
+watch(() => form.value.name, () => fieldErrors.value.name = '')
+watch(() => form.value.location, () => fieldErrors.value.location = '')
+watch(() => form.value.description, () => fieldErrors.value.description = '')
+watch(() => form.value.image, () => fieldErrors.value.image = '')
+
+
+// Fetch reports with user info
+const fetchReports = async () => {
+  reportsLoading.value = true; // start spinner
+  try {
+    const q = query(collection(db, "catReports"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    const reportsData = [];
+    for (const docSnap of snapshot.docs) {
+      const report = { id: docSnap.id, ...docSnap.data() };
+
+      if (report.submittedBy) {
+        const userDoc = await getDoc(doc(db, "volunteers", report.submittedBy));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          report.username = userData.username || 'Unknown';
+          report.avatar = userData.avatar || null;
+        } else {
+          report.username = 'Unknown';
+          report.avatar = null;
+        }
+      }
+      reportsData.push(report);
+    }
+    reports.value = reportsData;
+  } catch (err) {
+    console.error("Failed to fetch reports", err);
+  } finally {
+    reportsLoading.value = false; // stop spinner
   }
-]
+};
 
-// Functions to handle navigation
-function openArticle(article) {
-  selectedArticle.value = article
+
+onMounted(() => {
+  fetchReports();
+  console.log(reports);
+});
+
+// Open modal
+const openModal = () => showModal.value = true
+
+// Submit report
+const submitReport = async () => {
+  const errors = validateCatReport(form.value);
+  if (Object.keys(errors).length > 0) {
+    fieldErrors.value = errors;
+    return;
+  }
+
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    return alert("You must be logged in to submit a report.");
+  }
+
+  try {
+    await addDoc(collection(db, "catReports"), {
+      status: form.value.status,
+      name: form.value.name.trim(),
+      location: form.value.location.trim(),
+      description: form.value.description.trim(),
+      image: form.value.image || null,
+      submittedBy: currentUser.uid,  // store user ID as foreign key
+      createdAt: serverTimestamp()
+    });
+
+
+    form.value.status = '';
+    form.value.name = '';
+    form.value.location = '';
+    form.value.description = '';
+    form.value.image = null;
+    fieldErrors.value = {};
+    fetchReports();
+    showModal.value = false;
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to submit report. Try again.");
+  }
+};
+
+// Trigger file input
+const fileInput = ref(null)
+const triggerFileInput = () => {
+  fileInput.value.click()
 }
-function goBack() {
-  selectedArticle.value = null
+
+// Convert file to base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+  })
 }
+
+// Handle file change
+const onFileChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  try {
+    const base64 = await fileToBase64(file)
+    form.value.image = base64
+  } catch (err) {
+    console.error('Failed to convert image:', err)
+  }
+}
+
+
+
 </script>
 
 <template>
@@ -55,194 +151,133 @@ function goBack() {
       Report
     </template>
   </Navbar>
-  <main class="background">
+  <div class="container my-5">
 
-    <div class="container news-layout">
-    <!-- Left: News Content -->
-    <div class="news-container mt-4">
-      <!-- Show all news if none selected -->
-      <div v-if="!selectedArticle">
-        <!-- Search Bar -->
-        <div class="mb-4 ">
-          <input type="text" class="form-control" placeholder="Search news..." />
+    <div class="row">
+
+      <!-- Left Column: RSS Feed -->
+      <div class="col-12 col-lg-8 mb-4">
+        <div v-if="rssLoading" class="d-flex justify-content-center align-items-center" style="height: 400px;">
+          <div class="spinner-border text-dark" role="status">
+          </div>
         </div>
-
-        <!-- Featured and older articles -->
-        <div
-          v-for="article in articles"
-          :key="article.id"
-          :class="article.isFeatured ? 'latest-news row align-items-center mb-5' : 'news-card text-start mb-5'"
-        >
-          <!-- Two-column featured article -->
-          <template v-if="article.isFeatured">
-            <div class="col-md-6">
-              <h2 class="news-title">{{ article.title }}</h2>
-              <p class="news-summary">{{ article.summary }}</p>
-              <Button @click="openArticle(article)">Read More</Button>
-              <!-- <button class="btn btn-dark" @click="openArticle(article)">Read More</button> -->
-            </div>
-            <div class="col-md-6 text-center">
-              <img :src="article.image" :alt="article.title" class="img-fluid rounded shadow-sm" />
-            </div>
-          </template>
-
-          <!-- Single-column older articles -->
-          <template v-else>
-            <img :src="article.image" :alt="article.title" class="img-fluid news-image rounded shadow-sm" />
-            <div class="news-text mt-3">
-              <h4 class="news-title">{{ article.title }}</h4>
-              <p class="news-summary">{{ article.summary }}</p>
-              
-              
-              <Button @click="openArticle(article)">Read More</Button>
-              <!-- <button class="btn btn-outline-dark" @click="openArticle(article)">Read More</button> -->
-            </div>
-          </template>
-        </div>
+        <iframe v-show="!rssLoading" @load="rssLoading = false" width="100%" height="2800px"
+          src="https://rss.app/embed/v1/feed/t5NpsAOuQiydgeJJ" frameborder="0">
+        </iframe>
       </div>
 
-      <!-- Show selected article -->
-      <div v-else class="selected-article">
-        <button class="btn btn-outline-secondary mb-3" @click="goBack">← Back to All Articles</button>
-        <h2 class="news-title">{{ selectedArticle.title }}</h2>
-        <img :src="selectedArticle.image" :alt="selectedArticle.title" class="img-fluid rounded shadow-sm my-3" />
-        <p class="news-full">{{ selectedArticle.full }}</p>
+      <!-- Right Column: Sidebar -->
+
+      <div class="col-12 col-lg-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4>Cat Reports</h4>
+          <button class="btn btn-dark btn-sm" @click="openModal">Create Report</button>
+        </div>
+
+        <div v-if="reportsLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+          <div class="spinner-border text-dark" role="status">
+          </div>
+        </div>
+
+        <div v-if="reports.length === 0">No reports yet.</div>
+
+        <div class="d-flex flex-column gap-3">
+          <CatReportCard v-for="report in reports" :key="report.id" :report="report" />
+        </div>
+
       </div>
+
     </div>
 
-    <!-- Right: Sidebar for reporting -->
-    <aside class="sidebar mt-4">
-      <h4 class="mb-3">Create a Cat Report</h4>
-      <form class="report-form">
-        <div class="mb-3">
-          <label class="form-label">Cat Name</label>
-          <input type="text" class="form-control" placeholder="Enter cat name" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Location</label>
-          <input type="text" class="form-control" placeholder="Where was the cat found?" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea class="form-control" rows="3" placeholder="Describe the cat's condition..."></textarea>
-        </div>
-        <!-- <button class="btn btn-dark w-100">Submit Report</button> -->
-        <Button class="w-100">Submit Report</Button>
-      </form>
-    </aside>
   </div>
-  </main>
-  
+
+
+  <!-- Modal -->
+  <div v-if="showModal">
+    <!-- Backdrop -->
+    <div class="modal-backdrop fade show"></div>
+
+    <div class="modal d-flex align-items-center justify-content-center fade show" tabindex="-1">
+      <!-- Modal dialog: responsive -->
+      <div class="modal-dialog modal-dialog-centered" :style="{ maxWidth: '', width: '100%' }">
+        <div class="modal-content">
+          <form @submit.prevent="submitReport">
+            <div class="modal-header">
+              <h5 class="modal-title">Create a Cat Report</h5>
+              <button type="button" class="btn-close" @click="showModal = false"></button>
+            </div>
+
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+
+              <!-- Status -->
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select v-model="form.status" class="form-select" :class="{ 'is-invalid': fieldErrors.status }">
+                  <option value="" disabled>Select status</option>
+                  <option value="Lost">Lost</option>
+                  <option value="Found">Found</option>
+                </select>
+                <div class="invalid-feedback">{{ fieldErrors.status }}</div>
+              </div>
+
+
+              <!-- Cat Name -->
+              <div class="mb-3">
+                <label class="form-label">Cat Name</label>
+                <input v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.name }"
+                  placeholder="Enter cat name" />
+                <div class="invalid-feedback">{{ fieldErrors.name }}</div>
+              </div>
+
+              <!-- Location -->
+              <div class="mb-3">
+                <label class="form-label">Location</label>
+                <input v-model="form.location" type="text" class="form-control"
+                  :class="{ 'is-invalid': fieldErrors.location }" placeholder="Where was the cat found/lost?" />
+                <div class="invalid-feedback">{{ fieldErrors.location }}</div>
+              </div>
+
+              <!-- Description -->
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea v-model="form.description" class="form-control"
+                  :class="{ 'is-invalid': fieldErrors.description }" rows="3"
+                  placeholder="Describe the cat's condition..."></textarea>
+                <div class="invalid-feedback">{{ fieldErrors.description }}</div>
+              </div>
+
+              <!-- Image Upload -->
+              <div class="mb-3">
+                <label class="form-label">Upload Image</label>
+                <div class="d-flex gap-2 align-items-center">
+                  <button type="button" class="btn btn-outline-primary btn-sm" @click="triggerFileInput">
+                    Choose Image
+                  </button>
+                </div>
+                <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" style="display:none" />
+                <div v-if="form.image" class="mt-2">
+                  <img :src="form.image" alt="Preview" style="max-width: 100%; border-radius: 4px;" />
+                </div>
+              </div>
+
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary btn-sm" @click="showModal = false">Cancel</button>
+              <button type="submit" class="btn btn-dark btn-sm">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
 
   <BottomFooter />
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
-.news-layout {
-  display: flex;
-  gap: 2rem;
-}
-
-/* Left: main content */
-.news-container {
-  flex: 3;
-  font-family: "Nunito", sans-serif;
-}
-
-/* Right: sidebar */
-.sidebar {
-  flex: 1;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-family: "Nunito", sans-serif;
-}
-
-.report-form input,
-.report-form textarea {
-  font-size: 0.95rem;
-}
-
-/* --- Latest News Section --- */
-.latest-news img {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-}
-
-.latest-news .news-title {
-  font-weight: 700;
-}
-
-.latest-news .news-summary {
-  font-size: 1rem;
-  color: #555;
-}
-
-/* --- Older News Section --- */
-.news-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.news-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  object-fit: cover;
-}
-
-.news-text {
-  text-align: left;
-}
-
-.news-title {
-  font-weight: 700;
-}
-
-.news-summary {
-  font-size: 0.95rem;
-  color: #666;
-}
-
-.news-full {
-  font-size: 1rem;
-  color: #444;
-  line-height: 1.6;
-}
-
-/* --- Responsive Fixes (SMALL screens only) --- */
-@media (max-width: 768px) {
-  .news-layout {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .sidebar {
-    margin-top: 0.8rem;
-    padding: 1rem;
-  }
-
-  .latest-news {
-    flex-direction: column;
-  }
-
-  .latest-news .col-md-6 {
-    text-align: center;
-  }
-
-  .latest-news .btn {
-    margin-top: 1rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .older-news {
-    margin-bottom: 0.3rem;
-  }
-}
 </style>
