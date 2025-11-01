@@ -105,6 +105,24 @@ export const validateCatReport = (form) => {
   if (isEmpty(form.description)) errors.description = "Description cannot be empty.";
   if (!form.status) errors.status = "Please select Lost or Found.";
 
-  // Optional: image is not required
+  return errors;
+};
+
+export const validatePost = (form) => {
+  const errors = {};
+
+  if (!form.description?.trim()) errors.description = "Description cannot be empty.";
+
+  return errors;
+};
+
+
+export const validateComment = (form) => {
+  const errors = {};
+
+  if (!form.comment || !form.comment.trim()) {
+    errors.comment = "Comment cannot be empty.";
+  }
+
   return errors;
 };

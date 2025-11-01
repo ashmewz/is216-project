@@ -27,7 +27,6 @@
       <ul class="dropdown-menu dropdown-menu-end shadow w-100" :class="{ show: dropdownOpen }">
         <li><a class="dropdown-item" href="#" @click.prevent="setSort('newest')"><i class="bi bi-clock-history me-2"></i>Newest First</a></li>
         <li><a class="dropdown-item" href="#" @click.prevent="setSort('oldest')"><i class="bi bi-clock me-2"></i>Oldest First</a></li>
-        <li><a class="dropdown-item" href="#" @click.prevent="setSort('popular')"><i class="bi bi-heart-fill me-2"></i>Most Liked</a></li>
       </ul>
     </div>
   </div>
