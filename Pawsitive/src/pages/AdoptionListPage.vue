@@ -74,7 +74,6 @@ const adoptionTimeline = [
     },
 ];
 
-
 // Reactive state management
 const adoptionReason = ref('');      // Intialise User Input for adoption reason
 const currentIndex = ref(0);         // Initialise Index of currently displayed cat profile
