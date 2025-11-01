@@ -180,6 +180,8 @@ body,
     background-size: 300% 300%;
     animation: bgShift 18s ease-in-out infinite;
     color: #1b1b1f;
+    min-height: 100vh;
+
 }
 
 @keyframes bgShift {
