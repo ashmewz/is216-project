@@ -558,8 +558,6 @@ onMounted(() => {
 })
 </script>
 
-
-
 <template>
   <Navbar>
     <template v-slot:navbar-title>Report</template>
@@ -727,7 +725,7 @@ onMounted(() => {
       <textarea class="form-control" rows="3" v-model="report.description" placeholder="Describe the cat's condition..."></textarea>
     </div>
 
-    <button class="btn btn-dark w-100" type="submit">Submit Report</button>
+    <button class="btn btn-pink w-100" type="submit">Submit Report</button>
   </form>
   <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
   
@@ -740,7 +738,7 @@ onMounted(() => {
 
 
     <!-- Nearby Cats Section -->
-<h5 style="margin-top: 30px">Nearby Similar Reports (Past 24h, < 1 km ) </h5>
+<h5 class="sidebar-heading">Nearby Similar Reports (Past 24h, < 1 km ) </h5>
 <div v-if="nearbyCats.length === 0" class="text-muted">
   No nearby cats found.
 </div>
@@ -775,11 +773,11 @@ onMounted(() => {
 
   
     <!-- Other Cats Section -->
-        <h5>Other Cat Reports</h5>
+        <h5 class="sidebar-heading">Other Cat Reports</h5>
       <!-- Other Cats Section with Accordion -->
 <div>
   <button 
-    class="btn btn-outline-secondary w-100 mb-2"
+    class="btn btn-outline-pink w-100 mb-2"
     type="button" 
     @click="otherCatsOpen = !otherCatsOpen"
   >
@@ -835,20 +833,24 @@ onMounted(() => {
   <BottomFooter />
 </template>
 
-<style>
+<style scoped>
+/* ... existing code ... */
+
+/* <CHANGE> Updated background to match landing page pink gradient */
+
 /* ---- Container Layout ---- */
 .main-container {
   display: flex;
-  justify-content: center;  /* center form by default */
+  justify-content: center;
   transition: all 0.3s ease;
   padding: 1rem;
 }
 
 .main-content {
   transition: margin-right 0.3s ease;
-  margin-right: 0; /* centered by default */
-  max-width: 500px; /* same width as your form */
-  width: 100%; /* responsive */
+  margin-right: 0;
+  max-width: 500px;
+  width: 100%;
   padding-top: 30px;
 }
 
@@ -863,7 +865,7 @@ onMounted(() => {
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   padding: 1rem;
-  padding-top: 70px; /* space for navbar */
+  padding-top: 70px;
   z-index: 1000;
   transform: translateX(100%);
   transition: transform 0.3s ease;
@@ -886,7 +888,7 @@ onMounted(() => {
   top: 50%;
   transform: translateY(-50%);
   z-index: 1100;
-  background-color: #343a40;
+  background-color: #e875a7;
   color: #fff;
   border: none;
   border-radius: 4px 0 0 4px;
@@ -894,11 +896,16 @@ onMounted(() => {
   height: 40px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 20px;
+}
+
+.sidebar-toggle:hover {
+  background-color: #d55a8f;
 }
 
 /* When sidebar is open, move toggle left */
 .sidebar-open-btn {
-  right: 300px; /* matches sidebar width */
+  right: 300px;
   border-radius: 4px;
 }
 
@@ -912,19 +919,24 @@ onMounted(() => {
     transform: translateX(0);
   }
   .sidebar-open .main-content {
-    margin-right: 0; /* no shift on mobile */
+    margin-right: 0;
   }
   .sidebar-open-btn {
-    right: 0; /* stays visible */
+    right: 0;
   }
 }
 
 /* ==============================
    Report Form Styles
+   <CHANGE> Updated form styling with pink theme
    ============================== */
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .report-form input,
@@ -932,6 +944,21 @@ onMounted(() => {
 .report-form select {
   font-size: 0.95rem;
   border-radius: 8px;
+  border: 1.5px solid #e0d5e0;
+  color: #2d1b2e;
+}
+
+.report-form input:focus,
+.report-form textarea:focus,
+.report-form select:focus {
+  border-color: #e875a7;
+  box-shadow: 0 0 0 3px rgba(232, 117, 167, 0.1);
+}
+
+.form-label {
+  color: #2d1b2e;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 /* ---- Header ---- */
@@ -939,11 +966,51 @@ onMounted(() => {
   text-align: center;
   padding-top: 20px;
   margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: #2d1b2e;
+  font-size: 2rem;
+}
+
+/* ==============================
+   Buttons
+   <CHANGE> Updated button colors to pink theme
+   ============================== */
+.btn-pink {
+  background-color: #e875a7;
+  border-color: #e875a7;
+  color: white;
   font-weight: 600;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-pink:hover {
+  background-color: #d55a8f;
+  border-color: #d55a8f;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 117, 167, 0.3);
+}
+
+.btn-outline-pink {
+  color: #e875a7;
+  border: 1.5px solid #e875a7;
+  border-radius: 8px;
+  background-color: transparent;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-pink:hover {
+  background-color: #f8d7ea;
+  border-color: #d55a8f;
+  color: #d55a8f;
 }
 
 /* ==============================
    Severity Selector
+   <CHANGE> Updated severity box colors to pink theme
    ============================== */
 .severity-container {
   display: flex;
@@ -955,25 +1022,26 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1.5px solid #e0d5e0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  color: #2d1b2e;
+  font-weight: 600;
 }
 
 .severity-box.selected {
-  background-color: #343a40;
+  background-color: #e875a7;
   color: white;
-  border-color: #343a40;
+  border-color: #e875a7;
 }
 
 .severity-box:hover {
-  background-color: #495057;
-  color: white;
-  border-color: #495057;
+  background-color: #f8d7ea;
+  border-color: #e875a7;
 }
 
 /* ==============================
@@ -989,6 +1057,7 @@ onMounted(() => {
   height: auto;
   border-radius: 10px;
   display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .remove-image-btn {
@@ -999,10 +1068,18 @@ onMounted(() => {
   font-size: 0.8rem;
   border-radius: 50%;
   line-height: 1;
+  background-color: #e875a7 !important;
+  border-color: #e875a7 !important;
+}
+
+.remove-image-btn:hover {
+  background-color: #d55a8f !important;
+  border-color: #d55a8f !important;
 }
 
 /* ==============================
    Nearby Cats Section
+   <CHANGE> Updated card styling with subtle pink accents
    ============================== */
 .nearby-cats-container {
   display: flex;
@@ -1011,21 +1088,43 @@ onMounted(() => {
 }
 
 .nearby-cat-card {
-  background-color: #f8f9fa;
+  background-color: #fdf9fc;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(232, 117, 167, 0.1);
   padding: 1rem;
+  border: 1px solid #f0e0e9;
+  transition: all 0.3s ease;
 }
 
+.nearby-cat-card:hover {
+  box-shadow: 0 4px 12px rgba(232, 117, 167, 0.15);
+  transform: translateY(-2px);
+}
+
+.sidebar-heading {
+  color: #2d1b2e;
+  font-weight: 700;
+  margin-top: 30px;
+  margin-bottom: 1rem;
+}
 
 /* ==============================
-   Suggestion
+   Suggestion Dropdown
    ============================== */
-
 .list-group-item:hover {
-  background-color: #f1f1f1;
+  background-color: #f8d7ea;
+  border-color: #e875a7;
 }
 
+/* <CHANGE> Alert styling for breed result */
+.alert-info {
+  background-color: #f0e8f5;
+  border-color: #e875a7;
+  color: #2d1b2e;
+}
 
+.text-muted {
+  color: #8b6b8f !important;
+}
 
 </style>
