@@ -3,7 +3,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import CatReportCard from '@/components/resuables/CatReportCard.vue'
-import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy, where } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy, where, GeoPoint } from 'firebase/firestore'
 import { getAuth } from "firebase/auth"
 import { validateCatReport } from '@/utils/validators' // your validation util
 import { Client } from "@gradio/client"
@@ -22,7 +22,7 @@ const report = reactive({
   estimatedAge: '',
   gender: '',
   neutered: '',
-  location: '',
+  location: 'Central Park, Singapore', // <-- prefilled
   description: '',
   imageFile: null,
   imagePreview: null,
@@ -372,55 +372,81 @@ const fetchReports = async () => {
 
 // Submit form to Firebase
 const submitReport = async () => {
-  // Assemble report object for validation
+  console.log("📨 Submit button clicked");
+
+  // 1️⃣ Validation
   const toValidate = {
     status: report.status,
     name: report.catName,
     location: report.location,
     description: report.description,
     image: report.imagePreview
-  }
-  const errors = validateCatReport(toValidate)
+  };
+  const errors = validateCatReport(toValidate);
   if (Object.keys(errors).length > 0) {
-    fieldErrors.value = errors
-    return
+    console.warn("⚠️ Validation failed:", errors);
+    fieldErrors.value = errors;
+    return;
   }
-  const currentUser = auth.currentUser
+
+  const currentUser = auth.currentUser;
   if (!currentUser) {
-    alert("You must be logged in to submit a report.")
-    return
+    console.warn("⚠️ User not logged in, cannot submit report.");
+    alert("You must be logged in to submit a report.");
+    return;
   }
+
   try {
-    // Store the report in Firestore
-    await addDoc(collection(db, "catReports"), {
-      status: report.status,
-      name: report.catName.trim(),
-      location: report.location.trim(),
-      description: report.description.trim(),
-      image: report.imagePreview || null,
-      condition: report.condition,
-      severity: report.severity,
-      submittedBy: currentUser.uid,
-      createdAt: serverTimestamp()
-    })
-    // Reset form fields
-    report.status = ''
-    report.catName = ''
-    report.location = ''
-    report.description = ''
-    report.imageFile = null
-    report.imagePreview = null
-    report.condition = ''
-    report.severity = 0
-    fieldErrors.value = {}
-    fetchReports()
-    showModal.value = false
-    if (fileInput.value) fileInput.value.value = null
+    // 🧭 Hardcoded location for testing
+    const lat = 1.3578025;
+    const lon = 103.737034;
+
+    // 3️⃣ Add to `cats` collection
+    console.log("Saving report to 'cats' collection...");
+
+    const catRef = await addDoc(collection(db, "cats"), {
+      age: report.estimatedAge || "",
+      color: "",
+      created_at: serverTimestamp(),
+      description: report.description || "",
+      gender: report.gender || "",
+      last_location: new GeoPoint(lat, lon),
+      last_seen: serverTimestamp(),
+      name: report.catName || "",
+      neutered: report.neutered || "",
+      photos: report.imagePreview ? [report.imagePreview] : [],
+      species: report.catName || "",
+      status: report.status || ""
+    });
+
+    console.log("✅ Cat added to 'cats' with ID:", catRef.id);
+
+    // 4️⃣ Reset form
+    report.status = '';
+    report.catName = '';
+    report.location = '';
+    report.description = '';
+    report.imageFile = null;
+    report.imagePreview = null;
+    report.condition = '';
+    report.severity = 0;
+    report.gender = '';
+    report.neutered = '';
+    report.estimatedAge = '';
+    fieldErrors.value = {};
+    if (fileInput.value) fileInput.value.value = null;
+
+    fetchReports();
+    showModal.value = false;
+
+    console.log("🎉 Form reset complete, reports refreshed!");
+    alert("✅ Report submitted and cat record added successfully!");
+
   } catch (err) {
-    console.error(err)
-    alert("Failed to submit report. Try again.")
+    console.error("❌ Error submitting report:", err);
+    alert("Failed to submit report. Check console for details.");
   }
-}
+};
 
 onMounted(() => {
   fetchReports()
@@ -584,15 +610,7 @@ onMounted(() => {
   
   <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
   
-  <!-- Main content (report form) -->
-  <div class="flex-grow-1 main-content">
-
-    <form class="report-form" @submit.prevent="submitReport">
-      <!-- existing form code here -->
-      <!-- Status, Cat Breed, Location, Image Upload, Condition, Severity, Description, Submit button -->
-    </form>
-  </div>
-
+  
   <!-- Sidebar -->
   <div class="sidebar" v-if="sidebarOpen">
 
