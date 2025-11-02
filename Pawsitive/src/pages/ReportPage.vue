@@ -57,6 +57,9 @@ let userCircle = null;
 let catMarkers = []; // 🆕 store cat markers
 const showMap = ref(false);
 
+//
+const otherCatsOpen = ref(false);
+
 
 
 function selectLocationSuggestion(suggestion) {
@@ -197,7 +200,7 @@ async function initMapWithRadius(cats = []) {
 
 // Example: radius for nearby cats in meters
 // --- Constants ---
-const RADIUS_METERS = 20000;
+const RADIUS_METERS = 1000;
 
 // --- Haversine / proximity functions ---
 function haversineMeters(lat1, lon1, lat2, lon2) {
@@ -414,33 +417,44 @@ const fileToBase64 = (file) => {
 
 // Firebase: fetch all reports ordered by creation date
 const fetchReports = async () => {
-  reportsLoading.value = true
+  reportsLoading.value = true;
   try {
-    const q = query(collection(db, "catReports"), orderBy("createdAt", "desc"))
-    const snapshot = await getDocs(q)
-    const reportsData = []
+    // Fetch cats collection
+    const q = query(collection(db, "cats"), orderBy("created_at", "desc"));
+    const snapshot = await getDocs(q);
+
+    const catsData = [];
     for (const docSnap of snapshot.docs) {
-      const r = { id: docSnap.id, ...docSnap.data() }
-      if (r.submittedBy) {
-        const userDoc = await getDoc(doc(db, "volunteers", r.submittedBy))
+      const cat = { id: docSnap.id, ...docSnap.data() };
+
+      // Optional: fetch volunteer info if submittedBy exists
+      if (cat.submittedBy) {
+        const userDoc = await getDoc(doc(db, "volunteers", cat.submittedBy));
         if (userDoc.exists()) {
-          const userData = userDoc.data()
-          r.username = userData.username || 'Unknown'
-          r.avatar = userData.avatar || null
+          const userData = userDoc.data();
+          cat.username = userData.username || "Unknown";
+          cat.avatar = userData.avatar || null;
         } else {
-          r.username = 'Unknown'
-          r.avatar = null
+          cat.username = "Unknown";
+          cat.avatar = null;
         }
+      } else {
+        cat.username = "Unknown";
+        cat.avatar = null;
       }
-      reportsData.push(r)
+
+      catsData.push(cat);
     }
-    reports.value = reportsData
+
+    reports.value = catsData;
+    console.log(`✅ Fetched ${catsData.length} cats`);
   } catch (err) {
-    console.error("Failed to fetch reports", err)
+    console.error("Failed to fetch cats", err);
   } finally {
-    reportsLoading.value = false
+    reportsLoading.value = false;
   }
-}
+};
+
 
 // Submit form to Firebase
 const submitReport = async () => {
@@ -708,11 +722,10 @@ onMounted(() => {
   <!-- Sidebar -->
   <div class="sidebar" v-if="sidebarOpen">
 
-    <!-- My Reports Section -->
-    <h5 style="margin-top: 30px">Similar Reports</h5>
+
 
     <!-- Nearby Cats Section -->
-<h5>Nearby Cats (< 0.5 km)</h5>
+<h5 style="margin-top: 30px">Nearby Similar Reports (Past 24h, < 1 km ) </h5>
 <div v-if="nearbyCats.length === 0" class="text-muted">
   No nearby cats found.
 </div>
@@ -732,11 +745,12 @@ onMounted(() => {
       />
       <div>
         <h6 class="mb-1">{{ cat.name || 'Unnamed Cat' }}</h6>
-        <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ? cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
+        <p class="mb-1"><strong>Description:</strong> {{ cat.description || 'No description' }}</p>
         <p class="mb-1"><strong>Last Location:</strong> 
           {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ", " + cat.last_location._long }}
         </p>
-        <p class="mb-0"><strong>Distance:</strong> {{ cat.distanceMeters.toFixed(2) }} m</p>
+        <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ? cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
+        <p v-if="cat.distanceMeters" class="mb-0"><strong>Estimated Distance:</strong> {{ cat.distanceMeters.toFixed(2) }} m</p>
       </div>
     </div>
   </div>
@@ -744,11 +758,46 @@ onMounted(() => {
 
     <hr />
 
-    <!-- Others' Reports Section -->
-    <h5>Others' Reports</h5>
-    <div v-for="reportItem in reports.filter(r => r.username !== 'Alice')" :key="reportItem.id">
-      <CatReportCard :report="reportItem" />
+  
+    <!-- Other Cats Section -->
+        <h5>Other Cat Reports</h5>
+      <!-- Other Cats Section with Accordion -->
+<div>
+  <button 
+    class="btn btn-outline-secondary w-100 mb-2"
+    type="button" 
+    @click="otherCatsOpen = !otherCatsOpen"
+  >
+    Other Cats ({{ reports.length }}) 
+    <span>{{ otherCatsOpen ? '▲' : '▼' }}</span>
+  </button>
+
+  <div v-show="otherCatsOpen" class="nearby-cats-container">
+    <div 
+      v-for="cat in reports" 
+      :key="cat.id" 
+      class="nearby-cat-card card mb-3 p-2"
+    >
+      <div class="d-flex gap-2">
+        <img 
+          v-if="cat.photos && cat.photos.length" 
+          :src="cat.photos[0]" 
+          alt="cat photo" 
+          class="card-img" 
+          style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"
+        />
+        <div>
+          <h6 class="mb-1">{{ cat.name || 'Unnamed Cat' }}</h6>
+          <p class="mb-1"><strong>Description:</strong> {{ cat.description || 'No description' }}</p>
+          <p class="mb-1"><strong>Last Location:</strong> 
+            {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ", " + cat.last_location._long }}
+          </p>
+          <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ? cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
   </div>
 
@@ -961,5 +1010,7 @@ onMounted(() => {
 .list-group-item:hover {
   background-color: #f1f1f1;
 }
+
+
 
 </style>
