@@ -61,6 +61,21 @@ const showMap = ref(false);
 const otherCatsOpen = ref(false);
 
 
+if (map) {
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 100); // wait for DOM render
+}
+
+watch(nearbyCats, (newCats) => {
+  if (newCats.length > 0) {
+    showMap.value = true; // show container first
+    setTimeout(() => initMapWithRadius(newCats), 100); // slight delay for DOM
+  } else {
+    showMap.value = false;
+    clearCatMarkers();
+  }
+}, { deep: true });
 
 function selectLocationSuggestion(suggestion) {
   report.location = suggestion.label;
@@ -587,7 +602,7 @@ onMounted(() => {
         <strong>Detected Breed:</strong> {{ breedResult }}
       </div>
     
-      <div v-if="showMap" id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
+      <div v-show="showMap" id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
 
     <!-- Status Dropdown -->
     <div class="mb-3">
