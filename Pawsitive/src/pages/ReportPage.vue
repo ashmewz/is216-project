@@ -46,10 +46,9 @@ const breedResult = ref(null)
 const firstBreed = ref(null)
 const nearbyCats = ref([])
 
-// --- New reactive state for location display ---
-const locationStatus = ref('')
-const locationResult = ref('')
-const locationCoords = ref('')
+//for location field auto complete
+const locationSuggestions = ref([]);
+const showSuggestions = ref(false);
 
 // 🆕 Leaflet map variables
 let map = null;
@@ -57,6 +56,48 @@ let userMarker = null;
 let userCircle = null;
 let catMarkers = []; // 🆕 store cat markers
 const showMap = ref(false);
+
+
+
+function selectLocationSuggestion(suggestion) {
+  report.location = suggestion.label;
+  report.coords = suggestion.coords;
+  showSuggestions.value = false;
+}
+
+watch(
+  () => report.location,
+  async (newVal) => {
+    if (!newVal || newVal.length < 2) {
+      locationSuggestions.value = [];
+      showSuggestions.value = false;
+      return;
+    }
+
+    try {
+      const resp = await fetch(
+        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(newVal)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`
+      );
+      const data = await resp.json();
+
+      if (data.found > 0) {
+        // pick first 5 results
+        locationSuggestions.value = data.results.slice(0, 5).map(r => ({
+          label: r.ADDRESS,
+          coords: { lat: parseFloat(r.LATITUDE), lng: parseFloat(r.LONGITUDE) }
+        }));
+        showSuggestions.value = true;
+      } else {
+        locationSuggestions.value = [];
+        showSuggestions.value = false;
+      }
+    } catch (err) {
+      console.error("Location suggestion error:", err);
+      locationSuggestions.value = [];
+      showSuggestions.value = false;
+    }
+  }
+);
 
 
 async function getCoordinatesFromQuery(query) {
@@ -587,18 +628,33 @@ onMounted(() => {
 
 
     <!-- Location (auto-detect) -->
-    <div class="mb-3">
+  <div class="mb-3 position-relative">
   <label class="form-label">Location</label>
-  <div class="d-flex gap-2 align-items-center">
-    <input 
-      type="text" 
-      class="form-control" 
-      v-model="report.location" 
-      placeholder="Enter location..."
-    />
-  </div>
+  <input 
+    type="text" 
+    class="form-control" 
+    v-model="report.location" 
+    placeholder="Enter location..."
+    @focus="showSuggestions.value = locationSuggestions.value.length > 0"
+  />
+  
+  <!-- Dropdown Suggestions -->
+  <ul 
+    v-if="showSuggestions" 
+    class="list-group position-absolute w-100" 
+    style="z-index: 1000; max-height: 200px; overflow-y: auto;"
+  >
+    <li 
+      v-for="(suggestion, index) in locationSuggestions" 
+      :key="index" 
+      class="list-group-item list-group-item-action"
+      @click="selectLocationSuggestion(suggestion)"
+      style="cursor: pointer;"
+    >
+      {{ suggestion.label }}
+    </li>
+  </ul>
 </div>
-
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
       <label class="form-label">Condition of the cat (optional)</label>
@@ -895,6 +951,15 @@ onMounted(() => {
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1rem;
+}
+
+
+/* ==============================
+   Suggestion
+   ============================== */
+
+.list-group-item:hover {
+  background-color: #f1f1f1;
 }
 
 </style>
