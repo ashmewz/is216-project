@@ -7,6 +7,14 @@
   --white-off: #FFFDF7;
 }
 
+a,
+a:hover,
+a:focus,
+a:active,
+.text-primary:hover {
+  color: inherit !important;
+  background: none !important;
+}
 
 
 * {

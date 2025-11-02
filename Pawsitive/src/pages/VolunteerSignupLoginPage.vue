@@ -9,7 +9,7 @@
 
                         <!-- ========== GRAPHIC PANEL (Top on mobile, Left on lg) ========== -->
                         <div
-                            class="col-12 col-lg-6 order-lg-1 bg-secondary text-white d-flex flex-column justify-content-center align-items-center p-4 p-lg-5 rounded-top rounded-lg-start">
+                            class="col-12 col-lg-6 order-lg-1 bg-secondary text-white d-flex flex-column justify-content-center align-items-center p-4 p-lg-5 rounded-top rounded-bottom rounded-lg-start">
                             <h1 class="display-5 fw-bold mb-3">Welcome!</h1>
                             <p class="lead text-center mb-4">Join our volunteer community and make a difference.</p>
                             <img src="/src/assets/pawsitive_gif_bgnone.gif" alt="Pawsitive"

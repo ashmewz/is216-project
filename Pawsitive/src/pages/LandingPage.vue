@@ -8,7 +8,7 @@
                     <div class="logo" aria-hidden="true">🐾</div>
                     <span>Pawsitive</span>
                 </div>
-                <router-link to="/login" class="no-hover">
+                <router-link to="/login" >
                     <button class="btn ghost">Login</button>
                 </router-link>
 
@@ -23,7 +23,7 @@
 
                     <div class="cta-row">
                         <router-link :to="{ path: '/login', query: { form: 'register' } }">
-                            <button class="btn primary" @click="alert('Welcome to Pawsitive! 🐾')">Register
+                            <button class="btn primary">Register
                                 Now!</button>
                         </router-link>
                     </div>
@@ -201,20 +201,13 @@ body,
     }
 }
 
-
-/* Make all router-links “neutral” */
+a,
 router-link {
-    color: inherit;
-    /* take parent color */
-    text-decoration: none;
-    /* remove underline */
+  background-color: transparent !important;
+  color: black;
 }
 
-/* Prevent hover color changes */
-router-link:hover {
-    color: inherit;
-    /* keep same color on hover */
-}
+
 
 
 .wrap {
