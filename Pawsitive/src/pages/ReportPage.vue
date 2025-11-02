@@ -296,10 +296,14 @@ const fetchReports = async () => {
 </template>
 
 <style>
+/* Make form have side spacing on mobile */
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
+  padding: 0 1rem; /* <-- add horizontal padding */
+  box-sizing: border-box; /* ensures padding doesn’t exceed max-width */
 }
+
 .report-form input,
 .report-form textarea,
 .report-form select {
