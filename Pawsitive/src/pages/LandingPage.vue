@@ -8,7 +8,7 @@
                     <div class="logo" aria-hidden="true">🐾</div>
                     <span>Pawsitive</span>
                 </div>
-                <router-link to="/login" >
+                <router-link to="/login">
                     <button class="btn ghost">Login</button>
                 </router-link>
 
@@ -176,10 +176,20 @@ body,
 .landing-page {
     margin: 0;
     font-family: system-ui, sans-serif;
-    background: linear-gradient(120deg, #4da6ff, #3399ff, #66ccff, #99ddff);
-    background-size: 300% 300%;
-    animation: bgShift 18s ease-in-out infinite;
-    color: #1b1b1f;
+    background: linear-gradient(120deg,
+            /* Light pink */
+            #f8d7ea,
+            /* Warm rose */
+            #f9bec7,
+            /* Subtle coral pink */
+            #f8a5c2,
+            /* Gentle mid-pink */
+            #fdf2f8
+            /* Loop back */
+        );
+    background-size: 400% 400%;
+    animation: bgShift 14s ease-in-out infinite;
+    color: #2d1b2b;
     min-height: 100vh;
     padding-left: 16px;
     padding-right: 16px;
@@ -192,8 +202,16 @@ body,
         background-position: 0% 50%;
     }
 
-    50% {
+    25% {
         background-position: 100% 50%;
+    }
+
+    50% {
+        background-position: 100% 100%;
+    }
+
+    75% {
+        background-position: 0% 100%;
     }
 
     100% {
@@ -203,8 +221,8 @@ body,
 
 a,
 router-link {
-  background-color: transparent !important;
-  color: black;
+    background-color: transparent !important;
+    color: black;
 }
 
 
@@ -418,8 +436,17 @@ h1 {
 }
 
 .btn.primary {
-    background: #00c2ff;
-    color: #00233a;
+  background: #ff80ab;               /* Vibrant pink that pops on the soft bg */
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(255, 128, 171, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn.primary:hover {
+  background: #ff6b9d;               /* Slightly deeper on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 128, 171, 0.45);
 }
 
 /* Scroll reveal */
