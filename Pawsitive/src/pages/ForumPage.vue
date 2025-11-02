@@ -356,6 +356,7 @@ onMounted(fetchPosts)
   background: linear-gradient(135deg, #fef5f5 0%, #f8e1e1 100%);
   border: 2px solid #f0d4d4;
   animation: slideDown 0.5s ease-out;
+  text-align: center;
 }
 
 .welcome-content h2 {
@@ -655,4 +656,27 @@ onMounted(fetchPosts)
 .navbar {
   z-index: 1030 !important;
 }
+
+.forum-page {
+  background-color: #f8e1e1 ; /* change this to any color you want */
+  min-height: 100vh; /* ensures it covers the full viewport height */
+}
+
+/* In your forum page CSS or GridSplit.css */
+@media (max-width: 991.98px) { /* Medium breakpoint and smaller */
+  .grid-split {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .grid-split > .sidebar {
+    order: -1;       /* Moves sidebar on top */
+    margin-bottom: 1rem; /* Space between sidebar and posts */
+  }
+
+  .grid-split > .main {
+    width: 100%;     /* Ensure posts take full width */
+  }
+}
+
 </style>
