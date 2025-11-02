@@ -22,7 +22,8 @@ const report = reactive({
   estimatedAge: '',
   gender: '',
   neutered: '',
-  location: 'Central Park, Singapore', // <-- prefilled
+  location: '', 
+  coords: null,
   description: '',
   imageFile: null,
   imagePreview: null,
@@ -37,7 +38,7 @@ const showModal = ref(false)
 const sidebarOpen = ref(false)
 const fileInput = ref(null)
 
-
+const searchQuery = ref('SMU'); // default prefilled
 
 // --- New refs for prediction ---
 const isLoading = ref(false)
@@ -56,6 +57,36 @@ let userMarker = null;
 let userCircle = null;
 let catMarkers = []; // 🆕 store cat markers
 const showMap = ref(false);
+
+
+async function getCoordinatesFromQuery(query) {
+  if (!query) return null
+  try {
+    const resp = await fetch(`https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(query)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`)
+    const data = await resp.json()
+    if (data.found === 0 || !data.results?.length) return null
+    const result = data.results[0]
+    return { lat: parseFloat(result.LATITUDE), lng: parseFloat(result.LONGITUDE) }
+  } catch (err) {
+    console.error("OneMap fetch error:", err)
+    return null
+  }
+}
+
+async function updateLocation() {
+  if (!report.location) return alert("Please enter a location!")
+  const coords = await getCoordinatesFromQuery(report.location)
+  if (!coords) {
+    alert("Failed to resolve location. Check your input.")
+    report.coords = null
+    return
+  }
+  report.coords = coords
+  console.log("Updated coordinates:", coords) // lat/lng stored here
+}
+
+
+
 
 function clearCatMarkers() {
   catMarkers.forEach(marker => map.removeLayer(marker));
@@ -397,9 +428,12 @@ const submitReport = async () => {
   }
 
   try {
-    // 🧭 Hardcoded location for testing
-    const lat = 1.3578025;
-    const lon = 103.737034;
+      if (!report.coords) {
+      await updateLocation(); // try to fetch if not already fetched
+      if (!report.coords) return; // stop if invalid
+    }
+
+    const { lat, lng } = report.coords;
 
     // 3️⃣ Add to `cats` collection
     console.log("Saving report to 'cats' collection...");
@@ -410,7 +444,7 @@ const submitReport = async () => {
       created_at: serverTimestamp(),
       description: report.description || "",
       gender: report.gender || "",
-      last_location: new GeoPoint(lat, lon),
+      last_location: new GeoPoint(lat, lng),
       last_seen: serverTimestamp(),
       name: report.catName || "",
       neutered: report.neutered || "",
@@ -554,12 +588,16 @@ onMounted(() => {
 
     <!-- Location (auto-detect) -->
     <div class="mb-3">
-      <label class="form-label">Location</label>
-      <div class="d-flex gap-2 align-items-center">
-        <input type="text" class="form-control" v-model="report.location" readonly placeholder="Fetching location..." />
-        <button type="button" class="btn btn-outline-secondary btn-sm" @click="getLocation">Refresh</button>
-      </div>
-    </div>
+  <label class="form-label">Location</label>
+  <div class="d-flex gap-2 align-items-center">
+    <input 
+      type="text" 
+      class="form-control" 
+      v-model="report.location" 
+      placeholder="Enter location..."
+    />
+  </div>
+</div>
 
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
