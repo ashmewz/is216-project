@@ -8,6 +8,9 @@ import { getAuth } from "firebase/auth"
 import { validateCatReport } from '@/utils/validators' // your validation util
 import { Client } from "@gradio/client"
 
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 const db = getFirestore()
 const auth = getAuth()
 
@@ -46,6 +49,78 @@ const nearbyCats = ref([])
 const locationStatus = ref('')
 const locationResult = ref('')
 const locationCoords = ref('')
+
+// 🆕 Leaflet map variables
+let map = null;
+let userMarker = null;
+let userCircle = null;
+let catMarkers = []; // 🆕 store cat markers
+const showMap = ref(false);
+
+function clearCatMarkers() {
+  catMarkers.forEach(marker => map.removeLayer(marker));
+  catMarkers = [];
+}
+
+
+async function initMapWithRadius(cats = []) {
+  try {
+    const [lat, lon] = await getLocation(); // reuse your existing getLocation()
+
+    // Create or center map
+    if (!map) {
+      map = L.map("map").setView([lat, lon], 14);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+    }
+
+    // Clear previous layers
+    if (userMarker) map.removeLayer(userMarker);
+    if (userCircle) map.removeLayer(userCircle);
+    clearCatMarkers();
+
+    // Draw your location marker
+    userMarker = L.marker([lat, lon])
+      .addTo(map)
+      .bindPopup("📍 You are here")
+      .openPopup();
+
+    // Draw the detection radius
+    userCircle = L.circle([lat, lon], {
+      radius: RADIUS_METERS,
+      color: "blue",
+      fillColor: "#3b82f6",
+      fillOpacity: 0.2
+    }).addTo(map);
+
+    // 🐱 Draw markers for nearby cats
+    cats.forEach(cat => {
+      const loc = cat.last_location;
+      const [catLat, catLon] = Array.isArray(loc)
+        ? loc
+        : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
+
+      if (!catLat || !catLon) return;
+
+      // 🆕 create marker for each nearby cat
+      const marker = L.marker([catLat, catLon])
+        .addTo(map)
+        .bindPopup(
+          `<strong>${cat.name || "Unnamed Cat"}</strong><br>
+           Distance: ${cat.distanceMeters?.toFixed(2)} m<br>
+           Condition: ${cat.condition || "Unknown"}`
+        );
+
+      catMarkers.push(marker);
+    });
+
+    console.log(`✅ Drawn ${cats.length} cat markers on the map`);
+  } catch (error) {
+    console.error("❌ Failed to load map or draw markers:", error);
+  }
+}
+
 
 
 // Example: radius for nearby cats in meters
@@ -96,6 +171,8 @@ function extractFirstBreed(breedResult) {
 async function fetchCatsByBreed(breedName) {
   if (!breedName) return [];
 
+  console.log(breedName)
+
   try {
     // 🔹 1. Simple query — only by species
     const q = query(collection(db, "cats"), where("species", "==", breedName));
@@ -111,6 +188,8 @@ async function fetchCatsByBreed(breedName) {
         const createdAt = cat.created_at?.toDate ? cat.created_at.toDate() : null;
         return createdAt && createdAt >= oneDayAgo;
       });
+
+      console.log("Recent Cats: " + recentCats)
 
     return recentCats;
   } catch (err) {
@@ -128,6 +207,7 @@ function filterCatsByProximity(cats, myLocation, radiusMeters = RADIUS_METERS) {
 
       const catLocation = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
       if (catLocation.some(v => v == null)) return null;
+
 
       const proximity = roughlySameArea(myLocation, catLocation, radiusMeters);
 
@@ -198,6 +278,11 @@ async function identifyBreed(imageBlob) {
 
     // 5️⃣ Filter cats by proximity
     nearbyCats.value = filterCatsByProximity(cats, myLocation, RADIUS_METERS);
+    // 🆕 Only show map if there are nearby cats
+    showMap.value = nearbyCats.value.length > 0;
+
+    // 🗺️ Draw the map only if we have nearby cats
+    if (showMap.value) initMapWithRadius(nearbyCats.value);
 
   } catch (err) {
     console.error("❌ Identify breed workflow failed:", err);
@@ -353,7 +438,7 @@ onMounted(() => {
 
   <form class="report-form" @submit.prevent="submitReport">
 
-
+  
       <!-- Image Upload -->
       <div class="mb-3">
         <label class="form-label">Upload Image</label>
@@ -364,13 +449,7 @@ onMounted(() => {
           @change="handleFileUpload" 
           accept="image/*"
         />
-        <!-- 🐾 Breed Prediction Result -->
-      <div v-if="isLoading" class="text-muted mt-2">
-        Analyzing image for breed...
-      </div>
-      <div v-else-if="breedResult" class="mt-2 alert alert-info">
-        <strong>Detected Breed:</strong> {{ breedResult }}
-      </div>
+
 
         <!-- Preview Section -->
         <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
@@ -384,8 +463,16 @@ onMounted(() => {
           </button>
         </div>
       </div>
-    
 
+      <!-- 🐾 Breed Prediction Result -->
+      <div v-if="isLoading" class="text-muted mt-2">
+        Analyzing image for breed...
+      </div>
+      <div v-else-if="breedResult" class="mt-2 alert alert-info">
+        <strong>Detected Breed:</strong> {{ breedResult }}
+      </div>
+    
+      <div v-if="showMap" id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
 
     <!-- Status Dropdown -->
     <div class="mb-3">
