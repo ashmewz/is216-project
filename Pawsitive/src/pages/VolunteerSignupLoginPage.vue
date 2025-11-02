@@ -103,7 +103,7 @@
                                             <label class="form-label">Contact Number</label>
                                             <input v-model="registerForm.contactNumber" type="tel" class="form-control"
                                                 :class="{ 'is-invalid': registerFieldErrors.contactNumber }"
-                                                placeholder="+65 9123 4567">
+                                                placeholder="9123 4567">
                                             <div class="invalid-feedback">{{ registerFieldErrors.contactNumber }}</div>
                                         </div>
 

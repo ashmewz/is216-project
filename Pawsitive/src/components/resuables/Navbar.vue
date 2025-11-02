@@ -5,9 +5,7 @@ import { ref, onMounted } from "vue";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import defaultAvatar from '@/assets/avatar_placeholder.jpg'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import 'bootstrap/dist/css/bootstrap.min.css'
-import * as bootstrap from 'bootstrap';
+
 
 const avatar = ref(null);
 const auth = getAuth();
