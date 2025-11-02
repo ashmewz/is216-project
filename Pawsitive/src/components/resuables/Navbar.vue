@@ -5,9 +5,7 @@ import { ref, onMounted } from "vue";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import defaultAvatar from '@/assets/avatar_placeholder.jpg'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import 'bootstrap/dist/css/bootstrap.min.css'
-import * as bootstrap from 'bootstrap';
+
 
 const avatar = ref(null);
 const auth = getAuth();
@@ -70,6 +68,13 @@ function toggleAIDropdown() {
 
       <div class="collapse navbar-collapse" id="pawsitive-navbar">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+            <li class="nav-item">
+              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
+                Report
+              </RouterLink>
+            </li>
+
             <li class="nav-item">
               <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/map') }" to="/map/">
                 Map
@@ -82,17 +87,17 @@ function toggleAIDropdown() {
               </RouterLink>
             </li>
 
+            
+
+            
+
             <li class="nav-item">
               <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/donations') }" to="/donations/">
                 Donations
               </RouterLink>
             </li>
 
-            <li class="nav-item">
-              <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/report') }" to="/report/">
-                Report
-              </RouterLink>
-            </li>
+            
 
             <li class="nav-item">
               <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/adoption') }" to="/adoption/">
@@ -100,16 +105,18 @@ function toggleAIDropdown() {
               </RouterLink>
             </li>
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/services') }" to="/services/">
               Services
             </RouterLink>
-          </li>
-          <li class="nav-item">
+          </li> -->
+
+
+          <!-- <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: route.path.startsWith('/ai/recog') }" to="/ai/recog/">
                AI Recognition
             </RouterLink>
-          </li>
+          </li> -->
         </ul>
         <a href="/volunteer/profile" class="btn btn-outline-secondary rounded-circle p-0" title="Profile"
           style="width:40px; height:40px;">

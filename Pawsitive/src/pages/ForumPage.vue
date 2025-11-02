@@ -1,381 +1,265 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import GridSplit from '@/components/resuables/GridSplit.vue'
-import { Modal } from 'bootstrap'
 import ForumCard from '@/components/resuables/ForumCard.vue'
 import ForumSideBar from '@/components/resuables/ForumSideBar.vue'
+import { db } from '@/firebase'
+import { getAuth } from "firebase/auth"
+import {
+  collection, addDoc, getDoc, doc, getDocs, serverTimestamp
+} from 'firebase/firestore'
+import { validatePost, validateComment } from '@/utils/validators'
 
-const posts = reactive([
-  {
-    id: 'p1',
-    username: 'Meowie',
-    profilePic: '/src/assets/profilepic1.jpg',
-    caption:
-      "I love this cat soooo much! 😻 This is Whiskers, and she's been with me since I rescued her from the void deck. She loves cuddles, chasing string toys, and stealing my seat whenever I get up for just 2 seconds!",
-    image: '/src/assets/cutecats1.jpg',
-    likes: 22,
-    comments: [{ user: 'Sia', text: 'So cute!', time: '2025-10-24 14:30' }],
-    datePosted: '2025-10-23 18:00',
-    expanded: false,
-  },
-  {
-    id: 'p2',
-    username: 'Adorablecats123',
-    profilePic: '/src/assets/profilepic2.jpg',
-    caption: 'Look at this cutie 😻',
-    image: '/src/assets/cutecats2.jpg',
-    likes: 18,
-    comments: [],
-    datePosted: '2025-10-24 09:15',
-    expanded: false,
-  },
-  {
-    id: 'p3',
-    username: 'CatCareTips',
-    profilePic: '/src/assets/profilepic3.jpg',
-    caption:
-      'Cats are wonderful companions, but caring for them goes beyond just feeding...',
-    image: '',
-    likes: 12,
-    comments: [],
-    datePosted: '2025-10-22 16:45',
-    expanded: false,
-  },
-])
+const auth = getAuth()
+const posts = ref([])
+const loading = ref(false)
+const showWelcome = ref(true)
+
+/* ---------- MODAL REFS (no Bootstrap) ---------- */
+const showCreatePostModal = ref(false)
+const showCommentModal = ref(false)
+const activeCommentPostId = ref(null)
+/* ------------------------------------------------ */
 
 const searchQuery = ref('')
 const sortMode = ref('newest')
-const activePostId = ref(null)
-const newComment = ref('')
-const showWelcome = ref(true)
-const likeAnimations = reactive({})
-const dropdownOpen = ref(false)
-const dropdownRef = ref(null)
-const newPost = reactive({ caption: '', image: null, imagePreview: null })
+const newCommentText = ref('')
+const fieldErrors = reactive({})
+const newPost = reactive({ description: '', image: '' })
 
+/* ------------------- SORT LABEL ------------------- */
+const sortLabel = computed(() => ({
+  newest: { text: 'Newest First', icon: 'bi-clock-history' },
+  oldest: { text: 'Oldest First', icon: 'bi-clock' }
+})[sortMode.value])
+
+/* ------------------- DISPLAYED POSTS ------------------- */
 const displayedPosts = computed(() => {
-  const filtered = posts.filter(
-    (p) =>
-      !searchQuery.value ||
-      p.caption.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      p.username.toLowerCase().includes(searchQuery.value.toLowerCase())
+  let filtered = posts.value.filter(p =>
+    !searchQuery.value ||
+    (p.description?.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+    (p.author?.toLowerCase().includes(searchQuery.value.toLowerCase()))
   )
 
-  if (sortMode.value === 'oldest') return [...filtered].reverse()
-  if (sortMode.value === 'popular') return [...filtered].sort((a, b) => b.likes - a.likes)
-  return filtered
+  if (sortMode.value === 'oldest') {
+    return [...filtered].sort((a, b) => {
+      const aT = a.createdAt?.toMillis?.() ?? 0
+      const bT = b.createdAt?.toMillis?.() ?? 0
+      return aT - bT
+    })
+  }
+  return [...filtered].sort((a, b) => {
+    const aT = a.createdAt?.toMillis?.() ?? 0
+    const bT = b.createdAt?.toMillis?.() ?? 0
+    return bT - aT
+  })
 })
 
-const sortLabel = computed(
-  () =>
-    ({
-      newest: { text: 'Newest First', icon: 'bi-clock-history' },
-      oldest: { text: 'Oldest First', icon: 'bi-clock' },
-      popular: { text: 'Most Liked', icon: 'bi-heart-fill' },
-    }[sortMode.value])
-)
+/* ------------------- FETCH POSTS ------------------- */
+const fetchPosts = async () => {
+  loading.value = true
+  try {
+    const snap = await getDocs(collection(db, 'posts'))
+    const list = []
+    for (const d of snap.docs) {
+      const post = { id: d.id, ...d.data(), comments: [] }
 
-const getLikedPosts = () => JSON.parse(localStorage.getItem('likedPosts') || '[]')
-const setLikedPosts = (arr) => localStorage.setItem('likedPosts', JSON.stringify(arr))
-const hasLiked = (id) => getLikedPosts().includes(id)
+      // author
+      if (post.author) {
+        const u = await getDoc(doc(db, 'volunteers', post.author))
+        if (u.exists()) {
+          const ud = u.data()
+          post.author = ud.username || 'Unknown'
+          post.avatar = ud.avatar || null
+        } else {
+          post.author = 'Unknown'
+          post.avatar = null
+        }
+      }
 
-const formatDateTime = (date = new Date()) => {
-  const d = new Date(date)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate()
-  ).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(
-    d.getMinutes()
-  ).padStart(2, '0')}`
+      // comments
+      const cSnap = await getDocs(collection(db, 'posts', d.id, 'comments'))
+      post.comments = await Promise.all(
+        cSnap.docs.map(async c => {
+          const cd = { id: c.id, ...c.data() }
+          let name = 'Unknown', ava = null
+          if (cd.author) {
+            const cu = await getDoc(doc(db, 'volunteers', cd.author))
+            if (cu.exists()) {
+              const ud = cu.data()
+              name = ud.username || 'Unknown'
+              ava = ud.avatar || null
+            }
+          }
+          cd.username = name
+          cd.avatar = ava
+          return cd
+        })
+      )
+
+      post.likes ??= 0
+      list.push(post)
+    }
+    posts.value = list
+  } catch (e) { console.error(e) }
+  loading.value = false
 }
 
-function setSort(mode) {
-  sortMode.value = mode
-  dropdownOpen.value = false
+/* ------------------- VALIDATION WATCHERS ------------------- */
+watch(() => newPost.description, () => delete fieldErrors.description)
+watch(() => newCommentText.value, () => delete fieldErrors.comment)
+
+/* ------------------- IMAGE HELPERS ------------------- */
+const fileToBase64 = file => new Promise((res, rej) => {
+  const r = new FileReader()
+  r.onload = () => res(r.result)
+  r.onerror = rej
+  r.readAsDataURL(file)
+})
+async function handleImageUpload(e) {
+  const f = e.target.files[0]
+  if (!f) return
+  try { newPost.image = await fileToBase64(f) }
+  catch (err) { console.error(err) }
 }
 
-function toggleLike(postId) {
-  const post = posts.find((p) => p.id === postId)
-  if (!post) return
-
-  const liked = hasLiked(postId)
-  post.likes += liked ? -1 : 1
-
-  if (liked) {
-    setLikedPosts(getLikedPosts().filter((id) => id !== postId))
-  } else {
-    setLikedPosts([...getLikedPosts(), postId])
-    likeAnimations[postId] = true
-    setTimeout(() => (likeAnimations[postId] = false), 600)
-  }
-}
-
-function toggleExpand(postId) {
-  const post = posts.find((p) => p.id === postId)
-  if (!post) return
-  post.expanded = !post.expanded
-}
-
-async function sharePost(postId) {
-  const post = posts.find((p) => p.id === postId)
-  if (!post) return
-
-  const shareData = {
-    title: `Post by ${post.username}`,
-    text: post.caption,
-    url: `${location.href}#post-${postId}`,
-  }
-
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData)
-      return
-    } catch (e) {}
-  }
-
-  await navigator.clipboard.writeText(shareData.url)
-  alert('Link copied to clipboard! 📋')
-}
-
-function openComments(postId) {
-  activePostId.value = postId
-  new Modal(document.getElementById('commentsModal')).show()
-}
-
-function addComment() {
-  const text = newComment.value.trim()
-  if (!text) return alert('Please write a comment.')
-
-  const post = posts.find((p) => p.id === activePostId.value)
-  if (!post) return
-
-  post.comments.push({ user: 'You', text, time: formatDateTime() })
-  newComment.value = ''
-}
-
-function openCreatePost() {
-  new Modal(document.getElementById('createPostModal')).show()
-}
-
-function handleImageUpload(event) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  newPost.image = file
-  const reader = new FileReader()
-  reader.onload = (e) => (newPost.imagePreview = e.target.result)
-  reader.readAsDataURL(file)
-}
-
-function removeImage() {
-  newPost.image = null
-  newPost.imagePreview = null
-  const fileInput = document.getElementById('imageUpload')
-  if (fileInput) fileInput.value = ''
-}
-
-function createPost() {
-  const caption = newPost.caption.trim()
-  if (!caption) return alert('Please write a caption for your post.')
-
-  posts.unshift({
-    id: `p${Date.now()}`,
-    username: 'You',
-    profilePic: '/src/assets/profilepic1.jpg',
-    caption,
-    image: newPost.imagePreview || '',
-    likes: 0,
-    comments: [],
-    datePosted: formatDateTime(),
-    expanded: false,
+/* ------------------- CREATE POST ------------------- */
+function openCreatePost() { showCreatePostModal.value = true }
+function closeCreatePostModal() {
+  showCreatePostModal.value = false
+  // reset after the fade-out finishes
+  nextTick(() => {
+    newPost.description = ''
+    newPost.image = ''
+    Object.keys(fieldErrors).forEach(k => delete fieldErrors[k])
   })
+}
+async function createPost() {
+  const err = validatePost(newPost)
+  if (Object.keys(err).length) { Object.assign(fieldErrors, err); return }
 
-  newPost.caption = ''
-  removeImage()
-  Modal.getInstance(document.getElementById('createPostModal'))?.hide()
+  const u = auth.currentUser
+  if (!u) return alert('Login required')
+  try {
+    await addDoc(collection(db, 'posts'), {
+      author: u.uid,
+      description: newPost.description,
+      image: newPost.image || null,
+      createdAt: serverTimestamp(),
+      likes: 0
+    })
+    await fetchPosts()
+    closeCreatePostModal()
+  } catch (e) { console.error(e) }
 }
 
-function triggerImageUpload() {
-  document.getElementById('imageUpload')?.click()
+/* ------------------- COMMENTS ------------------- */
+function openCommentModal(postId) {
+  activeCommentPostId.value = postId
+  newCommentText.value = ''
+  showCommentModal.value = true
+}
+function closeCommentModal() {
+  showCommentModal.value = false
+  nextTick(() => {
+    activeCommentPostId.value = null
+    newCommentText.value = ''
+    delete fieldErrors.comment
+  })
+}
+async function addComment() {
+  const err = validateComment({ comment: newCommentText.value })
+  if (Object.keys(err).length) { Object.assign(fieldErrors, err); return }
+
+  const u = auth.currentUser
+  if (!u) return alert('Login required')
+  if (!activeCommentPostId.value) return
+
+  try {
+    await addDoc(collection(db, 'posts', activeCommentPostId.value, 'comments'), {
+      author: u.uid,
+      comment: newCommentText.value.trim(),
+      createdAt: serverTimestamp()
+    })
+    await fetchPosts()
+    closeCommentModal()
+  } catch (e) { console.error(e) }
 }
 
-function handleClickOutside(event) {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    dropdownOpen.value = false
-  }
-}
+/* ------------------- SORT ------------------- */
+function setSort(m) { sortMode.value = m }
 
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+onMounted(fetchPosts)
 </script>
 
 <template>
   <div class="forum-page">
     <Navbar />
-
     <main class="container mt-4">
-      <div
-        v-if="showWelcome"
-        class="welcome-banner mb-4 p-4 rounded-4 shadow-sm position-relative overflow-hidden"
-      >
-        <button
-          class="btn-close position-absolute top-0 end-0 m-3"
-          @click="showWelcome = false"
-        ></button>
+
+      <!-- welcome banner -->
+      <div v-if="showWelcome" class="welcome-banner mb-4 p-4 rounded-4 shadow-sm position-relative overflow-hidden">
+        <button class="btn-close position-absolute top-0 end-0 m-3" @click="showWelcome = false"></button>
         <div class="welcome-content">
-          <h2 class="fw-bold mb-2">🐱 Welcome to the Cat Lovers Forum!</h2>
+          <h2 class="fw-bold mb-2">Welcome to the Cat Lovers Forum!</h2>
           <p class="mb-0 text-muted">
-            Share your adorable cat moments, tips, and stories with fellow cat
-            enthusiasts
+            Share your adorable cat moments, tips, and stories with fellow cat enthusiasts
           </p>
         </div>
       </div>
 
       <GridSplit>
         <template #main>
-          <ForumCard
-            :posts="displayedPosts"
-            :hasLiked="hasLiked"
-            :likeAnimations="likeAnimations"
-            @toggle-like="toggleLike"
-            @toggle-expand="toggleExpand"
-            @share="sharePost"
-            @open-comments="openComments"
-          />
+          <ForumCard :posts="displayedPosts" @open-comments="openCommentModal" />
         </template>
-
         <template #sidebar>
-          <ForumSideBar
-            v-model:searchQuery="searchQuery"
-            :sortLabel="sortLabel"
-            @update:sortMode="setSort"
-            @create-post="openCreatePost"
-          />
+          <ForumSideBar v-model:searchQuery="searchQuery" :sortLabel="sortLabel" @update:sortMode="setSort"
+            @create-post="openCreatePost" />
         </template>
       </GridSplit>
     </main>
 
-    <!-- Comments Modal -->
-    <div class="modal fade" id="commentsModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content rounded-4 shadow-lg border-0">
-          <div class="modal-header border-bottom-0 pb-2">
-            <h5 class="modal-title fw-bold">
-              💬 Comments
-              <span v-if="activePostId" class="badge bg-light text-dark ms-2">{{
-                posts.find((p) => p.id === activePostId)?.comments?.length || 0
-              }}</span>
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
+    <!-- ==================== BACKDROPS ==================== -->
+    <div v-if="showCreatePostModal || showCommentModal" class="modal-backdrop fade show"></div>
 
-          <div class="modal-body">
-            <template v-if="activePostId">
-              <div
-                v-for="(c, i) in [...(posts.find((p) => p.id === activePostId)?.comments || [])].reverse()"
-                :key="i"
-                class="comment-item d-flex align-items-start mb-3 p-3 bg-light rounded-3"
-              >
-                <img
-                  src="/src/assets/profilepic1.jpg"
-                  alt="Profile"
-                  class="rounded-circle me-3 comment-avatar"
-                />
-                <div class="flex-grow-1">
-                  <strong class="d-block mb-1 text-accent">{{ c.user }}</strong>
-                  <p class="mb-2">{{ c.text }}</p>
-                  <small class="text-muted">
-                    <i class="bi bi-clock me-1"></i>{{ c.time }}
-                  </small>
-                </div>
-              </div>
-
-              <div
-                v-if="!posts.find((p) => p.id === activePostId)?.comments?.length"
-                class="empty-comments text-center py-5"
-              >
-                <div class="empty-icon mb-3">💭</div>
-                <p class="text-muted mb-0">No comments yet. Be the first to share your thoughts!</p>
-              </div>
-            </template>
-          </div>
-
-          <div
-            class="modal-footer border-top-0 pt-0 d-flex align-items-center gap-2"
-          >
-            <input
-              v-model="newComment"
-              class="form-control rounded-pill px-4 py-2 comment-input"
-              placeholder="Share your thoughts..."
-              @keyup.enter="addComment"
-            />
-            <button
-              @click="addComment"
-              class="btn btn-primary rounded-pill px-4 post-comment-btn"
-            >
-              <i class="bi bi-send-fill"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Create Post Modal -->
-    <div class="modal fade" id="createPostModal" tabindex="-1">
+    <!-- ==================== CREATE POST MODAL ==================== -->
+    <div v-if="showCreatePostModal" class="modal fade show" style="display:block" tabindex="-1" aria-modal="true"
+      role="dialog">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow-lg border-0">
           <div class="modal-header border-bottom-0 pb-2">
-            <h5 class="modal-title fw-bold">✨ Create New Post</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <h5 class="modal-title fw-bold">Create New Post</h5>
+            <button type="button" class="btn-close" @click="closeCreatePostModal"></button>
           </div>
 
           <div class="modal-body p-4">
+            <!-- caption -->
             <div class="mb-3">
               <label class="form-label fw-semibold">Caption</label>
-              <textarea
-                v-model="newPost.caption"
-                class="form-control create-post-textarea"
-                rows="4"
+              <textarea v-model="newPost.description" class="form-control create-post-textarea" rows="4"
                 placeholder="Share your thoughts, stories, or tips about cats..."
-              ></textarea>
+                :class="fieldErrors.description ? 'is-invalid' : ''"></textarea>
+              <div v-if="fieldErrors.description" class="invalid-feedback">
+                {{ fieldErrors.description }}
+              </div>
             </div>
 
+            <!-- image -->
             <div class="mb-3">
               <label class="form-label fw-semibold">Image (Optional)</label>
               <div class="image-upload-area">
-                <input
-                  type="file"
-                  id="imageUpload"
-                  accept="image/*"
-                  class="d-none"
-                  @change="handleImageUpload"
-                />
-
-                <div
-                  v-if="!newPost.imagePreview"
-                  class="upload-placeholder"
-                  @click="triggerImageUpload"
-                >
+                <input ref="imageUploadInput" type="file" accept="image/*" class="d-none" @change="handleImageUpload" />
+                <div v-if="!newPost.image" class="upload-placeholder" @click="$refs.imageUploadInput?.click()">
                   <i class="bi bi-cloud-upload fs-1 text-muted mb-2"></i>
                   <p class="text-muted mb-0">Click to upload an image</p>
                   <small class="text-muted">JPG, PNG, or GIF</small>
                 </div>
-
-                <div
-                  v-else
-                  class="image-preview-container position-relative"
-                >
-                  <img
-                    :src="newPost.imagePreview"
-                    alt="Preview"
-                    class="img-fluid rounded-3"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
-                    @click="removeImage"
-                  >
+                <div v-else class="image-preview-container position-relative">
+                  <img :src="newPost.image" alt="Preview" class="img-fluid rounded-3" />
+                  <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+                    @click="newPost.image = ''; document.getElementById('imageUpload').value = ''">
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
@@ -384,20 +268,62 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
           </div>
 
           <div class="modal-footer border-top-0 pt-0">
-            <button
-              type="button"
-              class="btn btn-light rounded-pill px-4"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary rounded-pill px-4"
-              @click="createPost"
-            >
+            <button type="button" class="btn btn-light rounded-pill px-4" @click="closeCreatePostModal">Cancel</button>
+            <button type="button" class="btn btn-primary rounded-pill px-4" @click="createPost">
               <i class="bi bi-send-fill me-2"></i>Post
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== COMMENTS MODAL ==================== -->
+    <div v-if="showCommentModal" class="modal fade show" style="display:block; margin-top: 10rem;" tabindex="-1"
+      aria-modal="true" role="dialog">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content rounded-4 shadow-lg border-0">
+          <div class="modal-header border-bottom-0 pb-2">
+            <h5 class="modal-title fw-bold">
+              Comments
+              <span class="badge bg-light text-dark ms-2">
+                {{posts.find(p => p.id === activeCommentPostId)?.comments?.length || 0}}
+              </span>
+            </h5>
+            <button type="button" class="btn-close" @click="closeCommentModal"></button>
+          </div>
+
+          <div class="modal-body" v-if="activeCommentPostId">
+            <!-- newest first -->
+            <div v-for="(c, i) in [...(posts.find(p => p.id === activeCommentPostId)?.comments || [])]
+              .reverse()" :key="c.id || i" class="comment-item d-flex align-items-start mb-3 p-3 bg-light rounded-3">
+              <img :src="c.avatar || '/src/assets/avatar_placeholder.jpg'" alt="Avatar"
+                class="rounded-circle me-3 comment-avatar" />
+              <div class="flex-grow-1">
+                <strong class="d-block mb-1 text-accent">{{ c.username }}</strong>
+                <p class="mb-2">{{ c.comment }}</p>
+                <small class="text-muted">
+                  <i class="bi bi-clock me-1"></i>
+                  {{ c.createdAt?.toDate?.().toLocaleString() ?? '-' }}
+                </small>
+              </div>
+            </div>
+
+            <div v-if="!(posts.find(p => p.id === activeCommentPostId)?.comments?.length)"
+              class="empty-comments text-center py-5">
+              <div class="empty-icon mb-3">No comments yet. Be the first!</div>
+            </div>
+          </div>
+
+          <div class="modal-footer border-top-0 pt-0 d-flex align-items-center gap-2">
+            <input v-model="newCommentText" :class="['form-control', 'rounded-pill', 'px-4', 'py-2', 'comment-input',
+              fieldErrors.comment ? 'is-invalid' : '']" placeholder="Share your thoughts..."
+              @keyup.enter="addComment" />
+            <button @click="addComment" class="btn btn-primary rounded-pill px-4 post-comment-btn">
+              <i class="bi bi-send-fill"></i>
+            </button>
+            <div v-if="fieldErrors.comment" class="invalid-feedback">
+              {{ fieldErrors.comment }}
+            </div>
           </div>
         </div>
       </div>
@@ -408,11 +334,29 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 </template>
 
 <style scoped>
+/* Paste your previous scoped styles here unchanged */
+/* ... (as provided in your original style section) ... */
+
+/* Example for some crucial modal and input states for validation */
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+</style>
+
+<style scoped>
 /* Welcome banner with gradient background */
 .welcome-banner {
   background: linear-gradient(135deg, #fef5f5 0%, #f8e1e1 100%);
   border: 2px solid #f0d4d4;
   animation: slideDown 0.5s ease-out;
+  text-align: center;
 }
 
 .welcome-content h2 {
@@ -425,11 +369,13 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 /*End of Welcome banner with gradient background */
 
 
@@ -551,6 +497,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   border-color: #806e83;
 }
 
+
+
 .image-preview-container img {
   max-height: 300px;
   width: 100%;
@@ -585,20 +533,20 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   .controls-wrapper {
     position: static;
   }
-  
+
   .controls-inner {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
   }
 
-  
+
   .buttons-stack {
     grid-column: 1;
     grid-row: 2;
     display: grid;
     gap: 0.75rem;
   }
-  
+
   .create-btn {
     position: fixed;
     bottom: 20px;
@@ -607,7 +555,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
   }
-  
+
   .sort-btn {
     width: 100%;
   }
@@ -619,15 +567,15 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     position: sticky;
     top: 80px;
   }
-  
-  
+
+
   .buttons-stack {
     grid-column: 1;
     grid-row: 2;
     display: grid;
     gap: 0.75rem;
   }
-  
+
   .create-btn,
   .sort-btn {
     width: 100%;
@@ -641,11 +589,11 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     top: 80px;
   }
 
-  
+
   .search-wrapper {
     min-width: 80%;
   }
-  
+
   .buttons-stack {
     grid-column: 2;
     grid-row: 1;
@@ -653,7 +601,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     gap: 0.75rem;
     min-width: 220px;
   }
-  
+
   .create-btn,
   .sort-btn {
     width: 100%;
@@ -696,4 +644,39 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 .posts-container {
   width: 100%;
 }
+
+.modal-backdrop.show {
+  z-index: 1040 !important;
+}
+
+.modal.show {
+  z-index: 1050 !important;
+}
+
+.navbar {
+  z-index: 1030 !important;
+}
+
+.forum-page {
+  background-color: #f8e1e1 ; /* change this to any color you want */
+  min-height: 100vh; /* ensures it covers the full viewport height */
+}
+
+/* In your forum page CSS or GridSplit.css */
+@media (max-width: 991.98px) { /* Medium breakpoint and smaller */
+  .grid-split {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .grid-split > .sidebar {
+    order: -1;       /* Moves sidebar on top */
+    margin-bottom: 1rem; /* Space between sidebar and posts */
+  }
+
+  .grid-split > .main {
+    width: 100%;     /* Ensure posts take full width */
+  }
+}
+
 </style>

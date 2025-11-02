@@ -1,115 +1,263 @@
+<template>
+    <div class="main-container">
+        <div class="login-container">
+            <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4 py-md-5">
+                <!-- Card: Full width on mobile, max 900px on large screens -->
+                <div class="card shadow card-entrance card-visible w-100 mx-3 mx-md-4 mx-lg-0"
+                    style="max-width: 900px;">
+                    <div class="row g-0">
+
+                        <!-- ========== GRAPHIC PANEL (Top on mobile, Left on lg) ========== -->
+                        <!-- GRAPHIC PANEL – now uses a soft pink that matches the page -->
+                        <div
+                            class="col-12 col-lg-6 order-lg-1 graphic-panel d-flex flex-column justify-content-center align-items-center p-4 p-lg-5 rounded-top rounded-bottom rounded-lg-start graphic-text">
+                            <h1 class="display-5 fw-bold mb-3">Welcome!</h1>
+                            <p class="lead text-center mb-4">Join our volunteer community and make a difference.</p>
+                            <img src="/src/assets/pawsitive_gif_bgnone.gif" alt="Pawsitive"
+                                class="img-fluid rounded gif-img">
+                        </div>
+
+                        <!-- ========== FORM PANEL ========== -->
+                        <div
+                            class="col-12 col-lg-6 order-lg-2 bg-white d-flex justify-content-center align-items-center p-4 p-lg-5 rounded-bottom rounded-lg-end">
+                            <div class="w-100" style="max-width: 420px;">
+                                <h3 class="text-center mb-4 fw-semibold">
+                                    {{ isLogin ? 'Volunteer Login' : 'Volunteer Registration' }}
+                                </h3>
+
+                                <transition name="slide-fade" mode="out-in">
+                                    <!-- ========= LOGIN ========= -->
+                                    <form v-if="isLogin" key="login" @submit.prevent="handleLogin"
+                                        class="mobile-form-padding">
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input v-model="loginForm.email" type="email" class="form-control"
+                                                :class="{ 'is-invalid': loginFieldErrors.email }"
+                                                placeholder="Enter email">
+                                            <div class="invalid-feedback">{{ loginFieldErrors.email }}</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Password</label>
+                                            <input v-model="loginForm.password" type="password" class="form-control"
+                                                :class="{ 'is-invalid': loginFieldErrors.password }"
+                                                placeholder="Enter password">
+                                            <div class="invalid-feedback">{{ loginFieldErrors.password }}</div>
+                                        </div>
+
+                                        <div v-if="errorMessage" class="alert alert-danger small"
+                                            style="white-space: pre-line;">
+                                            {{ errorMessage }}
+                                        </div>
+
+                                        <button type="submit"
+                                            class="btn btn-primary w-100 rounded-pill py-2 fw-medium mt-2">
+                                            Login
+                                        </button>
+
+                                        <p class="text-center mt-3 small text-muted">
+                                            Not a volunteer?
+                                            <a href="#" @click.prevent="toggleForm"
+                                                class="text-primary text-decoration-none fw-medium">Register</a>
+                                        </p>
+                                    </form>
+
+                                    <!-- ========= REGISTER ========= -->
+                                    <form v-else key="register" @submit.prevent="handleRegister"
+                                        class="mobile-form-padding">
+                                        <p class="text-muted small mb-3">* All fields are required</p>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                                <label class="form-label">First Name</label>
+                                                <input v-model="registerForm.firstName" type="text" class="form-control"
+                                                    :class="{ 'is-invalid': registerFieldErrors.firstName }"
+                                                    placeholder="John">
+                                                <div class="invalid-feedback">{{ registerFieldErrors.firstName }}</div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label">Last Name</label>
+                                                <input v-model="registerForm.lastName" type="text" class="form-control"
+                                                    :class="{ 'is-invalid': registerFieldErrors.lastName }"
+                                                    placeholder="Doe">
+                                                <div class="invalid-feedback">{{ registerFieldErrors.lastName }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Username</label>
+                                            <input v-model="registerForm.username" type="text" class="form-control"
+                                                :class="{ 'is-invalid': registerFieldErrors.username }"
+                                                placeholder="johndoe123">
+                                            <div class="invalid-feedback">{{ registerFieldErrors.username }}</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Email address</label>
+                                            <input v-model="registerForm.email" type="email" class="form-control"
+                                                :class="{ 'is-invalid': registerFieldErrors.email }"
+                                                placeholder="john@example.com">
+                                            <div class="invalid-feedback">{{ registerFieldErrors.email }}</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Contact Number</label>
+                                            <input v-model="registerForm.contactNumber" type="tel" class="form-control"
+                                                :class="{ 'is-invalid': registerFieldErrors.contactNumber }"
+                                                placeholder="9123 4567">
+                                            <div class="invalid-feedback">{{ registerFieldErrors.contactNumber }}</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Password</label>
+                                            <input v-model="registerForm.password" type="password" class="form-control"
+                                                :class="{ 'is-invalid': registerFieldErrors.password }"
+                                                placeholder="Enter password">
+                                            <div class="invalid-feedback">{{ registerFieldErrors.password }}</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Confirm Password</label>
+                                            <input v-model="registerForm.confirmPassword" type="password"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': registerFieldErrors.confirmPassword }"
+                                                placeholder="Confirm password">
+                                            <div class="invalid-feedback">{{ registerFieldErrors.confirmPassword }}
+                                            </div>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox"
+                                                v-model="registerForm.acceptTerms" id="termsConsent">
+                                            <label class="form-check-label small d-inline" for="termsConsent">
+                                                I agree to
+                                                <span class="text-primary" style="cursor:pointer"
+                                                    @click="showTnC = true">
+                                                    Terms and Conditions
+                                                </span>
+                                            </label>
+
+                                            <div v-if="registerFieldErrors.acceptTerms"
+                                                class="invalid-feedback d-block small">
+                                                {{ registerFieldErrors.acceptTerms }}
+                                            </div>
+                                        </div>
+
+
+                                        <div v-if="errorMessage" class="alert alert-danger small"
+                                            style="white-space: pre-line;">
+                                            {{ errorMessage }}
+                                        </div>
+
+                                        <button type="submit"
+                                            class="btn btn-primary w-100 rounded-pill py-2 fw-medium mt-2">
+                                            Register
+                                        </button>
+
+                                        <p class="text-center mt-3 small text-muted">
+                                            Already a volunteer?
+                                            <a href="#" @click.prevent="toggleForm"
+                                                class="text-primary text-decoration-none fw-medium">Log In</a>
+                                        </p>
+                                    </form>
+                                </transition>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div v-if="showTnC" class="modal-backdrop">
+        <div class="modal-content">
+            <h5>Terms and Conditions</h5>
+            <div class="tnc-modal-content">
+                <p><strong>1. Acceptance of Terms:</strong> By using Pawsitive, you agree to these Terms and Conditions.
+                    If you do not agree, please do not use the platform.</p>
+
+                <p><strong>2. Eligibility:</strong> You must be at least 18 years old to register as a volunteer.</p>
+
+                <p><strong>3. Account Responsibility:</strong> You are responsible for keeping your account details
+                    secure and must notify us of any unauthorized access.</p>
+
+                <p><strong>4. Volunteer Conduct:</strong> All volunteers must act respectfully. Harassment or illegal
+                    activities are prohibited.</p>
+
+                <p><strong>5. Privacy:</strong> Personal information collected will be used to provide services and
+                    handled according to our Privacy Policy.</p>
+
+                <p><strong>6. Reporting:</strong> Submit accurate reports regarding lost or injured animals. False
+                    reporting may result in account suspension.</p>
+
+                <p><strong>7. Liability:</strong> Pawsitive is not responsible for any injury or loss during volunteer
+                    activities or platform use.</p>
+
+                <p><strong>8. Changes:</strong> We may update these Terms. Users are encouraged to review them
+                    regularly.</p>
+            </div>
+
+            <button type="submit" @click="showTnC = false"
+                class="btn btn-primary w-100 rounded-pill py-2 fw-medium mt-2">
+                Close
+            </button>
+
+
+        </div>
+    </div>
+</template>
+
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { auth, db } from "@/firebase"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc, serverTimestamp, getDoc, deleteDoc } from "firebase/firestore"
+import { ref, reactive, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { auth, db } from '@/firebase'
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
+} from 'firebase/auth'
+import {
+    doc, setDoc, serverTimestamp, getDoc, deleteDoc
+} from 'firebase/firestore'
 import { validateRegistration, validateLogin } from '@/utils/validators'
-import PawCanvas from '@/components/resuables/PawCanvas.vue'
 
 const router = useRouter()
+const route = useRoute()
+onMounted(() => {
+    if (route.query.form === 'register') {
+        isLogin.value = false
+    }
+})
 
-// UI State
-const showLogin = ref(false)
-const isFadingOut = ref(false)
-const isCardVisible = ref(false)
 const isLogin = ref(true)
 const errorMessage = ref('')
-const currentTextIndex = ref(0)
-
-// Landing Page
-const accessButton = ref(null)
-const texts = ["\u00A0", "Meow", "OW", "MEOWWWWWW", "OW OW OW", "STOP POKING ME", "Bleh :P"]
-const tips = [
-    "Cats sleep 12–16 hours a day on average.",
-    "A flicking tail often means irritation — give space.",
-    "Trim claws every few weeks to prevent overgrowth.",
-    "Cats can rotate their ears 180 degrees.",
-    "Keep your cat indoors or in a secured outdoor area for safety.",
-    "Overfeeding leads to obesity — measure meals carefully.",
-    "Cats knead to show contentment or mark scent.",
-    "Cats love high places — add shelves or cat trees.",
-    "Avoid giving cats milk — most are lactose intolerant.",
-    "A cat's purr can have calming effects on humans.",
-    "Always keep poisonous plants away.",
-    "Regular vet checkups can prevent serious health issues.",
-    "Play with your cat at least 10–15 minutes daily.",
-    "Cats walk by moving both right feet, then both left — like camels.",
-    "Provide a quiet, safe space for them to retreat.",
-    "Respect their personal space; don't force cuddles.",
-    "Each cat's nose print is unique — like a human fingerprint.",
-    "Watch for subtle signs of illness: grooming, hiding, appetite.",
-    "Domestic cats share 95.6% of their DNA with tigers.",
-    "Spaying/neutering prevents unwanted litters and certain diseases."
-]
-
-const leftTipDisplay = ref('')
-const rightTipDisplay = ref('')
-const leftTipIndex = ref(0)
-const rightTipIndex = ref(5)
-let leftTipInterval = null
-let rightTipInterval = null
-
-// Forms
+const showTnC = ref(false)
 const loginForm = reactive({ email: '', password: '' })
-const registerForm = reactive({ firstName: '', lastName: '', username: '', email: '', password: '', confirmPassword: '', contactNumber: '' })
+const registerForm = reactive({
+    firstName: '', lastName: '', username: '', email: '',
+    password: '', confirmPassword: '', contactNumber: '', acceptTerms: false
+})
+
 const loginFieldErrors = reactive({})
 const registerFieldErrors = reactive({})
 
-watch(() => loginForm.email, () => loginFieldErrors.email = '');
-watch(() => loginForm.password, () => loginFieldErrors.password = '');
-
-watch(() => registerForm.firstName, () => registerFieldErrors.firstName = '');
-watch(() => registerForm.lastName, () => registerFieldErrors.lastName = '');
-watch(() => registerForm.username, () => registerFieldErrors.username = '');
-watch(() => registerForm.email, () => registerFieldErrors.email = '');
-watch(() => registerForm.password, () => registerFieldErrors.password = '');
-watch(() => registerForm.confirmPassword, () => registerFieldErrors.confirmPassword = '');
-watch(() => registerForm.contactNumber, () => registerFieldErrors.contactNumber = '');
-
 onMounted(() => {
-    setTimeout(() => accessButton.value?.classList.replace('access-button-hidden', 'access-button-visible'), 1000)
-    startTipAnimation('left')
-    startTipAnimation('right')
+    if (route.query.form === 'register') {
+        isLogin.value = false
+    }
 })
-onUnmounted(() => { clearInterval(leftTipInterval); clearInterval(rightTipInterval) })
 
-function startTipAnimation(side) {
-    const isLeft = side === 'left'
-    const tipIndex = isLeft ? leftTipIndex : rightTipIndex
-    const tipDisplay = isLeft ? leftTipDisplay : rightTipDisplay
+// Clear errors on input
+watch(() => loginForm.email, () => loginFieldErrors.email = '')
+watch(() => loginForm.password, () => loginFieldErrors.password = '')
 
-    tipDisplay.value = ''
-    let charIndex = 0
-    const charInterval = setInterval(() => {
-        if (charIndex < tips[tipIndex.value].length) tipDisplay.value += tips[tipIndex.value][charIndex++]
-        else {
-            clearInterval(charInterval)
-            setTimeout(() => {
-                tipIndex.value = (tipIndex.value + 1) % tips.length
-                startTipAnimation(side)
-            }, Math.max(1000, tips[tipIndex.value].length * 70))
-        }
-    }, 40)
-
-    if (isLeft) leftTipInterval = charInterval
-    else rightTipInterval = charInterval
-}
-
-function nextText() {
-    currentTextIndex.value = (currentTextIndex.value + 1) % texts.length
-    const calloutEle = document.getElementById("callout")
-    calloutEle.classList.remove("bubble-pulse")
-    void calloutEle.offsetWidth
-    calloutEle.classList.toggle("speech-bubble-visible", currentTextIndex.value !== 0)
-    calloutEle.classList.toggle("speech-bubble-hidden", currentTextIndex.value === 0)
-    if (currentTextIndex.value !== 0) calloutEle.classList.add("bubble-pulse")
-}
-
-function goToLogin() {
-    isFadingOut.value = true
-    setTimeout(() => { showLogin.value = true; setTimeout(() => isCardVisible.value = true, 100) }, 800)
-}
+watch(() => registerForm.firstName, () => registerFieldErrors.firstName = '')
+watch(() => registerForm.lastName, () => registerFieldErrors.lastName = '')
+watch(() => registerForm.username, () => registerFieldErrors.username = '')
+watch(() => registerForm.email, () => registerFieldErrors.email = '')
+watch(() => registerForm.contactNumber, () => registerFieldErrors.contactNumber = '')
+watch(() => registerForm.password, () => registerFieldErrors.password = '')
+watch(() => registerForm.confirmPassword, () => registerFieldErrors.confirmPassword = '')
+watch(() => registerForm.acceptTerms, () => registerFieldErrors.acceptTerms = '')
 
 const toggleForm = () => {
     errorMessage.value = ''
@@ -122,418 +270,100 @@ const handleLogin = async () => {
     Object.keys(loginFieldErrors).forEach(k => loginFieldErrors[k] = '')
     errorMessage.value = ''
     const errors = validateLogin(loginForm)
-    if (Object.keys(errors).length) { Object.assign(loginFieldErrors, errors); return }
-    try { await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password); router.push("/map") }
-    catch (e) { errorMessage.value = e.message }
+    if (Object.keys(errors).length) {
+        Object.assign(loginFieldErrors, errors)
+        return
+    }
+    try {
+        await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password)
+        router.push('/report')
+    } catch (e) {
+        errorMessage.value = e.message
+    }
 }
 
 const handleRegister = async () => {
     Object.keys(registerFieldErrors).forEach(k => registerFieldErrors[k] = '')
     errorMessage.value = ''
     const errors = validateRegistration(registerForm)
-    if (Object.keys(errors).length) { Object.assign(registerFieldErrors, errors); return }
+    if (Object.keys(errors).length) {
+        Object.assign(registerFieldErrors, errors)
+        return
+    }
+    if (!registerForm.acceptTerms) {
+        registerFieldErrors.acceptTerms = 'You must accept the Terms and Conditions.'
+        return
+    }
 
     const { username, email, password, firstName, lastName, contactNumber } = registerForm
     try {
-        const usernameRef = doc(db, "usernames", username)
-        if ((await getDoc(usernameRef)).exists()) { errorMessage.value = "Username taken"; return }
+        const usernameRef = doc(db, 'usernames', username)
+        if ((await getDoc(usernameRef)).exists()) {
+            errorMessage.value = 'Username taken'
+            return
+        }
         await setDoc(usernameRef, { reserved: true })
         const user = (await createUserWithEmailAndPassword(auth, email, password)).user
         await setDoc(usernameRef, { uid: user.uid })
-        await setDoc(doc(db, "volunteers", user.uid), { uid: user.uid, username, firstName, lastName, email, contactNumber, bio: "", role: "user", createdAt: serverTimestamp(), region: "" })
-        router.push("/volunteer/profile")
+        await setDoc(doc(db, 'volunteers', user.uid), {
+            uid: user.uid, username, firstName, lastName, email, contactNumber,
+            bio: '', role: 'user', createdAt: serverTimestamp(), region: ''
+        })
+        router.push('/volunteer/profile')
     } catch (e) {
         errorMessage.value = e.message
-        if (registerForm.username) await deleteDoc(doc(db, "usernames", registerForm.username))
+        if (registerForm.username) await deleteDoc(doc(db, 'usernames', registerForm.username))
     }
 }
 </script>
 
-
-<template>
-    <PawCanvas />
-    <div class="main-container" :class="{ 'show-login-bg': showLogin }">
-        <div v-if="!showLogin" class="landing-page" :class="{ 'fade-out': isFadingOut }">
-            <div class="tip-column tip-left" :class="{ 'fade-out-element': isFadingOut }">
-                <div class="tip-text">{{ leftTipDisplay }}</div>
-            </div>
-
-            <div class="center-content" :class="{ 'fade-out-element': isFadingOut }">
-                <video src="/src/assets/pawsitive_gif_updated.mp4" autoplay muted loop playsinline
-                    class="landing-video explode-bounce gif" @click="nextText"></video>
-
-                <div id="callout" class="speech-bubble-box speech-bubble-hidden">
-                    {{ texts[currentTextIndex] }}
-                </div>
-
-                <button ref="accessButton" @click="goToLogin" class="access-button access-button-hidden">
-                    ENTER
-                </button>
-            </div>
-
-            <div class="tip-column tip-right" :class="{ 'fade-out-element': isFadingOut }">
-                <div class="tip-text">{{ rightTipDisplay }}</div>
-            </div>
-
-            
-        </div>
-
-        <!-- Login/Register View -->
-        <div v-if="showLogin" class="login-container">
-            <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
-                <div class="card shadow card-entrance" :class="{ 'card-visible': isCardVisible }"
-                    style="max-width: 900px; width: 90%;">
-                    <div class="row g-0">
-                        <div
-                            class="col-md-6 d-none d-md-flex flex-column justify-content-center align-items-center bg-secondary text-white p-4 rounded-start">
-                            <h1>Welcome!</h1>
-                            <p class="lead text-center">Join our volunteer community and make a difference.</p>
-                            <img src="../assets/pawsitive-logo.png" alt="Graphic" class="img-fluid rounded mt-3">
-                        </div>
-
-                        <div class="col-12 col-md-6 d-flex justify-content-center align-items-center p-4">
-                            <div class="w-100" style="max-width: 25rem;">
-                                <h3 class="text-center mb-4">{{ isLogin ? 'Volunteer Login' : 'Volunteer Registration'
-                                    }}</h3>
-
-                                <transition name="slide-fade" mode="out-in">
-                                    <form v-if="isLogin" key="login" @submit.prevent="handleLogin">
-                                        <div class="mb-3">
-                                            <label class="form-label">Email</label>
-                                            <input v-model="loginForm.email" class="form-control"
-                                                :class="{ 'is-invalid': loginFieldErrors.email }"
-                                                placeholder="Enter email" />
-                                            <div class="invalid-feedback">{{ loginFieldErrors.email }}</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Password</label>
-                                            <input v-model="loginForm.password" type="password" class="form-control"
-                                                :class="{ 'is-invalid': loginFieldErrors.password }"
-                                                placeholder="Enter password" />
-                                            <div class="invalid-feedback">{{ loginFieldErrors.password }}</div>
-                                        </div>
-
-                                        <div v-if="errorMessage" class="alert alert-danger"
-                                            style="white-space: pre-line;">{{ errorMessage }}</div>
-                                        <button type="submit" class="btn login-btn"
-                                            style="background-color: #7a5cfb; color: #fff;">Login</button>
-
-                                        <p class="text-center mt-3">
-                                            Not a volunteer?
-                                            <a href="javascript:void(0)" class=""
-                                                @click.prevent="toggleForm">Register here</a>
-                                        </p>
-                                    </form>
-
-                                    <form v-else key="register" @submit.prevent="handleRegister">
-                                        <div class="row mb-3">
-                                            <div class="col-12 col-md-6 mb-2 mb-md-0">
-                                                <label class="form-label">First Name</label>
-                                                <input v-model="registerForm.firstName" type="text" class="form-control"
-                                                    :class="{ 'is-invalid': registerFieldErrors.firstName }"
-                                                    placeholder="First Name" />
-                                                <div class="invalid-feedback">{{ registerFieldErrors.firstName }}</div>
-                                            </div>
-                                            <div class="col-12 col-md-6">
-                                                <label class="form-label">Last Name</label>
-                                                <input v-model="registerForm.lastName" type="text" class="form-control"
-                                                    :class="{ 'is-invalid': registerFieldErrors.lastName }"
-                                                    placeholder="Last Name" />
-                                                <div class="invalid-feedback">{{ registerFieldErrors.lastName }}</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Username</label>
-                                            <input v-model="registerForm.username" type="text" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.username }"
-                                                placeholder="Enter username" />
-                                            <div class="invalid-feedback">{{ registerFieldErrors.username }}</div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Email address</label>
-                                            <input v-model="registerForm.email" type="email" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.email }"
-                                                placeholder="Enter email" />
-                                            <div class="invalid-feedback">{{ registerFieldErrors.email }}</div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Contact Number</label>
-                                            <input v-model="registerForm.contactNumber" type="tel" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.contactNumber }"
-                                                placeholder="Enter contact number" />
-                                            <div class="invalid-feedback">{{ registerFieldErrors.contactNumber }}</div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Password</label>
-                                            <input v-model="registerForm.password" type="password" class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.password }"
-                                                placeholder="Enter password" />
-                                            <div class="invalid-feedback">{{ registerFieldErrors.password }}</div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Confirm Password</label>
-                                            <input v-model="registerForm.confirmPassword" type="password"
-                                                class="form-control"
-                                                :class="{ 'is-invalid': registerFieldErrors.confirmPassword }"
-                                                placeholder="Confirm password" />
-                                            <div class="invalid-feedback">{{ registerFieldErrors.confirmPassword }}
-                                            </div>
-                                        </div>
-
-                                        <div v-if="errorMessage" class="alert alert-danger"
-                                            style="white-space: pre-line;">{{ errorMessage }}</div>
-                                        <button type="submit" class="btn w-100"
-                                            style="background-color: #7a5cfb; color: #fff;">Register</button>
-
-                                        <p class="text-center mt-3">
-                                            Already a volunteer?
-                                            <a href="javascript:void(0)" class="text-primary"
-                                                @click.prevent="toggleForm">Login here</a>
-                                        </p>
-                                    </form>
-                                </transition>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-</template>
-
 <style scoped>
+/* Background Animation */
 .main-container {
     min-height: 100vh;
-    background-color: var(--blue);
-    transition: background 1s ease-in-out;
-}
-
-.main-container.show-login-bg {
-    background: var(--dark-blue);
-}
-
-.landing-page {
-    height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    grid-template-rows: 1fr auto;
-    grid-template-areas: "left content right" "content content content";
-    gap: 20px;
-    justify-items: center;
-    align-items: center;
-    padding: 20px;
-    position: relative;
-}
-
-.center-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    gap: 2rem;
-}
-
-.gif {
-    width: 400px;
-    height: 400px;
-    border-radius: 50%;
-    object-fit: contain;
-    cursor: pointer;
-}
-
-@keyframes explodeBounce {
-    0% {
-        transform: scale(0.1);
-    }
-
-    30% {
-        transform: scale(1.2);
-    }
-
-    50% {
-        transform: scale(0.9);
-    }
-
-    65% {
-        transform: scale(1.1);
-    }
-
-    80% {
-        transform: scale(0.95);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.explode-bounce {
-    animation: explodeBounce 1.5s ease-out forwards;
-}
-
-.tip-column {
     display: flex;
     justify-content: center;
     align-items: center;
-    max-width: 300px;
-    padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.7);
-    color: black;
-    backdrop-filter: blur(10px);
-    border-radius: 1rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    min-width: 220px;
+    background: linear-gradient(120deg,
+            #fdf2f8,
+            /* very soft blush */
+            #fce7f3,
+            #f8d7ea,
+            #f9bec7,
+            #f8a5c2,
+            #fdf2f8);
+    background-size: 400% 400%;
+    animation: bgShift 14s ease-in-out infinite;
 }
 
-.tip-left {
-    justify-self: center;
-    padding-right: 1rem;
-}
+@keyframes bgShift {
 
-.tip-right {
-    justify-self: center;
-    padding-left: 1rem;
-}
-
-.tip-text {
-    color: black;
-    font-size: 18px;
-    line-height: 1.5;
-    text-align: center;
-    padding: 10px;
-}
-
-@media (max-width: 1024px) {
-    .tip-column {
-        display: none;
-    }
-}
-
-.speech-bubble-box {
-    position: relative;
-    padding: 1.25rem 2rem;
-    border-radius: 1.5rem;
-    background: linear-gradient(135deg, #fef3c7 0%, #fecaca 100%);
-    border: 3px solid #ffffff;
-    color: #7c2d12;
-    font-size: 1.6rem;
-    font-weight: 700;
-    line-height: 1.3;
-    display: inline-block;
-    max-width: 80%;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    text-align: center;
-}
-
-.speech-bubble-box::after {
-    content: '';
-    position: absolute;
-    top: -23px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 23px solid #ffffff;
-}
-
-.speech-bubble-hidden {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.4s, visibility 0.4s;
-}
-
-.speech-bubble-visible {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.4s, visibility 0.4s;
-}
-
-.bubble-pulse {
-    animation: bubble-pulse 1.5s infinite;
-}
-
-@keyframes bubble-pulse {
-    0% {
-        transform: scale(1);
+    0%,
+    100% {
+        background-position: 0% 50%;
     }
 
     50% {
-        transform: scale(1.1);
-    }
-
-    100% {
-        transform: scale(1);
+        background-position: 100% 50%;
     }
 }
 
-.access-button {
-    margin-top: 3rem;
-    padding: 1.25rem 3rem;
-    font-size: 1.5rem;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    color: #ffffff;
-    border-radius: 9999px;
-    border: 3px solid #ffffff;
-    cursor: pointer;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    background-color: var(--dark-blue);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    transition-property: opacity, transform;
-    transition-duration: 0.8s;
+.graphic-panel {
+  background: #f9bec7;
+  color: black /* keep text white */
 }
 
-.access-button:hover {
-    transform: translateY(-4px) scale(1.05);
-}
-
-.access-button:active {
-    transform: translateY(-2px) scale(1.02);
-}
-
-.access-button-hidden {
-    opacity: 0;
-    transform: translateY(2rem);
-    pointer-events: none;
-}
-
-.access-button-visible {
+/* Card Entrance */
+.card-entrance {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.fade-out-element {
-    animation: fadeOut 0.8s ease-out forwards;
-}
-
-@keyframes fadeOut {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-    }
-}
-
-.login-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
+/* Form Transition */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-    transition: all 0.4s ease;
+    transition: all .4s ease;
 }
 
 .slide-fade-enter-from {
@@ -546,166 +376,67 @@ const handleRegister = async () => {
     transform: translateX(-30px);
 }
 
-.card-entrance {
-    opacity: 0;
-    transform: translateY(100px) scale(0.9);
-    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* Button */
+.btn-primary {
+    background: #ff80ab;    
+    border: none;
+    font-weight: 500;
 }
 
-.card-entrance.card-visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+.btn-primary:hover {
+    background: #e26a92;    
 }
 
-.login-container .card {
+/* GIF Size */
+.gif-img {
+    max-height: 180px;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (min-width: 992px) {
+    .gif-img {
+        max-height: 200px;
+    }
+}
+
+/* Mobile Form Padding (extra breathing room) */
+.mobile-form-padding {
+    padding: 0 0.5rem;
+}
+
+@media (max-width: 576px) {
+    .mobile-form-padding {
+        padding: 0 1rem;
+    }
+}
+
+/* Optional: Hide graphic on very small phones */
+@media (max-width: 480px) {
+    .order-lg-1 {
+        display: none;
+    }
+}
+
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 500px;
     width: 90%;
-    max-width: 900px;
-}
-
-.login-btn {
-    width: 100%;
-    padding: 0 !important;
-    height: 40px;
-    display: block;
-}
-
-.login-container .card .col-md-6.bg-secondary {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.login-container .card .col-12.col-md-6 {
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-@media (max-width: 768px) {
-    .login-container .card {
-        flex-direction: column;
-    }
-    .login-container .card .col-md-6.bg-secondary {
-        display: none;
-    }
-    .login-container .card .col-12.col-md-6 {
-        width: 100%;
-        padding: 1.5rem;
-    }
-}
-
-.login-container .w-100 {
-    width: 100%;
-    max-width: 30rem;
-}
-@media (max-width: 576px) {
-    .login-container .w-100 {
-        max-width: 100%;
-    }
-}
-
-.form-control {
-    font-size: 1rem;
-    padding: 0.65rem 0.75rem;
-}
-@media (max-width: 576px) {
-    .form-control {
-        font-size: 0.95rem;
-        padding: 0.55rem 0.65rem;
-    }
-    .form-label {
-        font-size: 0.9rem;
-    }
-}
-
-.btn {
-    font-size: 1rem;
-    padding: 0.75rem 1rem;
-}
-
-@media (max-width: 576px) {
-    .btn {
-        font-size: 0.95rem;
-        padding: 0.65rem 0.9rem;
-    }
-}
-
-.landing-page {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    grid-template-rows: 1fr auto;
-    grid-template-areas: "left content right" "content content content";
-    justify-items: center;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
-}
-
-@media (max-width: 992px) {
-    .landing-page {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        grid-template-areas:
-            "content"
-            "left"
-            "right";
-        gap: 15px;
-    }
-    .tip-column {
-        justify-self: center;
-    }
-}
-
-/* Landing page center content adjustments for mobile */
-.center-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    gap: 2rem;
-}
-
-@media (max-width: 768px) {
-    .center-content {
-        gap: 1.5rem;
-    }
-    .gif {
-        width: 200px;
-        height: 200px;
-    }
-    .speech-bubble-box {
-        font-size: 1rem;
-        max-width: 95%;
-        padding: 0.6rem 1rem;
-    }
-}
-
-.access-button {
-    font-size: 1.2rem;
-    padding: 1rem 2rem;
-}
-@media (max-width: 576px) {
-    .access-button {
-        font-size: 1rem;
-        padding: 0.75rem 1.5rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .tip-column {
-        display: none;
-    }
-}
-
-.landing-video {
-    max-width: 100%;
-    height: auto;
-    border-radius: 50%;
 }
 </style>

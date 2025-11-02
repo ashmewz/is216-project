@@ -7,6 +7,16 @@
   --white-off: #FFFDF7;
 }
 
+a,
+a:hover,
+a:focus,
+a:active,
+.text-primary:hover {
+  color: inherit !important;
+  background: none !important;
+}
+
+
 * {
   box-sizing: border-box; /* Width and height include content, padding, border */
   margin: 0;
@@ -22,7 +32,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Potta One', cursive;
+  /* font-family: 'Potta One', cursive; */
   font-weight: bold;
   color: inherit; 
 }
