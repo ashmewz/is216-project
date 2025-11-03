@@ -75,7 +75,7 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
         <div class="mb-3">
           <h6 class="text-muted small">Services</h6>
           <div v-if="user.services && user.services.length" class="d-flex flex-column gap-3">
-            <div v-for="(service, idx) in user.services" :key="idx" class="card p-3 shadow-sm w-100">
+            <div v-for="(service, idx) in user.services" :key="idx" class="card p-3 shadow-sm w-100 service-list">
               <div class="mb-2"><strong>{{ service.type }}</strong></div>
               <div class="d-flex justify-content-start gap-4 flex-wrap">
                 <div>
@@ -106,6 +106,20 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
 .card {
   all: revert;
   background-color: white;
+}
+
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box; /* prevent padding overflow */
+}
+
+.service-card {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word; /* prevent long text from overflowing */
 }
 
 
