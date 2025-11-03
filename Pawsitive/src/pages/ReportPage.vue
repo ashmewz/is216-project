@@ -689,24 +689,26 @@ onMounted(() => {
 </template>
 
 <style>
+/* ---- Background ---- */
+body {
+  background-color: var(--pink);
+}
+
 /* Make form have side spacing on mobile */
 /* ---- Container Layout ---- */
 .main-container {
   display: flex;
   justify-content: center;
-  /* center form by default */
   transition: all 0.3s ease;
   padding: 1rem;
+  background-color: var(--pink);
 }
 
 .main-content {
   transition: margin-right 0.3s ease;
   margin-right: 0;
-  /* centered by default */
   max-width: 500px;
-  /* same width as your form */
   width: 100%;
-  /* responsive */
   padding-top: 30px;
 }
 
@@ -722,24 +724,20 @@ onMounted(() => {
   overflow-y: auto;
   padding: 1rem;
   padding-top: 70px;
-  /* space for navbar */
   z-index: 1000;
   transform: translateX(100%);
   transition: transform 0.3s ease;
   overflow-x: hidden;
 }
 
-/* Sidebar open state */
 .sidebar-open .sidebar {
   transform: translateX(0);
 }
 
-/* Push form left when sidebar open (desktop only) */
 .sidebar-open .main-content {
   margin-right: 300px;
 }
 
-/* ---- Sidebar Toggle Button ---- */
 .sidebar-toggle {
   position: fixed;
   right: 0;
@@ -756,14 +754,11 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-/* When sidebar is open, move toggle left */
 .sidebar-open-btn {
   right: 300px;
-  /* matches sidebar width */
   border-radius: 4px;
 }
 
-/* ---- Responsive Sidebar ---- */
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
@@ -776,42 +771,99 @@ onMounted(() => {
 
   .sidebar-open .main-content {
     margin-right: 0;
-    /* no shift on mobile */
   }
 
   .sidebar-open-btn {
     right: 0;
-    /* stays visible */
   }
 }
 
 /* ==============================
-   Report Form Styles
+   Report Form Styles - Forum Design
    ============================== */
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
-  padding: 0 1rem; /* <-- add horizontal padding */
-  box-sizing: border-box; /* ensures padding doesn’t exceed max-width */
+  padding: 1.5rem;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
 }
 
 .placeholder-selected {
   color: #6c757d;
 }
 
-.report-form input,
+.report-form input[type="text"],
+.report-form input[type="number"],
+.report-form input[type="file"],
 .report-form textarea,
 .report-form select {
+  padding: 0.75rem 1rem;
+  border-radius: 25px;
+  border: 2px solid #e0d4e0;
+  transition: all 0.3s ease;
   font-size: 0.95rem;
-  border-radius: 8px;
+  width: 100%;
+  background-color: #fff;
 }
 
-/* ---- Header ---- */
+.report-form input[type="text"]:focus,
+.report-form input[type="number"]:focus,
+.report-form textarea:focus,
+.report-form select:focus {
+  border-color: #806e83;
+  box-shadow: 0 0 0 0.2rem rgba(128, 110, 131, 0.15);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.report-form input[type="file"] {
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.report-form textarea {
+  border-radius: 15px;
+  resize: vertical;
+}
+
 .report-header {
   text-align: center;
   padding-top: 20px;
   margin-bottom: 1.5rem;
   font-weight: 600;
+  color: #806e83;
+}
+
+.report-form .form-label {
+  font-weight: 600;
+  color: #806e83;
+  margin-bottom: 0.5rem;
+}
+
+.report-form button[type="submit"] {
+  background: #806e83;
+  border: 2px solid #806e83;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.report-form button[type="submit"]:hover {
+  background: #6d5c70;
+  border-color: #6d5c70;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
 }
 
 /* ==============================
@@ -827,25 +879,27 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 2px solid #e0d4e0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  color: #806e83;
+  font-weight: 600;
 }
 
 .severity-box.selected {
-  background-color: #343a40;
+  background-color: #806e83;
   color: white;
-  border-color: #343a40;
+  border-color: #806e83;
 }
 
 .severity-box:hover {
-  background-color: #495057;
+  background-color: #6d5c70;
   color: white;
-  border-color: #495057;
+  border-color: #6d5c70;
 }
 
 /* ==============================
@@ -854,33 +908,69 @@ onMounted(() => {
 .image-preview-container {
   position: relative;
   display: inline-block;
+  width: 100%;
 }
 
 .img-preview {
   max-width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 15px;
   display: block;
 }
 
 .remove-image-btn {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.8rem;
+  top: 10px;
+  right: 10px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
   border-radius: 50%;
   line-height: 1;
+  background-color: #806e83;
+  border-color: #806e83;
+}
+
+.remove-image-btn:hover {
+  background-color: #6d5c70;
+  border-color: #6d5c70;
 }
 
 /* ==============================
-   Suggestion
+   Suggestion Dropdown
    ============================== */
-
 .list-group-item:hover {
-  background-color: #f1f1f1;
+  background-color: #f8e1e1;
+  color: #806e83;
 }
 
+.list-group-item {
+  border: 1px solid #e0d4e0;
+  transition: all 0.2s ease;
+}
+
+/* ==============================
+   Alert Boxes
+   ============================== */
+.alert-info {
+  background-color: #f8e1e1;
+  border-color: #e0d4e0;
+  color: #806e83;
+  border-radius: 15px;
+}
+
+/* ==============================
+   Form Validation
+   ============================== */
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
 
 /* Leaflet attribution style override fix */
 #map .leaflet-control-attribution.leaflet-control {
@@ -897,4 +987,10 @@ onMounted(() => {
   margin: 2px;
   padding-right: 1px;
 }
+
+#map {
+  border-radius: 15px;
+  border: 2px solid #e0d4e0;
+}
 </style>
+
