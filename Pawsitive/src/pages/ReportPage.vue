@@ -921,4 +921,19 @@ onMounted(() => {
 .list-group-item:hover {
   background-color: #f1f1f1;
 }
+
+
+/* Leaflet attribution style override fix */
+#map .leaflet-control-attribution.leaflet-control {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+#map .leaflet-control-attribution.leaflet-control > a {
+  margin: 2px;
+  padding: 0px;
+}
+#map .leaflet-control-attribution.leaflet-control > span {
+  margin: 2px;
+  padding-right: 1px;
+}
 </style>
