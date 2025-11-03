@@ -278,7 +278,7 @@ onMounted(fetchPosts)
     </div>
 
     <!-- ==================== COMMENTS MODAL ==================== -->
-    <div v-if="showCommentModal" class="modal fade show" style="display:block; margin-top: 10rem;" tabindex="-1"
+    <div v-if="showCommentModal" class="modal fade show" style="display:block;" tabindex="-1"
       aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content rounded-4 shadow-lg border-0">
@@ -447,7 +447,29 @@ onMounted(fetchPosts)
   border-radius: 15px;
   border: 2px solid #f0e8f0;
   padding: 0.5rem;
+
+
 }
+
+.controls-sidebar {
+  position: sticky;
+  top: 100px;
+  padding: 1rem;
+  background: #f8e1e1;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
+  z-index: 1020; /* below modal-backdrop */
+}
+
+
+.dropdown-menu {
+  position: absolute !important;
+  z-index: 3100 !important;
+}
+
+
+
+
 
 .dropdown-item {
   border-radius: 10px;
@@ -658,25 +680,31 @@ onMounted(fetchPosts)
 }
 
 .forum-page {
-  background-color: #f8e1e1 ; /* change this to any color you want */
-  min-height: 100vh; /* ensures it covers the full viewport height */
+  background-color: #f8e1e1;
+  /* change this to any color you want */
+  min-height: 100vh;
+  /* ensures it covers the full viewport height */
 }
 
 /* In your forum page CSS or GridSplit.css */
-@media (max-width: 991.98px) { /* Medium breakpoint and smaller */
+@media (max-width: 991.98px) {
+
+  /* Medium breakpoint and smaller */
   .grid-split {
     display: flex;
     flex-direction: column;
   }
 
-  .grid-split > .sidebar {
-    order: -1;       /* Moves sidebar on top */
-    margin-bottom: 1rem; /* Space between sidebar and posts */
+  .grid-split>.sidebar {
+    order: -1;
+    /* Moves sidebar on top */
+    margin-bottom: 1rem;
+    /* Space between sidebar and posts */
   }
 
-  .grid-split > .main {
-    width: 100%;     /* Ensure posts take full width */
+  .grid-split>.main {
+    width: 100%;
+    /* Ensure posts take full width */
   }
 }
-
 </style>

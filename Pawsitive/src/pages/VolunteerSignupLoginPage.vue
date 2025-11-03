@@ -51,7 +51,7 @@
                                         </div>
 
                                         <button type="submit"
-                                            class="btn btn-primary w-100 rounded-pill py-2 fw-medium mt-2">
+                                            class="btn btn-volunteer w-100 rounded-pill py-2 fw-medium mt-2">
                                             Login
                                         </button>
 
@@ -149,7 +149,7 @@
                                         </div>
 
                                         <button type="submit"
-                                            class="btn btn-primary w-100 rounded-pill py-2 fw-medium mt-2">
+                                            class="btn btn-volunteer w-100 rounded-pill py-2 fw-medium mt-2">
                                             Register
                                         </button>
 
@@ -198,7 +198,7 @@
             </div>
 
             <button type="submit" @click="showTnC = false"
-                class="btn btn-primary w-100 rounded-pill py-2 fw-medium mt-2">
+                class="btn btn-volunteer w-100 rounded-pill py-2 fw-medium mt-2">
                 Close
             </button>
 
@@ -399,6 +399,22 @@ const handleRegister = async () => {
         max-height: 200px;
     }
 }
+
+.btn-volunteer {
+    background-color: #806e83;  /* profile page accent color */
+    color: white;               /* text color */
+    border: none;
+    border-radius: 50px;        /* rounded-pill */
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-volunteer:hover {
+    background-color: #6b5a6d;  /* slightly darker shade for hover */
+    transform: scale(1.05);
+}
+
 
 /* Mobile Form Padding (extra breathing room) */
 .mobile-form-padding {
