@@ -246,14 +246,29 @@ async function initMapWithRadius(cats = []) {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
+  } else {
+    // Recenter map on subsequent calls to reflect new coordinates
+    const currentZoom = map.getZoom();
+    map.setView([lat, lon], currentZoom);
   }
 
-  if (userMarker) map.removeLayer(userMarker);
-  if (userCircle) map.removeLayer(userCircle);
   clearCatMarkers();
 
-  userMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 Selected Location").openPopup();
-  userCircle = L.circle([lat, lon], { radius: RADIUS_METERS, color: "blue", fillColor: "#3b82f6", fillOpacity: 0.2 }).addTo(map);
+  // Create or move the user marker and circle
+  if (userMarker) {
+    userMarker.setLatLng([lat, lon]);
+  } else {
+    userMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 Selected Location");
+  }
+  if (userCircle) {
+    userCircle.setLatLng([lat, lon]);
+    userCircle.setRadius(RADIUS_METERS);
+  } else {
+    userCircle = L.circle([lat, lon], { radius: RADIUS_METERS, color: "blue", fillColor: "#3b82f6", fillOpacity: 0.2 }).addTo(map);
+  }
+
+  // Ensure map recalculates layout in case container size changed
+  setTimeout(() => map.invalidateSize(), 0);
 
   // Reverse-geocode and prefill the Location field when the map is drawn
   try {
