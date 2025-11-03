@@ -1,16 +1,8 @@
 <script setup>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
-=======
-=======
->>>>>>> Stashed changes
-import { ref, reactive, computed } from 'vue'; // Import Vue's reactivity API
-import Navbar from '@/components/resuables/Navbar.vue'; // Navigation bar component
-import BottomFooter from '@/components/resuables/BottomFooter.vue'; // Footer component
->>>>>>> Stashed changes
+
 
 const containerRef = ref(null);
 const scrolledPast = ref(false);
