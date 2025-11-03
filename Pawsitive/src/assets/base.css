@@ -128,14 +128,15 @@ html {
 }
 
 
-/* NEW CSS TO USE */
+/* NEW CSS TO RE-USE */
 
 
 .pawsitive-background {
     background-color: #f8e1e1;
 }
 
-.pawsitive-btn{
+
+.pawsitive-btn, .pawsitive-btn-outline{
   border-radius: 25px;
   padding: 0.5rem 1.25rem;
   font-weight: 600;
@@ -148,11 +149,13 @@ html {
   cursor: pointer;
 }
 
+
+/* USE THIS FOR MAIN BTN */
+
 .pawsitive-btn {
   background: #806e83;
   border: 2px solid #806e83;
   color: white;
-  margin-bottom: 1rem;
 }
 
 .pawsitive-btn:hover {
@@ -160,6 +163,33 @@ html {
   border-color: #6d5c70;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+}
+
+/* USE THIS FOR OUTLINE BTN */
+
+.pawsitive-btn-outline {
+  border: 2px solid #806e83;
+  color: #806e83;
+  transition: all 0.3s ease;
+}
+
+
+.pawsitive-btn-outline:hover {
+  background: #806e83;
+  color: white;
+  transform: scale(1.05);
+}
+
+/* USE THIS IF U ONLY WANT TO CHANGE THE BUTTON COLOR */
+.pawsitive-color{
+  background: #806e83 !important;
+  color: white !important;
+  border-color: #806e83 !important;
+}
+
+.pawsitive-color:hover {
+  background-color: #6d5c70 !important;
+  border-color: #6d5c70 !important;
 }
 
 

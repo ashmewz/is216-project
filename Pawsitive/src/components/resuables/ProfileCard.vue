@@ -24,7 +24,7 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
         <small class="text-muted">@{{ user.username }}</small>
 
         <div v-if="showActions" class="mt-3 d-flex gap-2 flex-wrap">
-          <button class="btn btn-outline-primary rounded-pill px-4 py-2" @click="onEditProfile">
+          <button class="pawsitive-btn-outline" @click="onEditProfile">
             Edit Profile
           </button>
         </div>

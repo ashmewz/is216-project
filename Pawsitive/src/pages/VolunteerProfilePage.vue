@@ -410,7 +410,7 @@ onMounted(() => {
                             <div class="modal-footer border-0">
                                 <button type="button" class="btn btn-secondary btn-sm rounded-pill"
                                     @click="showModal = false">Cancel</button>
-                                <button type="submit" class="btn btn-primary btn-sm rounded-pill">Save</button>
+                                <button type="submit" class="btn btn-primary btn-sm rounded-pill pawsitive-color">Save</button>
                             </div>
                         </form>
                     </div>
