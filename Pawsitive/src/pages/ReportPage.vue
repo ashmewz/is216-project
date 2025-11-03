@@ -3,6 +3,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import CatReportCard from '@/components/resuables/CatReportCard.vue'
+import NearbyCatsList from '@/components/resuables/NearbyCatsList.vue'
 import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy, where, GeoPoint } from 'firebase/firestore'
 import { getAuth } from "firebase/auth"
 import { validateCatReport } from '@/utils/validators'
@@ -643,30 +644,7 @@ onMounted(() => {
             <div v-if="nearbyCats.length === 0" class="text-muted">
               No nearby cats found.
             </div>
-            <!-- NOTE(RAYNER): For Kevan, so notice how this is very very similar to the Other Cats card -->
-             <!-- So you should extract this out into it's own component. -->
-              <!-- I'll leave this as an exercise for you to do. I've helped you fixed the other things already. -->
-            <div v-else class="nearby-cats-container">
-              <div v-for="cat in nearbyCats" :key="cat.id" class="nearby-cat-card card mb-3 p-2">
-                <div class="d-flex gap-2">
-                  <img v-if="cat.photos && cat.photos.length" :src="cat.photos[0]" alt="cat photo" class="card-img"
-                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" />
-                  <div class="cat-info-text">
-                    <h6 class="mb-1"><strong>Name:</strong> {{ cat.name || 'Unnamed Cat' }}</h6>
-                    <p class="mb-1 text-break"><strong>Description:</strong><br> {{ cat.description || 'No description' }} </p>
-                    <p class="mb-1 text-break"><strong>Last Location:</strong><br>
-                      {{ Array.isArray(cat.last_location) ? cat.last_location.join(",\n") : cat.last_location._lat.toFixed(8) + ",\n"
-                        +
-                        cat.last_location._long.toFixed(8) }}
-                    </p>
-                    <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ?
-                      cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
-                    <p v-if="cat.distanceMeters" class="mb-0"><strong>Estimated Distance:</strong> {{
-                      cat.distanceMeters.toFixed(2) }} m</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <NearbyCatsList v-else :cats="nearbyCats" :show-distance="true" />
 
             <hr />
 
@@ -681,25 +659,7 @@ onMounted(() => {
                 <span>{{ otherCatsOpen ? '▲' : '▼' }}</span>
               </button>
 
-              <div v-show="otherCatsOpen" class="nearby-cats-container">
-                <div v-for="cat in reports" :key="cat.id" class="nearby-cat-card card mb-3 p-2">
-                  <div class="d-flex gap-2">
-                    <img v-if="cat.photos && cat.photos.length" :src="cat.photos[0]" alt="cat photo" class="card-img"
-                      style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" />
-                    <div class="cat-info-text">
-                      <h6 class="mb-1"><strong>Name:</strong> {{ cat.name || 'Unnamed Cat' }}</h6>
-                      <p class="mb-1 text-break"><strong>Description:</strong><br> {{ cat.description || 'No description' }}</p>
-                      <p class="mb-1 text-break"><strong>Last Location:</strong><br>
-                        {{ Array.isArray(cat.last_location) ? cat.last_location.join(",\n") : cat.last_location._lat.toFixed(8) +
-                          ",\n"
-                          + cat.last_location._long.toFixed(8) }}
-                      </p>
-                      <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ?
-                        cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <NearbyCatsList v-show="otherCatsOpen" :cats="reports" :show-distance="false" />
             </div>
 
       </div>
@@ -792,22 +752,6 @@ onMounted(() => {
   right: 300px;
   /* matches sidebar width */
   border-radius: 4px;
-}
-
-.cat-info-text {
-  min-width: 0;
-  flex-grow: 1;
-  flex-shrink: 1;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.nearby-cat-card .card-img {
-  flex-shrink: 0;
-}
-
-.nearby-cats-container {
-  overflow: hidden;
 }
 
 /* ---- Responsive Sidebar ---- */
@@ -919,23 +863,6 @@ onMounted(() => {
   border-radius: 50%;
   line-height: 1;
 }
-
-/* ==============================
-   Nearby Cats Section
-   ============================== */
-.nearby-cats-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.nearby-cat-card {
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-}
-
 
 /* ==============================
    Suggestion
