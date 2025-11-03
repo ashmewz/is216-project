@@ -60,6 +60,20 @@ const otherCatsOpen = ref(false);
 
 const RADIUS_METERS = 2000;
 
+// -------------------- Reverse Geocoding (Nominatim) --------------------
+async function reverseGeocode(lat, lon) {
+  if (lat == null || lon == null) return null;
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=16&addressdetails=1`;
+    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const data = await resp.json();
+    return data?.display_name ?? null;
+  } catch (err) {
+    console.warn('Reverse geocoding failed:', err);
+    return null;
+  }
+}
+
 // -------------------- Utility Functions --------------------
 function haversineMeters(lat1, lon1, lat2, lon2) {
   const toRad = d => d * Math.PI / 180;
@@ -222,6 +236,11 @@ async function initMapWithRadius(cats = []) {
     ? [report.coords.lat, report.coords.lng]
     : await getLocation();
 
+  // Persist current coords if not already set
+  if (!report.coords) {
+    report.coords = { lat, lng: lon };
+  }
+
   if (!map) {
     map = L.map("map").setView([lat, lon], 14);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -235,6 +254,16 @@ async function initMapWithRadius(cats = []) {
 
   userMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 Selected Location").openPopup();
   userCircle = L.circle([lat, lon], { radius: RADIUS_METERS, color: "blue", fillColor: "#3b82f6", fillOpacity: 0.2 }).addTo(map);
+
+  // Reverse-geocode and prefill the Location field when the map is drawn
+  try {
+    const addr = await reverseGeocode(lat, lon);
+    if (addr && !report.location) {
+      report.location = addr;
+    }
+  } catch (e) {
+    console.warn('Prefill via reverse geocode failed:', e);
+  }
 
   cats.forEach(cat => {
     const loc = cat.last_location;
@@ -458,6 +487,25 @@ onMounted(() => {
 
     <div v-show="showMap" id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
 
+
+    <!-- Location (auto-detect) -->
+    <div class="mb-3 position-relative">
+      <label class="form-label">Location</label>
+      <input type="text" class="form-control" v-model="report.location" placeholder="Enter location..."
+        @focus="showSuggestions.value = locationSuggestions.value.length > 0" />
+
+      <!-- Dropdown Suggestions -->
+      <ul v-if="showSuggestions" class="list-group position-absolute w-100"
+        style="z-index: 1000; max-height: 200px; overflow-y: auto;">
+        <li v-for="(suggestion, index) in locationSuggestions" :key="index"
+          class="list-group-item list-group-item-action" @click="selectLocationSuggestion(suggestion)"
+          style="cursor: pointer;">
+          {{ suggestion.label }}
+        </li>
+      </ul>
+    </div>
+
+
     <!-- Status Dropdown -->
     <div class="mb-3">
       <label class="form-label">Status</label>
@@ -505,22 +553,7 @@ onMounted(() => {
 
 
 
-    <!-- Location (auto-detect) -->
-    <div class="mb-3 position-relative">
-      <label class="form-label">Location</label>
-      <input type="text" class="form-control" v-model="report.location" placeholder="Enter location..."
-        @focus="showSuggestions.value = locationSuggestions.value.length > 0" />
 
-      <!-- Dropdown Suggestions -->
-      <ul v-if="showSuggestions" class="list-group position-absolute w-100"
-        style="z-index: 1000; max-height: 200px; overflow-y: auto;">
-        <li v-for="(suggestion, index) in locationSuggestions" :key="index"
-          class="list-group-item list-group-item-action" @click="selectLocationSuggestion(suggestion)"
-          style="cursor: pointer;">
-          {{ suggestion.label }}
-        </li>
-      </ul>
-    </div>
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
       <label class="form-label">Condition of the cat (optional)</label>
