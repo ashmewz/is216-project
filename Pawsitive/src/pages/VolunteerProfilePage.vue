@@ -254,7 +254,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100">
+    <div class="d-flex flex-column min-vh-100 page-background">
         <!-- Navbar -->
         <Navbar>
             <template #navbar-title>Profile</template>
@@ -270,115 +270,101 @@ onMounted(() => {
             <div v-if="showModal" class="modal-backdrop fade show"></div>
 
             <!-- Bootstrap Modal -->
-            <div class="modal fade" :class="{ show: showModal }" tabindex="-1" style="display: block;" v-if="showModal"
-                aria-modal="true" role="dialog">
+            <div v-if="showModal" class="modal fade show" tabindex="-1" aria-modal="true" role="dialog"
+                style="display: block;">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content">
+                    <div class="modal-content rounded-3 shadow-sm">
                         <form @submit.prevent="onSaveProfile">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Profile</h5>
+
+                            <!-- Modal Header -->
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold text-accent">Edit Profile</h5>
                                 <button type="button" class="btn-close" @click="showModal = false"></button>
                             </div>
 
+                            <!-- Modal Body -->
                             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
 
-
-                                <!-- Profile Photo -->
-                                <div class="mb-3 d-flex flex-column align-items-center">
-                                    <div class="position-relative" style="width: 100px; height: 100px; cursor: pointer;"
-                                        @click="triggerFileInput">
-                                        <img :src="avatarUrl" alt="Avatar" class="rounded-circle border w-100 h-100"
-                                            style="object-fit: cover;" />
-                                        <!-- Hover Overlay -->
-                                        <div
-                                            class="overlay d-flex justify-content-center align-items-center rounded-circle">
+                                <!-- Avatar -->
+                                <div class="mb-4 d-flex flex-column align-items-center">
+                                    <div class="avatar-wrapper position-relative" @click="triggerFileInput">
+                                        <img :src="avatarUrl" alt="Avatar" class="avatar-img rounded-circle border" />
+                                        <div class="overlay d-flex justify-content-center align-items-center">
                                             Click to change
                                         </div>
                                     </div>
-
                                     <input type="file" ref="avatarInput" @change="onAvatarChange" accept="image/*"
                                         style="display: none;" />
-
-                                    <div class="mt-2" v-if="form.avatar">
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
-                                            @click="onRemoveAvatar">
-                                            Remove Photo
-                                        </button>
-                                    </div>
+                                    <button v-if="form.avatar" type="button"
+                                        class="btn btn-outline-danger btn-sm mt-2 rounded-pill" @click="onRemoveAvatar">
+                                        Remove Photo
+                                    </button>
                                 </div>
 
-                                <div v-if="errorMessage" class="alert alert-danger">
+                                <!-- Error Message -->
+                                <div v-if="errorMessage" class="alert alert-danger rounded-3">
                                     {{ errorMessage }}
                                 </div>
-                                <!-- First Name + Last Name inline -->
+
+                                <!-- Name Fields -->
                                 <div class="row mb-3">
                                     <div class="col-12 col-md-6 mb-2 mb-md-0">
                                         <label class="form-label">First Name</label>
-                                        <input v-model="form.firstName" type="text" class="form-control"
+                                        <input v-model="form.firstName" type="text" class="form-control rounded-pill"
                                             :class="{ 'is-invalid': fieldErrors.firstName }" placeholder="First Name" />
-                                        <div class="invalid-feedback">
-                                            {{ fieldErrors.firstName }}
-                                        </div>
+                                        <div class="invalid-feedback">{{ fieldErrors.firstName }}</div>
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label">Last Name</label>
-                                        <input v-model="form.lastName" type="text" class="form-control"
+                                        <input v-model="form.lastName" type="text" class="form-control rounded-pill"
                                             :class="{ 'is-invalid': fieldErrors.lastName }" placeholder="Last Name" />
-                                        <div class="invalid-feedback">
-                                            {{ fieldErrors.lastName }}
-                                        </div>
+                                        <div class="invalid-feedback">{{ fieldErrors.lastName }}</div>
                                     </div>
                                 </div>
 
                                 <!-- Contact Number -->
                                 <div class="mb-3">
                                     <label class="form-label">Contact Number</label>
-                                    <input v-model="form.contactNumber" type="tel" class="form-control"
+                                    <input v-model="form.contactNumber" type="tel" class="form-control rounded-pill"
                                         :class="{ 'is-invalid': fieldErrors.contactNumber }"
                                         placeholder="Contact Number" />
-                                    <div class="invalid-feedback">
-                                        {{ fieldErrors.contactNumber }}
-                                    </div>
+                                    <div class="invalid-feedback">{{ fieldErrors.contactNumber }}</div>
                                 </div>
 
                                 <!-- Bio -->
                                 <div class="mb-3">
                                     <label class="form-label">Bio</label>
-                                    <textarea v-model="form.bio" class="form-control" rows="3"
+                                    <textarea v-model="form.bio" class="form-control rounded-3" rows="3"
                                         placeholder="Tell us about yourself"></textarea>
                                 </div>
 
                                 <!-- Region -->
                                 <div class="mb-3">
                                     <label class="form-label">Region</label>
-                                    <select v-model="form.region" class="form-select"
+                                    <select v-model="form.region" class="form-select rounded-pill"
                                         :class="{ 'is-invalid': fieldErrors.region }">
-                                        <option value="select" disabled>Select a region</option>
+                                        <option value="" disabled>Select a region</option>
                                         <option value="">None</option>
                                         <option v-for="r in region" :key="r" :value="r">{{ r }}</option>
                                     </select>
                                     <div class="invalid-feedback">{{ fieldErrors.region }}</div>
                                 </div>
 
-
                                 <!-- Skills -->
                                 <div class="mb-3">
                                     <label class="form-label d-block">Skills</label>
                                     <div v-for="(skill, index) in form.skills" :key="index" class="input-group mb-2">
-                                        <input v-model="form.skills[index]" type="text" class="form-control"
-                                            placeholder="Skill">
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                        <input v-model="form.skills[index]" type="text"
+                                            class="form-control rounded-pill" placeholder="Skill">
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
                                             @click="form.skills.splice(index, 1)">Remove</button>
                                     </div>
-
-                                    <div class="mt-2">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" @click="addSkill">
-                                            Add Skill
-                                        </button>
-                                        <div v-if="fieldErrors.skills" class="invalid-feedback d-block">
-                                            {{ fieldErrors.skills }}
-                                        </div>
-
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1"
+                                        @click="addSkill">
+                                        Add Skill
+                                    </button>
+                                    <div v-if="fieldErrors.skills" class="invalid-feedback d-block">{{
+                                        fieldErrors.skills }}
                                     </div>
                                 </div>
 
@@ -386,10 +372,10 @@ onMounted(() => {
                                 <div class="mb-3">
                                     <label class="form-label d-block">Services</label>
                                     <div v-for="(service, index) in form.services" :key="index"
-                                        class="border p-2 mb-2 rounded">
+                                        class="service-card p-3 mb-2 rounded-3 shadow-sm">
                                         <div class="mb-2">
                                             <label class="form-label">Service Type</label>
-                                            <select v-model="service.type" class="form-select">
+                                            <select v-model="service.type" class="form-select rounded-pill">
                                                 <option value="" disabled>Select a service</option>
                                                 <option v-for="type in serviceTypes" :key="type" :value="type">{{ type
                                                     }}
@@ -399,42 +385,38 @@ onMounted(() => {
                                         <div class="mb-2">
                                             <label class="form-label">Years of Experience</label>
                                             <input v-model.number="service.yearsOfExp" type="number"
-                                                class="form-control" placeholder="Years of Experience">
+                                                class="form-control rounded-pill" placeholder="Years of Experience">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Fee Rate ($/hr)</label>
-                                            <input v-model.number="service.feeRate" type="number" class="form-control"
-                                                placeholder="Fee Rate">
+                                            <input v-model.number="service.feeRate" type="number"
+                                                class="form-control rounded-pill" placeholder="Fee Rate">
                                         </div>
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
                                             @click="form.services.splice(index, 1)">Remove Service</button>
                                     </div>
-                                    <div class="mt-2">
-                                        <button type="button" class="btn btn-outline-primary btn-sm"
-                                            @click="addService">
-                                            Add Service
-                                        </button>
-
-                                        <div v-if="fieldErrors.services" class="invalid-feedback d-block">
-                                            {{ fieldErrors.services }}
-                                        </div>
-
-
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1"
+                                        @click="addService">
+                                        Add Service
+                                    </button>
+                                    <div v-if="fieldErrors.services" class="invalid-feedback d-block">{{
+                                        fieldErrors.services }}
                                     </div>
                                 </div>
 
                             </div>
 
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn-sm"
+                            <!-- Modal Footer -->
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-secondary btn-sm rounded-pill"
                                     @click="showModal = false">Cancel</button>
-                                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                <button type="submit" class="btn btn-primary btn-sm rounded-pill">Save</button>
                             </div>
                         </form>
                     </div>
                 </div>
-
             </div>
+
         </main>
 
         <!-- Footer -->
@@ -443,6 +425,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.page-background {
+    background-color: #f8e1e1;
+}
+
 /* optional: center vertically on taller screens */
 main {
     min-height: calc(100vh - 120px);
@@ -471,16 +457,60 @@ main {
 }
 
 .modal.show {
-  display: block !important;
-  z-index: 2000; /* higher than navbar */
+    display: block !important;
+    z-index: 2000;
+    /* higher than navbar */
 }
 
 .modal-backdrop.show {
-  z-index: 1500;
+    z-index: 1500;
 }
 
 .navbar {
-  z-index: 1000;
+    z-index: 1000;
 }
 
+.avatar-wrapper {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #f0e8f0;
+    box-shadow: 0 4px 12px rgba(128, 110, 131, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    border-radius: 50%;
+    transition: opacity 0.3s;
+}
+
+.avatar-wrapper:hover .overlay {
+    opacity: 1;
+}
+
+.service-card {
+    transition: all 0.2s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(128, 110, 131, 0.15);
+}
 </style>
