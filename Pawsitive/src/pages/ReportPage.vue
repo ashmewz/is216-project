@@ -507,7 +507,7 @@ onMounted(() => {
     <div class="mb-3 position-relative">
       <label class="form-label">Location</label>
       <input type="text" class="form-control" v-model="report.location" placeholder="Enter location..."
-        @focus="showSuggestions.value = locationSuggestions.value.length > 0" />
+        @focus="showSuggestions = locationSuggestions.value && locationSuggestions.value.length > 0" />
 
       <!-- Dropdown Suggestions -->
       <ul v-if="showSuggestions" class="list-group position-absolute w-100"
