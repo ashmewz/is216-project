@@ -8,8 +8,8 @@ import { getAuth } from "firebase/auth"
 import { validateCatReport } from '@/utils/validators' // your validation util
 import { Client } from "@gradio/client"
 
-// import L from "leaflet";
-// import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 const db = getFirestore()
 const auth = getAuth()
