@@ -3,7 +3,6 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
 
-
 const containerRef = ref(null);
 const scrolledPast = ref(false);
 const showApplicationForm = ref(false);
@@ -105,14 +104,6 @@ const cats = ref([
     },
 ]);
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-// Cat Adoption Timeline (unchanged)
->>>>>>> Stashed changes
-=======
-// Cat Adoption Timeline (unchanged)
->>>>>>> Stashed changes
 const adoptionTimeline = [
     { label: "Fill in Application Form", date: "31 Oct", time: "10:00 AM" },
     { label: "Center Processes Application", date: "01 Nov ~ 07 Nov", time: "5-7 Days" },
@@ -122,8 +113,6 @@ const adoptionTimeline = [
     { label: "Cat Pickup", date: "16 Nov", time: "11:00 AM" },
 ];
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 const currentIndex = ref(0);
 const carouselIndex = ref(0);
 const showDetails = ref(false);
@@ -163,258 +152,6 @@ onMounted(() => {
       cats.value.forEach(cat => {
         cat.favorite = stored.includes(cat.name);
       });
-=======
-=======
->>>>>>> Stashed changes
-// Adoption Form Reactive State
-const form = reactive({
-  reason: '',
-  havePets: '',
-  petsDetails: '',
-  surrenderedBefore: '',
-  surrenderReason: '',
-  allergies: '',
-  homeType: '',
-  landlordPermission: '',
-  landlordProof: '',
-  dailySchedule: '',
-  catAloneHours: null,
-  indoorOutdoor: '',
-  safetyMeasures: '',
-  financialPrepared: '',
-  specialNeedsAcceptance: '',
-  researchedCare: '',
-});
-
-// Validation errors reactive state
-const errors = reactive({});
-
-// Validation rules
-function validateForm() {
-  errors.reason = form.reason.trim() ? '' : 'Please provide your reason.';
-  errors.havePets = form.havePets ? '' : 'Please select if you have pets.';
-  errors.petsDetails = form.havePets === 'yes' && !form.petsDetails.trim() ? 'Please describe your current pets.' : '';
-  errors.surrenderedBefore = form.surrenderedBefore ? '' : 'Please select if you surrendered pets before.';
-  errors.surrenderReason = form.surrenderedBefore === 'yes' && !form.surrenderReason.trim() ? 'Please provide surrender reason.' : '';
-  errors.allergies = form.allergies ? '' : 'Please specify if anyone has allergies.';
-  errors.homeType = form.homeType ? '' : 'Please select your home ownership.';
-  errors.landlordPermission = form.homeType === 'rent' && !form.landlordPermission ? 'Please specify landlord permission.' : '';
-  errors.landlordProof = form.landlordPermission === 'yes' && !form.landlordProof.trim() ? 'Please provide landlord permission proof.' : '';
-  errors.dailySchedule = form.dailySchedule.trim() ? '' : 'Please describe your daily schedule.';
-  errors.catAloneHours = form.catAloneHours !== null && form.catAloneHours !== '' && !isNaN(form.catAloneHours) && form.catAloneHours >= 0 ? '' : 'Please enter valid hours cat will be alone.';
-  errors.indoorOutdoor = form.indoorOutdoor ? '' : 'Please select cat indoor/outdoor preference.';
-  errors.safetyMeasures = form.safetyMeasures.trim() ? '' : 'Please explain safety measures.';
-  errors.financialPrepared = form.financialPrepared ? '' : 'Please confirm financial preparedness.';
-  errors.specialNeedsAcceptance = form.specialNeedsAcceptance ? '' : 'Please confirm acceptance of special needs cat.';
-  errors.researchedCare = form.researchedCare ? '' : 'Please confirm research on cat care.';
-
-  // Return true if no errors
-  return Object.values(errors).every(e => e === '');
-}
-
-const currentQuestionIndex = ref(0);
-
-const questions = [
-  {
-    id: 'reason',
-    type: 'textarea',
-    label: "1. Why do you want to adopt a cat? *",
-    placeholder: '',
-    required: true,
-  },
-  {
-    id: 'havePets',
-    type: 'radio',
-    label: '2. Do you currently have pets? *',
-    options: ['yes', 'no'],
-    required: true,
-  },
-  {
-    id: 'petsDetails',
-    type: 'textarea',
-    label: 'Please describe your pets (species, ages, health, temperament) *',
-    required: true,
-    conditionalOn: { field: 'havePets', value: 'yes' }
-  },
-  {
-    id: 'surrenderedBefore',
-    type: 'radio',
-    label: '3. Have you ever surrendered or rehomed a pet? *',
-    options: ['yes', 'no'],
-    required: true,
-  },
-  {
-    id: 'surrenderReason',
-    type: 'textarea',
-    label: 'Please provide reason for surrender *',
-    required: true,
-    conditionalOn: { field: 'surrenderedBefore', value: 'yes' }
-  },
-  {
-    id: 'allergies',
-    type: 'radio',
-    label: '4. Does anyone in your household have allergies to cats or other animals? *',
-    options: ['yes', 'no'],
-    required: true,
-  },
-  {
-    id: 'homeType',
-    type: 'radio',
-    label: '5. Do you own or rent your home? *',
-    options: ['own', 'rent'],
-    required: true,
-  },
-  {
-    id: 'landlordPermission',
-    type: 'radio',
-    label: 'Does your landlord allow pets? *',
-    options: ['yes', 'no'],
-    required: true,
-    conditionalOn: { field: 'homeType', value: 'rent' }
-  },
-  {
-    id: 'landlordProof',
-    type: 'text',
-    label: 'Please provide proof of landlord permission *',
-    placeholder: 'e.g. lease agreement clause',
-    required: true,
-    conditionalOn: { field: 'landlordPermission', value: 'yes' }
-  },
-  {
-    id: 'dailySchedule',
-    type: 'textarea',
-    label: '6. Describe your typical daily schedule and how many hours the cat will be alone each day? *',
-    placeholder: 'e.g. at work 9am-6pm, home evenings',
-    required: true,
-  },
-  {
-    id: 'catAloneHours',
-    type: 'number',
-    label: 'Hours cat will be alone daily *',
-    required: true,
-    min: 0,
-  },
-  {
-    id: 'indoorOutdoor',
-    type: 'radio',
-    label: '7. Will the cat be indoor only, outdoor only, or indoor/outdoor? *',
-    options: ['indoor', 'outdoor', 'indoorOutdoor'],
-    required: true,
-  },
-  {
-    id: 'safetyMeasures',
-    type: 'textarea',
-    label: "How will you ensure the cat's safety? *",
-    required: true,
-  },
-  {
-    id: 'financialPrepared',
-    type: 'radio',
-    label: '8. Are you financially prepared to cover routine and emergency vet care, food, and supplies? *',
-    options: ['yes', 'no'],
-    required: true,
-  },
-  {
-    id: 'specialNeedsAcceptance',
-    type: 'radio',
-    label: '9. Are you willing to adopt a cat with medical or behavioral needs? *',
-    options: ['yes', 'no'],
-    required: true,
-  },
-  {
-    id: 'researchedCare',
-    type: 'radio',
-    label: '10. Have you researched proper cat care including vaccinations, spaying/neutering, and enrichment? *',
-    options: ['yes', 'no'],
-    required: true,
-  },
-];
-
-const submitAttempted = ref(false);
-
-function isQuestionVisible(question) {
-  if (!question.conditionalOn) return true;
-  const { field, value } = question.conditionalOn;
-  return form[field] === value;
-}
-function isQuestionVisible(question) {
-  if (!question.conditionalOn) return true;
-  const { field, value } = question.conditionalOn;
-  return form[field] === value;
-}
-
-function goNext() {
-  // Validate current question field first
-  const q = visibleQuestions.value[currentQuestionIndex.value];
-  if (!validateCurrentQuestion(q)) return;
-
-  // If last question, submit
-  if (currentQuestionIndex.value >= visibleQuestions.value.length -1) {
-    handleformSubmit();
-  } else {
-    currentQuestionIndex.value++;
-    // Scroll top smoothly after next tick
-    nextTick(() => {
-      const el = document.querySelector('.question-wrapper');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    });
-  }
-}
-
-// Validate only current question field
-function validateCurrentQuestion(question) {
-  const field = question.id;
-  const val = form[field];
-  let error = '';
-  if(question.required) {
-    if(val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
-      error = 'This field is required';
-    } else if (field === 'catAloneHours' && (isNaN(val) || val < 0)) {
-      error = 'Please enter valid number >= 0';
-    }
-  }
-  errors[field] = error;
-  return !error;
-}
-
-const visibleQuestions = computed(() => questions.filter(isQuestionVisible));
-
-const submitAttempted = ref(false);
-function handleformSubmit() {
-  submitAttempted.value = true;
-  let allValid = true;
-  visibleQuestions.value.forEach(q => {
-    if (!validateCurrentQuestion(q)) allValid = false;
-  });
-  if (allValid) {
-    alert('Application submitted successfully!');
-    // further submission logic here
-  } else {
-    alert('Please fix errors before submitting.');
-  }
-}
-
-function handleformSubmit() {
-  submitAttempted.value = true;
-  if (validateForm()) {
-    alert('Application submitted successfully!');
-    // further submission logic here
-  } else {
-    alert('Please fix errors before submitting.');
-  }
-}
-
-// Reactive state management (unchanged)
-const adoptionReason = ref('');
-const currentIndex = ref(0);
-const carouselIndex = ref(0);
-const showSuccess = ref(false);
-
-function nextCat() {
-    if (currentIndex.value < cats.length - 1) {
-        currentIndex.value++;
-        carouselIndex.value = 0;
->>>>>>> Stashed changes
     }
   } catch (e) {}
 
@@ -492,8 +229,6 @@ function showSuccessPopup(title, message, timeout = 2500) {
   setTimeout(() => showSuccess.value = false, timeout);
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 function handleIndicateInterest() {
   showApplicationForm.value = true;
   nextTick(() => {
@@ -548,43 +283,6 @@ function selectCatByFilteredIndex(idxInFiltered) {
 watch(currentIndex, (v) => {
   timelineProgress.value = Math.min(v, adoptionTimeline.length - 1);
 });
-=======
-=======
->>>>>>> Stashed changes
-function prevCat() {
-    if (currentIndex.value > 0) {
-        currentIndex.value--;
-        carouselIndex.value = 0;
-    }
-}
-
-function toggleFavorite(cat) {
-    cat.favorite = !cat.favorite;
-}
-
-function nextPhoto() {
-    const cat = cats[currentIndex.value];
-    if (carouselIndex.value < cat.images.length - 1) {
-        carouselIndex.value++;
-    }
-}
-
-function prevPhoto() {
-    const cat = cats[currentIndex.value];
-    if (cat && carouselIndex.value > 0) {
-        carouselIndex.value--;
-    }
-}
-
-function handleSubmit(event) {
-    event.preventDefault();
-    showSuccess.value = true;
-    setTimeout(() => showSuccess.value = false, 2500);
-}
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 </script>
 
 <template>
@@ -592,8 +290,6 @@ function handleSubmit(event) {
         <template v-slot:navbar-title>Adoption</template>
     </Navbar>
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <div ref="containerRef" :class="['scroll-bg-container', { 'background-changed': scrolledPast }]"
         style="min-height: 100vh; overflow-y: auto;">
         <!-- 1. Centered header -->
@@ -721,84 +417,8 @@ function handleSubmit(event) {
                     <button class="close-btn" @click="showDetails = false">Close</button>
                 </div>
             </div>
-=======
-=======
->>>>>>> Stashed changes
-    <div class="adoption-header">Adopt Your Cats Here</div>
-
-    <div class="adoption-bg">
-
-        <!-- Timeline -->
-        <div class="timeline-container">
-            <ul class="timeline">
-                <li v-for="(step, index) in adoptionTimeline" :key="index" class="timeline-step">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <span class="timeline-label">{{ step.label }}</span>
-                        <span class="timeline-date">{{ step.date }}</span>
-                        <span class="timeline-time">{{ step.time }}</span>
-                    </div>
-                </li>
-            </ul>
         </div>
 
-        <!-- Main Layout -->
-        <div class="card-row">
-
-            <!-- Prev Btn -->
-            <button class="arrow-btn" @click="prevCat" :disabled="currentIndex === 0">&#8592;</button>
-
-            <!-- Adoption Card Left -->
-            <div class="adoption-card">
-                <div class="carousel-container">
-                    <img :src="cats[currentIndex].images[carouselIndex]" alt="Cat photo" class="cat-image" />
-                    <button class="carousel-arrow left" @click="prevPhoto" :disabled="carouselIndex === 0" aria-label="Previous photo">‹</button>
-                    <button class="carousel-arrow right" @click="nextPhoto" :disabled="carouselIndex === cats[currentIndex].images.length -1" aria-label="Next photo">›</button>
-                </div>
-            </div>
-
-            <!-- Right Side: cat-info top, cat-status bottom -->
-            <div class="right-side-grid">
-
-                <!-- Cat Info Top -->
-                <div class="cat-info">
-                    <h2 class="cat-name">{{ cats[currentIndex].name }}, {{ cats[currentIndex].age }}</h2>
-                    <p class="cat-desc">{{ cats[currentIndex].desc }}</p>
-                </div>
-
-                <!-- Status and Favourite Bottom -->
-                <div class="status-fav-wrapper">
-                    <div class="cat-status">{{ cats[currentIndex].status }}</div>
-                    <button @click="toggleFavorite(cats[currentIndex])" class="fav-btn">
-                        <span v-if="cats[currentIndex].favorite">♥</span>
-                        <span v-else>♡</span>
-                    </button>
-                </div>
-
-                <!-- Cat Details always below the above grid items -->
-                <div class="cat-details-full">
-                    <p><strong>Breed:</strong> {{ cats[currentIndex].breed }}</p>
-                    <p><strong>Gender:</strong> {{ cats[currentIndex].gender }}</p>
-                    <p><strong>Vaccinated:</strong> {{ cats[currentIndex].vaccinated ? 'Yes' : 'No' }}</p>
-                    <p><strong>Status:</strong> {{ cats[currentIndex].status }}</p>
-                </div>
-            </div>
-
-            <!-- Next Btn -->
-            <button class="arrow-btn" @click="nextCat" :disabled="currentIndex === cats.length - 1">&#8594;</button>
->>>>>>> Stashed changes
-        </div>
-    <!-- New Adoption Form -->
-    <form @submit.prevent="handleSubmit" novalidate>
-    <!-- Why adopt -->
-    <label>
-      1. Why do you want to adopt a cat? *
-      <textarea v-model="form.reason" rows="3"></textarea>
-      <span v-if="submitAttempted && errors.reason" class="error">{{ errors.reason }}</span>
-    </label>
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         <div class="profile-card-subrow full-width-row">
             <div class="list-card subrow-half">
                 <h3>All Cats</h3>
@@ -960,146 +580,6 @@ function handleSubmit(event) {
     </div>
 
 
-=======
-    <!-- Pets currently -->
-    <fieldset>
-      <legend>2. Do you currently have pets? *</legend>
-      <label><input type="radio" value="yes" v-model="form.havePets" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.havePets" /> No</label>
-      <span v-if="submitAttempted && errors.havePets" class="error">{{ errors.havePets }}</span>
-    </fieldset>
-    <label v-if="form.havePets === 'yes'">
-      Please describe your pets (species, ages, health, temperament) *
-      <textarea v-model="form.petsDetails" rows="3"></textarea>
-      <span v-if="submitAttempted && errors.petsDetails" class="error">{{ errors.petsDetails }}</span>
-    </label>
-
-    <!-- Surrendered pets before -->
-    <fieldset>
-      <legend>3. Have you ever surrendered or rehomed a pet? *</legend>
-      <label><input type="radio" value="yes" v-model="form.surrenderedBefore" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.surrenderedBefore" /> No</label>
-      <span v-if="submitAttempted && errors.surrenderedBefore" class="error">{{ errors.surrenderedBefore }}</span>
-    </fieldset>
-    <label v-if="form.surrenderedBefore === 'yes'">
-      Please provide reason for surrender *
-      <textarea v-model="form.surrenderReason" rows="2"></textarea>
-      <span v-if="submitAttempted && errors.surrenderReason" class="error">{{ errors.surrenderReason }}</span>
-    </label>
-
-=======
-    <!-- Pets currently -->
-    <fieldset>
-      <legend>2. Do you currently have pets? *</legend>
-      <label><input type="radio" value="yes" v-model="form.havePets" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.havePets" /> No</label>
-      <span v-if="submitAttempted && errors.havePets" class="error">{{ errors.havePets }}</span>
-    </fieldset>
-    <label v-if="form.havePets === 'yes'">
-      Please describe your pets (species, ages, health, temperament) *
-      <textarea v-model="form.petsDetails" rows="3"></textarea>
-      <span v-if="submitAttempted && errors.petsDetails" class="error">{{ errors.petsDetails }}</span>
-    </label>
-
-    <!-- Surrendered pets before -->
-    <fieldset>
-      <legend>3. Have you ever surrendered or rehomed a pet? *</legend>
-      <label><input type="radio" value="yes" v-model="form.surrenderedBefore" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.surrenderedBefore" /> No</label>
-      <span v-if="submitAttempted && errors.surrenderedBefore" class="error">{{ errors.surrenderedBefore }}</span>
-    </fieldset>
-    <label v-if="form.surrenderedBefore === 'yes'">
-      Please provide reason for surrender *
-      <textarea v-model="form.surrenderReason" rows="2"></textarea>
-      <span v-if="submitAttempted && errors.surrenderReason" class="error">{{ errors.surrenderReason }}</span>
-    </label>
-
->>>>>>> Stashed changes
-    <!-- Allergies -->
-    <fieldset>
-      <legend>4. Does anyone in your household have allergies to cats or other animals? *</legend>
-      <label><input type="radio" value="yes" v-model="form.allergies" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.allergies" /> No</label>
-      <span v-if="submitAttempted && errors.allergies" class="error">{{ errors.allergies }}</span>
-    </fieldset>
-
-    <!-- Home type -->
-    <fieldset>
-      <legend>5. Do you own or rent your home? *</legend>
-      <label><input type="radio" value="own" v-model="form.homeType" /> Own</label>
-      <label><input type="radio" value="rent" v-model="form.homeType" /> Rent</label>
-      <span v-if="submitAttempted && errors.homeType" class="error">{{ errors.homeType }}</span>
-    </fieldset>
-
-    <fieldset v-if="form.homeType === 'rent'">
-      <legend>Does your landlord allow pets? *</legend>
-      <label><input type="radio" value="yes" v-model="form.landlordPermission" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.landlordPermission" /> No</label>
-      <span v-if="submitAttempted && errors.landlordPermission" class="error">{{ errors.landlordPermission }}</span>
-      <label v-if="form.landlordPermission === 'yes'">
-        Please provide proof of landlord permission *
-        <input type="text" v-model="form.landlordProof" placeholder="e.g. lease agreement clause" />
-        <span v-if="submitAttempted && errors.landlordProof" class="error">{{ errors.landlordProof }}</span>
-      </label>
-    </fieldset>
-
-    <!-- Daily schedule -->
-    <label>
-      6. Describe your typical daily schedule and how many hours the cat will be alone each day? *
-      <textarea v-model="form.dailySchedule" rows="2" placeholder="e.g. at work 9am-6pm, home evenings">
-      </textarea>
-      <span v-if="submitAttempted && errors.dailySchedule" class="error">{{ errors.dailySchedule }}</span>
-    </label>
-    <label>
-      Hours cat will be alone daily *
-      <input type="number" min="0" v-model.number="form.catAloneHours" />
-      <span v-if="submitAttempted && errors.catAloneHours" class="error">{{ errors.catAloneHours }}</span>
-    </label>
-
-    <!-- Indoor/outdoor -->
-    <fieldset>
-      <legend>7. Will the cat be indoor only, outdoor only, or indoor/outdoor? *</legend>
-      <label><input type="radio" value="indoor" v-model="form.indoorOutdoor" /> Indoor Only</label>
-      <label><input type="radio" value="outdoor" v-model="form.indoorOutdoor" /> Outdoor Only</label>
-      <label><input type="radio" value="indoorOutdoor" v-model="form.indoorOutdoor" /> Indoor & Outdoor</label>
-      <span v-if="submitAttempted && errors.indoorOutdoor" class="error">{{ errors.indoorOutdoor }}</span>
-    </fieldset>
-    <label>
-      How will you ensure the cat's safety? *
-      <textarea v-model="form.safetyMeasures" rows="2">
-      </textarea>
-      <span v-if="submitAttempted && errors.safetyMeasures" class="error">{{ errors.safetyMeasures }}</span>
-    </label>
-
-    <!-- Financial -->
-    <fieldset>
-      <legend>8. Are you financially prepared to cover routine and emergency vet care, food, and supplies? *</legend>
-      <label><input type="radio" value="yes" v-model="form.financialPrepared" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.financialPrepared" /> No</label>
-      <span v-if="submitAttempted && errors.financialPrepared" class="error">{{ errors.financialPrepared }}</span>
-    </fieldset>
-
-    <!-- Special needs -->
-    <fieldset>
-      <legend>9. Are you willing to adopt a cat with medical or behavioral needs? *</legend>
-      <label><input type="radio" value="yes" v-model="form.specialNeedsAcceptance" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.specialNeedsAcceptance" /> No</label>
-      <span v-if="submitAttempted && errors.specialNeedsAcceptance" class="error">{{ errors.specialNeedsAcceptance }}</span>
-    </fieldset>
-
-    <!-- Research -->
-    <fieldset>
-      <legend>10. Have you researched proper cat care including vaccinations, spaying/neutering, and enrichment? *</legend>
-      <label><input type="radio" value="yes" v-model="form.researchedCare" /> Yes</label>
-      <label><input type="radio" value="no" v-model="form.researchedCare" /> No</label>
-      <span v-if="submitAttempted && errors.researchedCare" class="error">{{ errors.researchedCare }}</span>
-    </fieldset>
-
-    <button type="submit">Submit Application</button>
-  </form>
-</div>
-    <!-- Success Notification -->
->>>>>>> Stashed changes
     <transition name="fade">
         <div v-if="showSuccess">
             <div class="success-overlay"></div>
@@ -1109,8 +589,6 @@ function handleSubmit(event) {
             </div>
         </div>
     </transition>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <BottomFooter />
 </template>
 
@@ -1118,18 +596,6 @@ function handleSubmit(event) {
 /* Header center fix */
 .full-center {
     text-align: center;
-=======
-=======
->>>>>>> Stashed changes
-    <BottomFooter></BottomFooter>
-</template>
-
-<style scoped>
-.adoption-bg {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #ffe7f7 0%, #f7faff 60%, #e0eefc 100%);
-    padding: 90px 0 70px 0;
->>>>>>> Stashed changes
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1143,8 +609,6 @@ function handleSubmit(event) {
     margin-right: auto;
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 .controls-row {
     justify-content: center;
     align-items: center;
@@ -1289,10 +753,6 @@ function handleSubmit(event) {
 }
 
 /* --- Timeline --- */
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 .timeline-container {
     width: 90vw;
     max-width: 1120px;
@@ -1374,7 +834,6 @@ function handleSubmit(event) {
 }
 
 
-<<<<<<< Updated upstream
 /* --- Card Standardisation --- */
 .adoption-card,
 .list-card {
@@ -1390,117 +849,6 @@ function handleSubmit(event) {
 
 .adoption-form {
     margin-top: 20px;
-=======
-.timeline-content {
-    margin-top: 7px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.timeline-label {
-    font-weight: 600;
-    font-size: 1.04rem;
-    color: #395069;
-    margin-bottom: 3px;
-}
-
-.timeline-date {
-    font-size: 0.96rem;
-    color: #888;
-    letter-spacing: 0.5px;
-}
-
-.timeline-time {
-    font-size: 0.92rem;
-    color: #8096b6;
-    margin-top: 2px;
-}
-
-@media (max-width: 700px) {
-    .timeline-container {
-        width: 99vw;
-        max-width: 100vw;
-    }
-
-    .timeline-step {
-        min-width: 60px;
-        font-size: 0.93rem;
-    }
-
-    .timeline-label {
-        font-size: 0.98rem;
-    }
-
-    .timeline-date,
-    .timeline-time {
-        font-size: 0.86rem;
-    }
-}
-
-/* Main container with left and right parts */
-.card-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 16px;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-/* Adoption Card left half */
-.adoption-card {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(60, 60, 60, 0.12);
-    padding: 20px;
-    width: 48vw;
-    max-width: 700px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Right side container uses grid with two rows: cat-info top, status-fav bottom */
-.right-side-grid {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(60, 60, 60, 0.12);
-    padding: 20px;
-    width: 40vw;
-    max-width: 350px;
-    display: grid;
-    grid-template-rows: auto auto auto;
-    row-gap: 16px;
-}
-
-/* cat-info on top row */
-.cat-info {
-    grid-row: 1;
-    text-align: left;
-}
-
-/* status and fav wrapper on second row */
-.status-fav-wrapper {
-    grid-row: 2;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-<<<<<<< Updated upstream
-=======
-}
-
-/* cat-details on third row spanning full width */
-.cat-details-full {
-    grid-row: 3;
->>>>>>> Stashed changes
-}
-
-/* cat-details on third row spanning full width */
-.cat-details-full {
-    grid-row: 3;
->>>>>>> Stashed changes
 }
 
 .list-card {
@@ -1511,13 +859,8 @@ function handleSubmit(event) {
 .carousel-container {
     width: 100%;
     aspect-ratio: 16/9;
-<<<<<<< Updated upstream
     max-width: 100%;
     margin: 0 auto 14px auto;
-=======
-    max-width: 90vw;
-    height: auto;
->>>>>>> Stashed changes
     position: relative;
     display: flex;
     justify-content: center;
@@ -1528,7 +871,6 @@ function handleSubmit(event) {
     box-shadow: 0 8px 32px rgba(233, 211, 229, 0.05);
 }
 
-<<<<<<< Updated upstream
 /* --- Arrows --- */
 .arrow-btn,
 .carousel-arrow {
@@ -1702,40 +1044,6 @@ function handleSubmit(event) {
 
 .form-label.big.center,
 .form-label.center {
-=======
-.cat-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border: none;
-    display: block;
-    background: none;
-    box-shadow: none;
-}
-
-.cat-name {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 2px;
-    letter-spacing: 1px;
-}
-
-.cat-desc {
-    color: #444;
-    font-size: 1rem;
-}
-
-.cat-status {
-    background: #f7e4ed;
-    color: #6075a7;
-    font-size: 1.03rem;
-    font-weight: 600;
-    padding: 12px 32px;
-    border-radius: 12px;
-    border: 2px solid #f7e4ed;
-    min-width: 98px;
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
     text-align: center;
     font-size: 1.28rem;
     margin-bottom: 20px;
@@ -1748,7 +1056,6 @@ function handleSubmit(event) {
 
 .radio-group {
     display: flex;
-<<<<<<< Updated upstream
     gap: 16px;
     margin-top: 8px;
     font-size: 1.05rem;
@@ -1784,77 +1091,19 @@ function handleSubmit(event) {
     .app-form {
         margin-bottom: 30px;
     }
-=======
-=======
-    text-align: center;
-}
-
-.fav-btn {
-    background: #fff8fc;
-    border: 2px solid #f78da7;
-    border-radius: 12px;
-    font-size: 2rem;
-    color: #f78da7;
-    cursor: pointer;
-    margin: 0;
-    padding: 0 24px;
-    height: 44px;
-    width: 64px;
-    display: flex;
->>>>>>> Stashed changes
-    align-items: center;
-    justify-content: center;
-}
-
-.fav-btn:active {
-    background: #fbe1ed;
-}
-
-/* Buttons (rest unchanged) */
-.adoption-form {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(60, 60, 60, 0.12);
-    padding: 20px;
-    width: 90vw;
-    max-width: 90vw;
-    min-width: 10vw;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0 auto 40px auto;
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 }
 
 .form-label {
     width: 100%;
     text-align: left;
-<<<<<<< Updated upstream
     font-weight: 700;
     font-size: 1.08rem;
     margin-bottom: 8px;
     color: #655691;
-=======
-    margin-bottom: 8px;
-}
-
-.form-label span {
-    font-weight: 600;
-    font-size: 1.07rem;
-}
-
-.form-label small {
-    color: #888;
-    font-size: 0.92rem;
->>>>>>> Stashed changes
 }
 
 .reason-input {
     width: 100%;
-<<<<<<< Updated upstream
     margin: 10px 0 14px 0;
     padding: 15px;
     border-radius: 12px;
@@ -1942,7 +1191,6 @@ function handleSubmit(event) {
     cursor: pointer;
 }
 
-<<<<<<< Updated upstream
 /* --- Modal --- */
 .modal-overlay {
     position: fixed;
@@ -1992,85 +1240,6 @@ function handleSubmit(event) {
 }
 
 /* --- Success Popup --- */
-=======
-=======
-    margin: 18px 0;
-    padding: 14px 10px;
-    border-radius: 10px;
-    border: 1px solid #e0dee3;
-    background: #f9f3f6;
-    font-size: 1.03rem;
-    min-height: 42px;
-}
-
-.next-btn {
-    width: 100%;
-    background: #8096b6;
-    color: #fff;
-    border: none;
-    border-radius: 18px;
-    font-weight: 600;
-    font-size: 1.15rem;
-    padding: 14px 0;
-    margin-top: 8px;
-}
-
-.next-btn:hover {
-    background: #445c85;
-}
-
->>>>>>> Stashed changes
-.arrow-btn {
-    background: #ececec;
-    border: none;
-    border-radius: 50%;
-    font-size: 2rem;
-    height: 48px;
-    width: 48px;
-    margin: 0 12px;
-    color: #6075a7;
-}
-
-.arrow-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.carousel-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #ececec;
-    border: none;
-    border-radius: 50%;
-    font-size: 2rem;
-    width: 38px;
-    height: 38px;
-    color: #6075a7;
-    opacity: 0.8;
-    z-index: 2;
-    cursor: pointer;
-    transition: opacity 0.1s;
-}
-
-.carousel-arrow.left {
-    left: 8px;
-}
-
-.carousel-arrow.right {
-    right: 8px;
-}
-
-.carousel-arrow:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* Success Message styles as before */
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 .success-overlay {
     position: fixed;
     inset: 0;
@@ -2160,8 +1329,6 @@ function handleSubmit(event) {
     }
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 .form-group {
     display: flex;
     flex-direction: column;
@@ -2335,67 +1502,3 @@ function handleSubmit(event) {
     font-size: 1.08rem;
 }
 </style>
-=======
-=======
->>>>>>> Stashed changes
-@media (max-width: 900px) {
-    .card-row {
-        flex-direction: column;
-        align-items: center;
-    }
-    .adoption-card,
-    .right-side-grid {
-        width: 95vw;
-        max-width: 95vw;
-    }
-}
-
-form {
-  max-width: 600px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-label, fieldset {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.error {
-  color: red;
-  font-size: 0.9em;
-  margin-top: 4px;
-}
-
-input[type="text"],
-input[type="number"],
-textarea {
-  font-size: 1rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  padding: 6px 8px;
-  margin-top: 6px;
-  resize: vertical;
-}
-
-button[type="submit"] {
-  background-color: #6075a7;
-  color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  padding: 12px;
-  cursor: pointer;
-  font-size: 1.1rem;
-}
-
-button[type="submit"]:hover {
-  background-color: #445c85;
-}
-</style>
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
