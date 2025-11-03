@@ -111,6 +111,10 @@ img {
   }
 }
 
+.pawsitive-background {
+    background-color: #f8e1e1;
+}
+
 /* For Chrome, Safari, Edge */
 ::-webkit-scrollbar {
   display: none;

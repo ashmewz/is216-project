@@ -254,7 +254,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100 page-background">
+    <div class="d-flex flex-column min-vh-100 pawsitive-background">
         <!-- Navbar -->
         <Navbar>
             <template #navbar-title>Profile</template>
@@ -425,9 +425,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page-background {
-    background-color: #f8e1e1;
-}
+
 
 /* optional: center vertically on taller screens */
 main {
