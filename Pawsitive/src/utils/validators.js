@@ -100,10 +100,10 @@ export const validateProfileUpdate = (form) => {
 export const validateCatReport = (form) => {
   const errors = {};
 
-  if (isEmpty(form.name)) errors.name = "Cat name cannot be empty.";
+  if (isEmpty(form.name)) errors.name = "Cat Breed cannot be empty. (Upload image to AI fill cat breed)";
   if (isEmpty(form.location)) errors.location = "Location cannot be empty.";
   if (isEmpty(form.description)) errors.description = "Description cannot be empty.";
-  if (!form.status) errors.status = "Please select Lost or Found.";
+  if (!form.status) errors.status = "Please select a status.";
 
   return errors;
 };

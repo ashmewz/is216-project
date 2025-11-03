@@ -20,8 +20,8 @@ const report = reactive({
   condition: '',
   catName: '',
   estimatedAge: '',
-  gender: '',
-  neutered: '',
+  gender: 'Unknown',
+  neutered: 'Unknown',
   location: '',
   coords: null,
   description: '',
@@ -422,7 +422,7 @@ const submitReport = async () => {
     if (!report.coords) return;
     const { lat, lng } = report.coords;
     await addDoc(collection(db, "cats"), {
-      age: report.estimatedAge || "",
+      age: report.estimatedAge || "Unknown",
       color: "",
       created_at: serverTimestamp(),
       description: report.description || "",
@@ -434,6 +434,8 @@ const submitReport = async () => {
       photos: report.imagePreview ? [report.imagePreview] : [],
       species: report.catName || "",
       status: report.status || ""
+      // NOTE(RAYNER): For Kevan, you've got several fields like severity that's not saved.
+      // Do you intend to update the firebase structure? Or are you going to remove the severity field.
     });
     // Reset form
     report.status = '';
@@ -444,8 +446,8 @@ const submitReport = async () => {
     report.imagePreview = null;
     report.condition = '';
     report.severity = 0;
-    report.gender = '';
-    report.neutered = '';
+    report.gender = 'Unknown';
+    report.neutered = 'Unknown';
     report.estimatedAge = '';
     fieldErrors.value = {};
     if (fileInput.value) fileInput.value.value = null;
@@ -506,8 +508,12 @@ onMounted(() => {
     <!-- Location (auto-detect) -->
     <div class="mb-3 position-relative">
       <label class="form-label">Location</label>
-      <input type="text" class="form-control" v-model="report.location" placeholder="Enter location..."
+      <input type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.location }" v-model="report.location"
+        placeholder="Enter location..."
         @focus="showSuggestions = locationSuggestions.value && locationSuggestions.value.length > 0" />
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.location }}
+      </div>
 
       <!-- Dropdown Suggestions -->
       <ul v-if="showSuggestions" class="list-group position-absolute w-100"
@@ -524,24 +530,32 @@ onMounted(() => {
     <!-- Status Dropdown -->
     <div class="mb-3">
       <label class="form-label">Status</label>
-      <select v-model="report.status" class="form-select">
+      <select v-model="report.status" class="form-select" :class="{ 'is-invalid': fieldErrors.status }">
         <option value="" disabled>Select status</option>
         <option value="Lost">Lost</option>
         <option value="Injured">Injured</option>
+        <option value="Found">Found</option>
       </select>
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.status }}
+      </div>
     </div>
 
     <!-- Cat Breed -->
     <div class="mb-3">
       <label class="form-label">Cat Breed</label>
-      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
+      <input type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.name }" v-model="report.catName"
+        placeholder="Enter cat breed" />
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.name }}
+      </div>
     </div>
 
     <!-- Estimated Age -->
     <div class="form-group">
       <label class="form-label">Estimated Age</label>
-      <input type="number" class="form-control input-field" v-model="report.estimatedAge" placeholder="e.g. 2 (years)"
-        min="0" />
+      <input type="number" class="form-control input-field" v-model="report.estimatedAge"
+        placeholder="e.g. 2 (years) leave empty if unknown" min="0" />
     </div>
 
     <!-- Gender -->
@@ -572,8 +586,9 @@ onMounted(() => {
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
       <label class="form-label">Condition of the cat (optional)</label>
-      <select v-model="report.condition" class="form-select">
-        <option value="" disabled>Select condition</option>
+      <select v-model="report.condition" class="form-select"
+        :class="{ 'placeholder-selected': report.condition === '' }">
+        <option value="">Select condition (if any)</option>
         <option value="Bleeding">Bleeding</option>
         <option value="Limping">Limping</option>
         <option value="Vomiting / Diarrhea">Vomiting / Diarrhea</option>
@@ -604,8 +619,11 @@ onMounted(() => {
     <!-- Description -->
     <div class="mb-3">
       <label class="form-label">Description</label>
-      <textarea class="form-control" rows="3" v-model="report.description"
-        placeholder="Describe the cat's condition..."></textarea>
+      <textarea class="form-control" :class="{ 'is-invalid': fieldErrors.description }" rows="3"
+        v-model="report.description" placeholder="Describe the cat's condition..."></textarea>
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.description }}
+      </div>
     </div>
 
     <button class="btn btn-dark w-100" type="submit">Submit Report</button>
@@ -636,7 +654,7 @@ onMounted(() => {
                     <p class="mb-1"><strong>Last Location:</strong>
                       {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ", "
                         +
-                      cat.last_location._long }}
+                        cat.last_location._long }}
                     </p>
                     <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ?
                       cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
@@ -669,8 +687,9 @@ onMounted(() => {
                       <h6 class="mb-1">{{ cat.name || 'Unnamed Cat' }}</h6>
                       <p class="mb-1"><strong>Description:</strong> {{ cat.description || 'No description' }}</p>
                       <p class="mb-1"><strong>Last Location:</strong>
-                        {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ","
-                        + cat.last_location._long }}
+                        {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat +
+                          ","
+                          + cat.last_location._long }}
                       </p>
                       <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ?
                         cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
@@ -798,6 +817,10 @@ onMounted(() => {
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
+}
+
+.placeholder-selected {
+  color: #6c757d;
 }
 
 .report-form input,
