@@ -124,7 +124,13 @@ onMounted(() => {
           <p class="mb-1">
             <strong>Created At:</strong> 
             {{ cat.created_at?.toDate 
-              ? cat.created_at.toDate().toLocaleString() 
+              ? cat.created_at.toDate().toLocaleString([], { 
+                  year: 'numeric', 
+                  month: 'numeric', 
+                  day: 'numeric', 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })
               : cat.created_at 
             }}
           </p>
