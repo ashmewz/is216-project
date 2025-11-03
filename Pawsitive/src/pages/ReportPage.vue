@@ -836,6 +836,7 @@ onMounted(() => {
 </template>
 
 <style>
+/* Make form have side spacing on mobile */
 /* ---- Container Layout ---- */
 .main-container {
   display: flex;
@@ -925,6 +926,8 @@ onMounted(() => {
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
+  padding: 0 1rem; /* <-- add horizontal padding */
+  box-sizing: border-box; /* ensures padding doesn’t exceed max-width */
 }
 
 .report-form input,
