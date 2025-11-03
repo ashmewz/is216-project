@@ -23,6 +23,8 @@ import AiRecogPage from "@/pages/AiRecogPage.vue";
 import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
 import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
 import LandingPage from "@/pages/LandingPage.vue";
+import DonationSuccessPage from "@/pages/DonationSuccessPage.vue";
+
 // TEST ONLY
 import AdminAddCat from "@/pages/TEST_ADMIN_ONLY/AdminAddCat.vue";
 
@@ -90,6 +92,11 @@ const routes = [
     {
         path: '/donations/',
         component: DonationPage,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/donationsuccess/',
+        component: DonationSuccessPage,
         meta: { requiresAuth: true }
     },
     {
