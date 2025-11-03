@@ -1,7 +1,10 @@
 <script setup>
+
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
+import { db } from "@/firebase";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 
 const containerRef = ref(null);
 const scrolledPast = ref(false);
@@ -11,106 +14,197 @@ const applicationFormRef = ref(null);
 const SCROLL_THRESHOLD = 50;
 
 const applicationData = ref({
-  livingSituation: '',
-  hasOtherPets: '',
-  hasKids: '',
-  allergies: '',
-  hoursAlone: '',
-  financialCommit: '',
-  routinePlan: '',
-  movingSoon: '',
-  agreeHomeVisit: false,
-  references: ''
+    livingSituation: '',
+    hasOtherPets: '',
+    hasKids: '',
+    allergies: '',
+    hoursAlone: '',
+    financialCommit: '',
+    routinePlan: '',
+    movingSoon: '',
+    agreeHomeVisit: false,
+    references: ''
 });
 
 const yesNoOptions = ['Yes', 'No'];
 const livingSituations = ['HDB Flat', 'Condo', 'Landed Property', 'Others'];
+const cats = ref([])
 
-const cats = ref([
-{
-        name: "Peoni",
-        age: 7,
-        breed: "British Shorthair",
-        gender: "Female",
-        vaccinated: true,
-        status: "Available",
-        desc: "Peoni is cute and cuddly",
-        images: ['/cat1.png', '/cat2.png', '/cat3.png'],
-        favorite: false,
-        rating: 4,
-        notes: "Loves naps near windows.",
-        microchipped: true,
-        fee: 120
-    },
-    {
-        name: "Keoni",
-        age: 6,
-        breed: "Tabby",
-        gender: "Female",
-        vaccinated: false,
-        status: "Available",
-        desc: "Keoni is Peoni's younger sister, even more cute and cuddly",
-        images: ['/cat2.png', '/cat3.png', '/cat1.png'],
-        favorite: false,
-        rating: 5,
-        notes: "Shy at first but affectionate with treats.",
-        microchipped: false,
-        fee: 100
-    },
-    {
-        name: "Meoni",
-        age: 5,
-        breed: "Maine Coon",
-        gender: "Male",
-        vaccinated: true,
-        status: "Pending",
-        desc: "Meoni is the youngest brother, so full of cutsies and cuddles",
-        images: ['/cat3.png', '/cat1.png', '/cat2.png'],
-        favorite: false,
-        rating: 3,
-        notes: "Very playful. Needs space to climb.",
-        microchipped: true,
-        fee: 140
-    }, 
-    {
-        name: "Luna",
-        age: 4,
-        breed: "Siamese",
-        gender: "Female",
-        vaccinated: true,
-        status: "Available",
-        desc: "Luna is playful and loves attention.",
-        images: ['/cat4.png', '/cat5.png', '/cat6.png'],
-        favorite: false,
-        rating: 5,
-        notes: "Enjoys sunbathing by the window.",
-        microchipped: true,
-        fee: 110
-    },
-    {
-        name: "Max",
-        age: 3,
-        breed: "Bengal",
-        gender: "Male",
-        vaccinated: true,
-        status: "Pending",
-        desc: "Max is energetic and curious.",
-        images: ['/cat7.png', '/cat8.png', '/cat9.png'],
-        favorite: false,
-        rating: 4,
-        notes: "Needs space to run and climb.",
-        microchipped: true,
-        fee: 130
-    },
-]);
+// Firestore Cat Profile Data (For redundancy)
+// async function addCatProfile() {
+//   try {
+//     await addDoc(collection(db, "catAdoption"), 
 
-const adoptionTimeline = [
-    { label: "Fill in Application Form", date: "31 Oct", time: "10:00 AM" },
-    { label: "Center Processes Application", date: "01 Nov ~ 07 Nov", time: "5-7 Days" },
-    { label: "Schedule Meet and Greet", date: "08 Nov", time: "2:00 PM" },
-    { label: "Cat Vaccinations", date: "09 Nov", time: "10:30 AM" },
-    { label: "Monitoring Period", date: "11 Nov ~ 15 Nov", time: "5-7 Days" },
-    { label: "Cat Pickup", date: "16 Nov", time: "11:00 AM" },
+//     );
+//     console.log("Cat profile added successfully!");
+//   } catch (e) {
+//     console.error("Error adding document: ", e);
+//   }
+// }
+
+// addCatProfile();
+
+// const catss = ref([
+//     {
+//         name: "Peoni",
+//         age: 7,
+//         breed: "British Shorthair",
+//         gender: "Female",
+//         vaccinated: true,
+//         status: "Available",
+//         desc: "Peoni is cute and cuddly",
+//         images: ['/cat1.png', '/cat2.png', '/cat3.png'],
+//         favorite: false,
+//         rating: 4,
+//         notes: "Loves naps near windows.",
+//         microchipped: true,
+//         fee: 120
+//     },
+//     {
+//         name: "Keoni",
+//         age: 6,
+//         breed: "Tabby",
+//         gender: "Female",
+//         vaccinated: false,
+//         status: "Available",
+//         desc: "Keoni is Peoni's younger sister, even more cute and cuddly",
+//         images: ['/cat4.png', '/cat5.png', '/cat6.png'],
+//         favorite: false,
+//         rating: 5,
+//         notes: "Shy at first but affectionate with treats.",
+//         microchipped: false,
+//         fee: 100
+//     },
+//     {
+//         name: "Meoni",
+//         age: 5,
+//         breed: "Maine Coon",
+//         gender: "Male",
+//         vaccinated: true,
+//         status: "Pending",
+//         desc: "Meoni is the youngest brother, so full of cutsies and cuddles",
+//         images: ['/cat7.png', '/cat8.png', '/cat9.png'],
+//         favorite: false,
+//         rating: 3,
+//         notes: "Very playful. Needs space to climb.",
+//         microchipped: true,
+//         fee: 140
+//     },
+//     {
+//         name: "Luna",
+//         age: 4,
+//         breed: "Siamese",
+//         gender: "Female",
+//         vaccinated: true,
+//         status: "Available",
+//         desc: "Luna is playful and loves attention.",
+//         images: ['/cat10.png', '/cat11.png', '/cat12.png'],
+//         favorite: false,
+//         rating: 5,
+//         notes: "Enjoys sunbathing by the window.",
+//         microchipped: true,
+//         fee: 110
+//     },
+//     {
+//         name: "Max",
+//         age: 3,
+//         breed: "Bengal",
+//         gender: "Male",
+//         vaccinated: true,
+//         status: "Pending",
+//         desc: "Max is energetic and curious.",
+//         images: ['/cat13.png', '/cat14.png', '/cat15.png'],
+//         favorite: false,
+//         rating: 4,
+//         notes: "Needs space to run and climb.",
+//         microchipped: true,
+//         fee: 130
+//     },
+//     {
+//         name: "Mochi",
+//         age: 2,
+//         breed: "Ragdoll",
+//         gender: "Female",
+//         vaccinated: true,
+//         status: "Available",
+//         desc: "Mochi is calm, affectionate, and loves being carried around.",
+//         images: ['/cat16.png', '/cat17.png', '/cat18.png'],
+//         favorite: false,
+//         rating: 5,
+//         notes: "Enjoys quiet spaces and gentle petting.",
+//         microchipped: true,
+//         fee: 115
+//     },
+//     {
+//         name: "Oreo",
+//         age: 8,
+//         breed: "Tuxedo",
+//         gender: "Male",
+//         vaccinated: true,
+//         status: "Available",
+//         desc: "Oreo is a wise old gentleman who loves warm laps.",
+//         images: ['/cat19.png', '/cat20.png', '/cat21.png'],
+//         favorite: false,
+//         rating: 4,
+//         notes: "Prefers soft blankets and slow mornings.",
+//         microchipped: true,
+//         fee: 90
+//     },
+//     {
+//         name: "Nala",
+//         age: 1,
+//         breed: "Scottish Fold",
+//         gender: "Female",
+//         vaccinated: false,
+//         status: "Available",
+//         desc: "Nala is curious and loves chasing feather toys.",
+//         images: ['/cat22.png', '/cat23.png', '/cat24.png'],
+//         favorite: false,
+//         rating: 5,
+//         notes: "Loves attention and exploring new rooms.",
+//         microchipped: false,
+//         fee: 100
+//     },
+//     {
+//         name: "Simba",
+//         age: 3,
+//         breed: "Abyssinian",
+//         gender: "Male",
+//         vaccinated: true,
+//         status: "Available",
+//         desc: "Simba is adventurous and confident with a big heart.",
+//         images: ['/cat25.png', '/cat26.png', '/cat27.png'],
+//         favorite: false,
+//         rating: 4,
+//         notes: "Enjoys interactive play and scratching posts.",
+//         microchipped: true,
+//         fee: 125
+//     },
+//     {
+//         name: "Cleo",
+//         age: 5,
+//         breed: "Persian",
+//         gender: "Female",
+//         vaccinated: true,
+//         status: "Pending",
+//         desc: "Cleo is elegant, calm, and always photo-ready.",
+//         images: ['/cat28.png', '/cat29.png', '/cat30.png'],
+//         favorite: false,
+//         rating: 5,
+//         notes: "Needs regular grooming and soft bedding.",
+//         microchipped: true,
+//         fee: 150
+//     }
+
+// ]);
+
+const timelineSteps = [
+    { label: "Send Application", offsetDays: 0, time: "10:00 AM" },
+    { label: "Application Processing", offsetDays: 2, time: "5-7 Days" },
+    { label: "Meet and Greet", offsetDays: 8, time: "2:00 PM" },
+    { label: "Cat Vaccinations", offsetDays: 9, time: "10:30 AM" },
+    { label: "Monitoring Period", offsetDays: 11, time: "5-7 Days" },
+    { label: "Cat Pickup", offsetDays: 16, time: "11:00 AM" }
 ];
 
 const currentIndex = ref(0);
@@ -131,91 +225,153 @@ const timelineProgress = ref(0);
 const FAVORITES_KEY = 'cat_favorites_v1';
 
 function onScroll() {
-  if (!containerRef.value || !applicationFormRef.value) return;
-  const containerScrollTop = containerRef.value.scrollTop;
-  const applicationOffset = applicationFormRef.value.offsetTop - 120;
-  if (containerScrollTop >= applicationOffset && showApplicationForm.value) {
-    scrolledPast.value = true;
-  } else {
-    scrolledPast.value = false;
-  }
+    if (!containerRef.value || !applicationFormRef.value) return;
+    const containerScrollTop = containerRef.value.scrollTop;
+    const applicationOffset = applicationFormRef.value.offsetTop - 120;
+    if (containerScrollTop >= applicationOffset && showApplicationForm.value) {
+        scrolledPast.value = true;
+    } else {
+        scrolledPast.value = false;
+    }
 }
 
-onMounted(() => {
-  if (containerRef.value) {
-    containerRef.value.addEventListener('scroll', onScroll);
-  }
-  
-  try {
-    const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
-    if (Array.isArray(stored)) {
-      cats.value.forEach(cat => {
-        cat.favorite = stored.includes(cat.name);
-      });
-    }
-  } catch (e) {}
 
-  const idx = cats.value.findIndex(c => c.status === 'Available');
-  timelineProgress.value = idx !== -1 ? 0 : 0;
+// Fetch all cat profiles from Firestore
+onMounted(async () => {
+    try {
+        const querySnapshot = await getDocs(collection(db, 'catAdoption'))
+        cats.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    } catch (e) {
+        console.error('Error fetching cats:', e)
+    }
+})
+
+// Firestore Application Form Data (For redundancy)
+async function submitApplication() {
+
+    try {
+        await addDoc(collection(db, 'catApplication'), applicationData.value)
+        console.log('Application submitted successfully')
+        // Optionally, reset form or show success message
+    } catch (error) {
+        console.error('Error submitting application: ', error)
+    }
+    showSuccessPopup('Application Submitted', 'Thank you for your interest! Our team will review your application.');
+    showApplicationForm.value = false;
+    scrolledPast.value = false;
+}
+
+function getTimelineWithDates() {
+    const today = new Date()
+    return timelineSteps.map(step => {
+        const eventDate = new Date(today)
+        eventDate.setDate(today.getDate() + step.offsetDays)
+        return {
+            label: step.label,
+            date: eventDate.toLocaleDateString('en-GB'), // Date format: DD/MM/YYYY
+            time: step.time
+        }
+    });
+}
+const adoptionTimeline = ref(getTimelineWithDates())
+
+function openScheduleVisit() {
+    window.open("https://spca.org.sg/services/adoption", "_blank", "noopener");
+}
+
+function openContactCenter() {
+    window.open("https://www.catwelfare.org/adoptions", "_blank", "noopener");
+}
+
+function openContactUs() {
+    window.open("https://www.catwelfare.org/get-help", "_blank", "noopener");
+}
+
+function openAskQuestion() {
+    window.open("https://spca.org.sg/services/adoption", "_blank", "noopener");
+}
+
+
+// Adoption Timeline
+onMounted(() => {
+    adoptionTimeline.value = getTimelineWithDates()
+})
+
+onMounted(() => {
+    if (containerRef.value) {
+        containerRef.value.addEventListener('scroll', onScroll);
+    }
+
+    try {
+        const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+        if (Array.isArray(stored)) {
+            cats.value.forEach(cat => {
+                cat.favorite = stored.includes(cat.name);
+            });
+        }
+    } catch (e) { }
+
+    const idx = cats.value.findIndex(c => c.status === 'Available');
+    timelineProgress.value = idx !== -1 ? 0 : 0;
 });
 
 onUnmounted(() => {
-  if (containerRef.value) {
-    containerRef.value.removeEventListener('scroll', onScroll);
-  }
+    if (containerRef.value) {
+        containerRef.value.removeEventListener('scroll', onScroll);
+    }
 });
 
 watch(cats, (newCats) => {
-  try {
-    const favs = newCats.filter(c => c.favorite).map(c => c.name);
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
-  } catch (e) {}
+    try {
+        const favs = newCats.filter(c => c.favorite).map(c => c.name);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+    } catch (e) { }
 }, { deep: true });
 
 const filtered = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase();
-  return cats.value.filter(cat => {
-    if (vaccinatedOnly.value && !cat.vaccinated) return false;
-    if (statusFilter.value && cat.status !== statusFilter.value) return false;
-    if (!q) return true;
-    return cat.name.toLowerCase().includes(q) || (cat.breed && cat.breed.toLowerCase().includes(q));
-  });
+    const q = searchQuery.value.trim().toLowerCase();
+    return cats.value.filter(cat => {
+        if (vaccinatedOnly.value && !cat.vaccinated) return false;
+        if (statusFilter.value && cat.status !== statusFilter.value) return false;
+        if (!q) return true;
+        return cat.name.toLowerCase().includes(q) || (cat.breed && cat.breed.toLowerCase().includes(q));
+    });
 });
 
 const filteredAndSorted = computed(() => {
-  const list = [...filtered.value];
-  switch (sortOption.value) {
-    case 'age-asc': list.sort((a, b) => a.age - b.age); break;
-    case 'age-desc': list.sort((a, b) => b.age - a.age); break;
-    case 'name-asc': list.sort((a, b) => a.name.localeCompare(b.name)); break;
-    case 'name-desc': list.sort((a, b) => b.name.localeCompare(a.name)); break;
-    default: break;
-  }
-  return list;
+    const list = [...filtered.value];
+    switch (sortOption.value) {
+        case 'age-asc': list.sort((a, b) => a.age - b.age); break;
+        case 'age-desc': list.sort((a, b) => b.age - a.age); break;
+        case 'name-asc': list.sort((a, b) => a.name.localeCompare(b.name)); break;
+        case 'name-desc': list.sort((a, b) => b.name.localeCompare(a.name)); break;
+        default: break;
+    }
+    return list;
 });
 
 const currentCat = computed(() => {
-  const list = filteredAndSorted.value;
-  if (list.length === 0) return cats.value[0] || {};
-  const idx = Math.min(Math.max(currentIndex.value, 0), list.length - 1);
-  currentIndex.value = idx;
-  return list[idx];
+    const list = filteredAndSorted.value;
+    if (list.length === 0) return cats.value[0] || {};
+    const idx = Math.min(Math.max(currentIndex.value, 0), list.length - 1);
+    currentIndex.value = idx;
+    return list[idx];
 });
 
 const currentImage = computed(() => {
-  const cat = currentCat.value;
-  if (!cat || !cat.images || cat.images.length === 0) return '';
-  if (carouselIndex.value >= cat.images.length) carouselIndex.value = 0;
-  return cat.images[carouselIndex.value];
+    const cat = currentCat.value;
+    if (!cat || !cat.images || cat.images.length === 0) return '';
+    if (carouselIndex.value >= cat.images.length) carouselIndex.value = 0;
+    return cat.images[carouselIndex.value];
 });
 
 const statusClass = computed(() => {
-  const s = currentCat.value.status || '';
-  return {
-    available: s === 'Available',
-    pending: s === 'Pending',
-    adopted: s === 'Adopted'
-  };
+    const s = currentCat.value.status || '';
+    return {
+        available: s === 'Available',
+        pending: s === 'Pending',
+        adopted: s === 'Adopted'
+    };
 });
 
 const favoriteTitle = computed(() => currentCat.value.favorite ? 'Remove from favorites' : 'Add to favorites');
@@ -223,72 +379,71 @@ const favoriteTitle = computed(() => currentCat.value.favorite ? 'Remove from fa
 function toggleFavorite(cat) { cat.favorite = !cat.favorite; }
 
 function showSuccessPopup(title, message, timeout = 2500) {
-  successTitle.value = title;
-  successMessage.value = message;
-  showSuccess.value = true;
-  setTimeout(() => showSuccess.value = false, timeout);
+    successTitle.value = title;
+    successMessage.value = message;
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, timeout);
 }
 
 function handleIndicateInterest() {
-  showApplicationForm.value = true;
-  nextTick(() => {
-    applicationFormRef.value?.scrollIntoView({ behavior: 'smooth' });
-  });
-}
-
-function submitApplication() {
-  showSuccessPopup('Application Submitted', 'Thank you for your interest! Our team will review your application.');
-  showApplicationForm.value = false;
-  scrolledPast.value = false;
+    showApplicationForm.value = true;
+    nextTick(() => {
+        applicationFormRef.value?.scrollIntoView({ behavior: 'smooth' });
+    });
 }
 
 function openBookingModal() {
-  booking.value = { date: '', time: '', attendees: 1, notes: '' };
-  showBooking.value = true;
+    booking.value = { date: '', time: '', attendees: 1, notes: '' };
+    showBooking.value = true;
 }
 
 function closeBooking() {
-  showBooking.value = false;
+    showBooking.value = false;
 }
 
 function submitBooking() {
-  closeBooking();
-  showSuccessPopup('Booking Confirmed', `Your visit for ${currentCat.value.name} has been scheduled on ${booking.value.date} at ${booking.value.time}.`);
+    closeBooking();
+    showSuccessPopup('Booking Confirmed', `Your visit for ${currentCat.value.name} has been scheduled on ${booking.value.date} at ${booking.value.time}.`);
 }
 
 function openContactModal() {
-  contactForm.value = { name: '', email: '', message: '' };
-  showContact.value = true;
+    contactForm.value = { name: '', email: '', message: '' };
+    showContact.value = true;
 }
 
 function shareProfile() {
-  const url = `${location.origin}${location.pathname}#${encodeURIComponent(currentCat.value.name)}`;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => {
-      showSuccessPopup('Link Copied', 'Profile link copied to clipboard.');
-    }).catch(() => {
-      showSuccessPopup('Share', 'Could not copy automatically. You can copy this URL: ' + url);
-    });
-  } else {
-    showSuccessPopup('Share', `Profile URL: ${url}`);
-  }
+    const url = `${location.origin}${location.pathname}#${encodeURIComponent(currentCat.value.name)}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showSuccessPopup('Link Copied', 'Profile link copied to clipboard.');
+        }).catch(() => {
+            showSuccessPopup('Share', 'Could not copy automatically. You can copy this URL: ' + url);
+        });
+    } else {
+        showSuccessPopup('Share', `Profile URL: ${url}`);
+    }
 }
 
 function selectCatByFilteredIndex(idxInFiltered) {
-  currentIndex.value = idxInFiltered;
-  carouselIndex.value = 0;
-  showDetails.value = false;
+    currentIndex.value = idxInFiltered;
+    carouselIndex.value = 0;
+    showDetails.value = false;
 }
 
 watch(currentIndex, (v) => {
-  timelineProgress.value = Math.min(v, adoptionTimeline.length - 1);
+    timelineProgress.value = Math.min(v, adoptionTimeline.length - 1);
 });
+
 </script>
+
+
 
 <template>
     <Navbar>
         <template v-slot:navbar-title>Adoption</template>
     </Navbar>
+
+    <!-- <button @click="addCat">Add Cat to Firestore</button> -->
 
     <div ref="containerRef" :class="['scroll-bg-container', { 'background-changed': scrolledPast }]"
         style="min-height: 100vh; overflow-y: auto;">
@@ -302,17 +457,12 @@ watch(currentIndex, (v) => {
                     aria-label="Search cats" />
                 <div class="select-group">
                     <select v-model="statusFilter" aria-label="Filter by status">
-                        <option value="">All statuses</option>
+                        <option value="">Sort: Status</option>
                         <option value="Available">Available</option>
                         <option value="Pending">Pending</option>
                         <option value="Adopted">Adopted</option>
                     </select>
-                    <!-- Vaccinated Only UI as toggle button -->
-                    <button type="button" class="filter-btn" :class="{ checked: vaccinatedOnly }"
-                        @click="vaccinatedOnly = !vaccinatedOnly">
-                        Vaccinated Only
-                    </button>
-                    <!-- Sort moved rightmost -->
+                    <!-- Sort -->
                     <select v-model="sortOption" aria-label="Sort cats">
                         <option value="default">Sort: Default</option>
                         <option value="age-asc">Age ↑</option>
@@ -320,6 +470,11 @@ watch(currentIndex, (v) => {
                         <option value="name-asc">Name A→Z</option>
                         <option value="name-desc">Name Z→A</option>
                     </select>
+                    <!-- Vaccinated Only UI as toggle button -->
+                    <button type="button" class="filter-btn" :class="{ checked: vaccinatedOnly }"
+                        @click="vaccinatedOnly = !vaccinatedOnly">
+                        Vaccinated Only
+                    </button>
                 </div>
             </div>
         </div>
@@ -329,15 +484,11 @@ watch(currentIndex, (v) => {
             <div class="timeline-bg">
                 <div class="timeline-container full-width-row">
                     <ul class="timeline">
-                        <li v-for="(step, index) in adoptionTimeline" :key="index" class="timeline-step"
-                            :aria-label="`${step.label}, ${step.date}, ${step.time}`">
+                        <li v-for="(step, index) in adoptionTimeline" :key="index" class="timeline-step">
                             <div class="timeline-dot" :class="{ active: index === timelineProgress }"></div>
-                            <div class="timeline-content">
-                                <span class="timeline-label">{{ step.label }}</span>
-                                <br />
-                                <span class="timeline-date">{{ step.date }}</span>
-                                <span class="timeline-time">{{ step.time }}</span>
-                            </div>
+                            <strong>{{ step.label }}</strong>
+                            <div>{{ step.date }}</div>
+                            <div>{{ step.time }}</div>
                         </li>
                     </ul>
                 </div>
@@ -361,9 +512,8 @@ watch(currentIndex, (v) => {
                             <p class="cat-desc">{{ currentCat.desc }}</p>
                             <div class="thumb-strip-horizontal">
                                 <button v-for="(img, idx) in currentCat.images" :key="img" class="thumb"
-                                    :class="{ active: idx === carouselIndex }" @click="carouselIndex = idx"
-                                    :aria-label="`Show photo ${idx + 1}`">
-                                    <img :src="img" :alt="`Thumbnail ${idx + 1}`" />
+                                    :class="{ active: idx === carouselIndex }" @click="carouselIndex = idx">
+                                    <img :src="img" :alt="'Thumbnail ' + (idx + 1)" />
                                 </button>
                             </div>
                         </div>
@@ -386,11 +536,13 @@ watch(currentIndex, (v) => {
                         <button class="action-btn" @click="showDetails = !showDetails" :aria-expanded="showDetails">
                             {{ showDetails ? 'Hide Details' : 'Show Details' }}
                         </button>
-                        <button class="action-btn" @click="openBookingModal"
+
+                        <button class="action-btn" @click="openScheduleVisit"
                             :disabled="currentCat.status !== 'Available'">
                             Schedule Visit
                         </button>
-                        <button class="action-btn" @click="openContactModal">Contact Center</button>
+                        <button class="action-btn" @click="openContactCenter">Contact
+                            Center</button>
                         <button class="action-btn" @click="shareProfile">Share</button>
                     </div>
                     <div class="notes-row">
@@ -404,15 +556,17 @@ watch(currentIndex, (v) => {
                     </div>
                 </div>
             </div>
+
             <div class="cat-details" v-if="showDetails">
-                <h3 class="details-title">{{ currentCat.name }}'s Details</h3>
-                <p><strong>Breed:</strong> {{ currentCat.breed }}</p>
-                <p><strong>Gender:</strong> {{ currentCat.gender }}</p>
-                <p><strong>Vaccinated:</strong> {{ currentCat.vaccinated ? 'Yes' : 'No' }}</p>
-                <p><strong>Status:</strong> {{ currentCat.status }}</p>
-                <p><strong>Age:</strong> {{ currentCat.age }} years</p>
-                <p><strong>Microchipped:</strong> {{ currentCat.microchipped ? 'Yes' : 'No' }}</p>
-                <p><strong>Adoption Fee:</strong> {{ currentCat.fee ? `$${currentCat.fee}` : 'TBD' }}</p>
+                <h2>{{ currentCat.name }}</h2>
+                <p>{{ currentCat.desc }}</p>
+                <p>Breed: {{ currentCat.breed }}</p>
+                <p>Age: {{ currentCat.age }}</p>
+                <p>Gender: {{ currentCat.gender }}</p>
+                <img :src="currentCat.images[0]" :alt="currentCat.name" width="64" height="48" />
+                <p>Fee: {{ currentCat.fee }}</p>
+                <p>Microchipped: {{ currentCat.microchipped ? 'Yes' : 'No' }}</p>
+                <p>Notes: {{ currentCat.notes }}</p>
                 <div class="close-row">
                     <button class="close-btn" @click="showDetails = false">Close</button>
                 </div>
@@ -421,30 +575,33 @@ watch(currentIndex, (v) => {
 
         <div class="profile-card-subrow full-width-row">
             <div class="list-card subrow-half">
-                <h3>All Cats</h3>
-                <ul class="cat-list">
-                    <li v-for="(cat, idx) in filteredAndSorted" :key="cat.name + idx"
-                        :class="{ selected: idx === currentIndex }" @click="selectCatByFilteredIndex(idx)" role="button"
-                        tabindex="0">
-                        <img :src="cat.images[0]" :alt="`${cat.name} thumbnail`" />
-                        <div class="list-info">
-                            <div class="list-name">{{ cat.name }}</div>
-                            <div class="list-sub">{{ cat.breed }} • {{ cat.age }}y</div>
-                        </div>
-                        <div class="list-right">
-                            <div class="list-status">{{ cat.status }}</div>
-                            <button class="mini-fav" @click.stop="toggleFavorite(cat)">{{ cat.favorite ? '♥' : '♡'
-                            }}</button>
-                        </div>
-                    </li>
-                    <li v-if="filteredAndSorted.length === 0" class="no-results">No cats match your filters.</li>
-                </ul>
+                <h3>Cat Catalogue (Scroll)</h3>
+                <div class="all-cats-card">
+                    <ul class="cat-list">
+                        <li v-for="(cat, idx) in filteredAndSorted" :key="cat.name + idx"
+                            :class="{ selected: idx === currentIndex }" @click="selectCatByFilteredIndex(idx)"
+                            role="button" tabindex="0">
+                            <img :src="cat.images[0]" :alt="`${cat.name} thumbnail`" />
+                            <div class="list-info">
+                                <div class="list-name">{{ cat.name }}</div>
+                                <div class="list-sub">{{ cat.breed }} • {{ cat.age }}y</div>
+                            </div>
+                            <div class="list-right">
+                                <div class="list-status">{{ cat.status }}</div>
+                                <button class="mini-fav" @click.stop="toggleFavorite(cat)">{{ cat.favorite ? '♥' : '♡'
+                                    }}</button>
+                            </div>
+                        </li>
+                        <li v-if="filteredAndSorted.length === 0" class="no-results">No cats match your filters.</li>
+                    </ul>
+                </div>
             </div>
             <div class="list-card subrow-half">
                 <h4>Quick Help</h4>
                 <p>Phone: +65 6123 4567</p>
                 <p>Email: adopt@catshelter.sg</p>
-                <button class="main-btn outline" @click="openContactModal">Contact Us</button>
+
+                <button class="main-btn outline" @click="openContactUs">Contact Us</button>
             </div>
         </div>
     </div>
@@ -623,6 +780,7 @@ watch(currentIndex, (v) => {
 /* Vaccinated only as button */
 .filter-btn {
     padding: 11px 22px;
+    margin-left: 7px;
     border-radius: 11px;
     background: #fcfcfc;
     border: 1.5px solid #7582cf;
@@ -646,6 +804,7 @@ watch(currentIndex, (v) => {
 
 .select-group select {
     padding: 11px;
+    margin-left: 7px;
     border-radius: 11px;
     border: 1px solid #efeff2;
     background: #fcfcfc;
@@ -745,6 +904,7 @@ watch(currentIndex, (v) => {
 .search-input {
     flex: 1;
     padding: 14px 18px;
+    margin-right: -10px;
     border-radius: 14px;
     border: 1px solid #efeff2;
     background: #fff;
@@ -753,14 +913,10 @@ watch(currentIndex, (v) => {
 }
 
 /* --- Timeline --- */
-.timeline-container {
-    width: 90vw;
-    max-width: 1120px;
-    margin: 0 auto 18px auto;
-}
 
 .timeline {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-start;
     list-style: none;
@@ -770,11 +926,16 @@ watch(currentIndex, (v) => {
 }
 
 .timeline-step {
-    flex: 1;
+    flex: 1 1 200px;
+    /* flexible width at least 200px */
+    min-width: 150px;
+    /* minimum width per item */
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
     text-align: center;
-    position: relative;
-    min-width: 112px;
-    padding: 8px 6px;
 }
 
 .timeline-dot {
@@ -791,11 +952,6 @@ watch(currentIndex, (v) => {
     transition: opacity 0.2s;
 }
 
-.timeline-dot.active {
-    background: linear-gradient(180deg, #fff, #f9e0e4);
-    box-shadow: 0 2px 22px rgba(57, 80, 105, 0.21);
-    opacity: 1;
-}
 
 .timeline-label {
     font-weight: 700;
@@ -820,23 +976,11 @@ watch(currentIndex, (v) => {
     display: block;
 }
 
-.timeline-step:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    top: 29px;
-    right: -50%;
-    width: 100%;
-    height: 6px;
-    background: linear-gradient(90deg, #f9e0e4 0%, #afaee9 100%);
-    z-index: 1;
-    border-radius: 4px;
-    opacity: 0.6;
-}
-
 
 /* --- Card Standardisation --- */
 .adoption-card,
-.list-card {
+.list-card,
+.timeline-container {
     background: #fff;
     border-radius: 18px;
     box-shadow: 0 10px 34px rgba(60, 60, 60, 0.08);
@@ -845,10 +989,6 @@ watch(currentIndex, (v) => {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-}
-
-.adoption-form {
-    margin-top: 20px;
 }
 
 .list-card {
@@ -920,9 +1060,8 @@ watch(currentIndex, (v) => {
 
 /* --- Cat Info --- */
 .cat-info {
-    text-align: left;
-    width: 100%;
-    margin-top: 10px;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .cat-top-row {
@@ -966,6 +1105,8 @@ watch(currentIndex, (v) => {
     display: flex;
     gap: 12px;
     margin-top: 16px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
 }
 
 /* --- Standard Action and Main Buttons --- */
@@ -1120,15 +1261,35 @@ watch(currentIndex, (v) => {
 }
 
 /* --- List Panel --- */
+
+.all-cats-card {
+    height: 150px;
+    overflow-y: auto;
+    /* vertical scroll if content overflows */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
 .cat-list {
-    list-style: none;
+    margin: 0;
     padding: 0;
-    margin: 10px 0 0 0;
+    list-style: none;
+}
+
+.cat-list-item {
     display: flex;
-    flex-direction: column;
     gap: 12px;
-    max-height: 52vh;
-    overflow: auto;
+    padding: 8px 4px;
+    border-bottom: 1px solid #eee;
+}
+
+.cat-thumbnail {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
 }
 
 .cat-list li {
@@ -1287,11 +1448,15 @@ watch(currentIndex, (v) => {
 
 /* 1. Ensure these forms match profile card full width */
 .adoption-form.profile-card-wide,
-.app-form.profile-card-wide {
+.app-form.profile-card-wide .timeline-bg {
     width: 100%;
     max-width: 960px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.timeline-bg {
+    margin-bottom: 36px;
 }
 
 /* 2. Framed photo */
@@ -1307,25 +1472,25 @@ watch(currentIndex, (v) => {
     justify-content: center;
 }
 
-/* 3. Timeline background */
-.timeline-bg {
-    background: #f7f6fd;
-    border-radius: 24px;
-    padding: 28px 10px 22px 10px;
-    margin-bottom: 36px;
-    box-shadow: 0 2px 22px rgba(140, 140, 180, 0.10);
+
+@media (max-width: 768px) {
+    .timeline-step {
+        flex: 1 1 100%;
+        /* full width on small screens */
+        font-size: 0.9rem;
+    }
 }
 
 /* Responsive support */
 @media (max-width:1020px) {
 
     .adoption-form.profile-card-wide,
-    .app-form.profile-card-wide {
+    .app-form.profile-card-wide .timeline-bg {
         max-width: 95vw;
     }
 
-    .timeline-bg {
-        padding: 16px 2vw;
+    .timeline {
+        flex-direction: column;
     }
 }
 
@@ -1392,17 +1557,31 @@ watch(currentIndex, (v) => {
 }
 
 .cat-name {
-    font-size: 1.62rem;
-    font-weight: 800;
-    color: #4c5069;
-    margin: 0 0 8px 0;
-    letter-spacing: 1.2px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.cat-breed-age {
+    margin: 2px 0 6px;
+    font-size: 13px;
+    color: #666;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .cat-desc {
-    margin: 0 0 10px 0;
-    color: #4c5069;
-    font-size: 1.08rem;
+    font-size: 12px;
+    color: #444;
+    line-height: 1.2;
+    max-height: 34px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .thumb-strip-horizontal {
