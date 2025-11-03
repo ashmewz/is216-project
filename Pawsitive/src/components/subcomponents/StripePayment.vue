@@ -56,7 +56,7 @@ async function handleSubmit() {
       class="donate-btn"
       :disabled="loading"
     >
-      {{ loading ? 'Processing...' : 'Donate Now' }}
+      {{ loading ? 'Processing...' : 'Proceed with Payment' }}
     </button>
 
     <p v-if="message" class="error-message">{{ message }}</p>
@@ -82,7 +82,6 @@ async function handleSubmit() {
 .donate-btn:hover:not(:disabled) {
   transform: translateY(-4px) scale(1.02);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, var(--blue), var(--light-blue));
 }
 
 .donate-btn:disabled {
