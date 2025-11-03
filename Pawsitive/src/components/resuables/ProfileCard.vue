@@ -99,6 +99,16 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
 </template>
 
 <style scoped>
+.card{
+  all:revert;
+}
+
+.card-header {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+
 .profile-card {
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(128, 110, 131, 0.1);
