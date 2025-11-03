@@ -1,9 +1,12 @@
 <script setup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import Navbar from '@/components/resuables/Navbar.vue';
 import BottomFooter from '@/components/resuables/BottomFooter.vue';
 =======
+=======
+>>>>>>> Stashed changes
 import { ref, reactive, computed } from 'vue'; // Import Vue's reactivity API
 import Navbar from '@/components/resuables/Navbar.vue'; // Navigation bar component
 import BottomFooter from '@/components/resuables/BottomFooter.vue'; // Footer component
@@ -111,6 +114,10 @@ const cats = ref([
 ]);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+// Cat Adoption Timeline (unchanged)
+>>>>>>> Stashed changes
 =======
 // Cat Adoption Timeline (unchanged)
 >>>>>>> Stashed changes
@@ -123,6 +130,7 @@ const adoptionTimeline = [
     { label: "Cat Pickup", date: "16 Nov", time: "11:00 AM" },
 ];
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 const currentIndex = ref(0);
 const carouselIndex = ref(0);
@@ -164,6 +172,8 @@ onMounted(() => {
         cat.favorite = stored.includes(cat.name);
       });
 =======
+=======
+>>>>>>> Stashed changes
 // Adoption Form Reactive State
 const form = reactive({
   reason: '',
@@ -491,6 +501,7 @@ function showSuccessPopup(title, message, timeout = 2500) {
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 function handleIndicateInterest() {
   showApplicationForm.value = true;
   nextTick(() => {
@@ -546,6 +557,8 @@ watch(currentIndex, (v) => {
   timelineProgress.value = Math.min(v, adoptionTimeline.length - 1);
 });
 =======
+=======
+>>>>>>> Stashed changes
 function prevCat() {
     if (currentIndex.value > 0) {
         currentIndex.value--;
@@ -576,6 +589,9 @@ function handleSubmit(event) {
     showSuccess.value = true;
     setTimeout(() => showSuccess.value = false, 2500);
 }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </script>
 
@@ -584,6 +600,7 @@ function handleSubmit(event) {
         <template v-slot:navbar-title>Adoption</template>
     </Navbar>
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     <div ref="containerRef" :class="['scroll-bg-container', { 'background-changed': scrolledPast }]"
         style="min-height: 100vh; overflow-y: auto;">
@@ -713,6 +730,8 @@ function handleSubmit(event) {
                 </div>
             </div>
 =======
+=======
+>>>>>>> Stashed changes
     <div class="adoption-header">Adopt Your Cats Here</div>
 
     <div class="adoption-bg">
@@ -786,6 +805,7 @@ function handleSubmit(event) {
       <span v-if="submitAttempted && errors.reason" class="error">{{ errors.reason }}</span>
     </label>
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         <div class="profile-card-subrow full-width-row">
             <div class="list-card subrow-half">
@@ -975,6 +995,34 @@ function handleSubmit(event) {
       <span v-if="submitAttempted && errors.surrenderReason" class="error">{{ errors.surrenderReason }}</span>
     </label>
 
+=======
+    <!-- Pets currently -->
+    <fieldset>
+      <legend>2. Do you currently have pets? *</legend>
+      <label><input type="radio" value="yes" v-model="form.havePets" /> Yes</label>
+      <label><input type="radio" value="no" v-model="form.havePets" /> No</label>
+      <span v-if="submitAttempted && errors.havePets" class="error">{{ errors.havePets }}</span>
+    </fieldset>
+    <label v-if="form.havePets === 'yes'">
+      Please describe your pets (species, ages, health, temperament) *
+      <textarea v-model="form.petsDetails" rows="3"></textarea>
+      <span v-if="submitAttempted && errors.petsDetails" class="error">{{ errors.petsDetails }}</span>
+    </label>
+
+    <!-- Surrendered pets before -->
+    <fieldset>
+      <legend>3. Have you ever surrendered or rehomed a pet? *</legend>
+      <label><input type="radio" value="yes" v-model="form.surrenderedBefore" /> Yes</label>
+      <label><input type="radio" value="no" v-model="form.surrenderedBefore" /> No</label>
+      <span v-if="submitAttempted && errors.surrenderedBefore" class="error">{{ errors.surrenderedBefore }}</span>
+    </fieldset>
+    <label v-if="form.surrenderedBefore === 'yes'">
+      Please provide reason for surrender *
+      <textarea v-model="form.surrenderReason" rows="2"></textarea>
+      <span v-if="submitAttempted && errors.surrenderReason" class="error">{{ errors.surrenderReason }}</span>
+    </label>
+
+>>>>>>> Stashed changes
     <!-- Allergies -->
     <fieldset>
       <legend>4. Does anyone in your household have allergies to cats or other animals? *</legend>
@@ -1070,6 +1118,7 @@ function handleSubmit(event) {
         </div>
     </transition>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <BottomFooter />
 </template>
 
@@ -1078,6 +1127,8 @@ function handleSubmit(event) {
 .full-center {
     text-align: center;
 =======
+=======
+>>>>>>> Stashed changes
     <BottomFooter></BottomFooter>
 </template>
 
@@ -1100,6 +1151,7 @@ function handleSubmit(event) {
     margin-right: auto;
 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 .controls-row {
     justify-content: center;
@@ -1245,6 +1297,8 @@ function handleSubmit(event) {
 }
 
 /* --- Timeline --- */
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 .timeline-container {
@@ -1441,6 +1495,14 @@ function handleSubmit(event) {
     display: flex;
     align-items: center;
     gap: 12px;
+<<<<<<< Updated upstream
+=======
+}
+
+/* cat-details on third row spanning full width */
+.cat-details-full {
+    grid-row: 3;
+>>>>>>> Stashed changes
 }
 
 /* cat-details on third row spanning full width */
@@ -1680,6 +1742,7 @@ function handleSubmit(event) {
     border-radius: 12px;
     border: 2px solid #f7e4ed;
     min-width: 98px;
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
     text-align: center;
     font-size: 1.28rem;
@@ -1730,6 +1793,23 @@ function handleSubmit(event) {
         margin-bottom: 30px;
     }
 =======
+=======
+    text-align: center;
+}
+
+.fav-btn {
+    background: #fff8fc;
+    border: 2px solid #f78da7;
+    border-radius: 12px;
+    font-size: 2rem;
+    color: #f78da7;
+    cursor: pointer;
+    margin: 0;
+    padding: 0 24px;
+    height: 44px;
+    width: 64px;
+    display: flex;
+>>>>>>> Stashed changes
     align-items: center;
     justify-content: center;
 }
@@ -1751,20 +1831,38 @@ function handleSubmit(event) {
     flex-direction: column;
     align-items: center;
     margin: 0 auto 40px auto;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 
 .form-label {
     width: 100%;
     text-align: left;
+<<<<<<< Updated upstream
     font-weight: 700;
     font-size: 1.08rem;
     margin-bottom: 8px;
     color: #655691;
+=======
+    margin-bottom: 8px;
+}
+
+.form-label span {
+    font-weight: 600;
+    font-size: 1.07rem;
+}
+
+.form-label small {
+    color: #888;
+    font-size: 0.92rem;
+>>>>>>> Stashed changes
 }
 
 .reason-input {
     width: 100%;
+<<<<<<< Updated upstream
     margin: 10px 0 14px 0;
     padding: 15px;
     border-radius: 12px;
@@ -1903,6 +2001,33 @@ function handleSubmit(event) {
 
 /* --- Success Popup --- */
 =======
+=======
+    margin: 18px 0;
+    padding: 14px 10px;
+    border-radius: 10px;
+    border: 1px solid #e0dee3;
+    background: #f9f3f6;
+    font-size: 1.03rem;
+    min-height: 42px;
+}
+
+.next-btn {
+    width: 100%;
+    background: #8096b6;
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    font-weight: 600;
+    font-size: 1.15rem;
+    padding: 14px 0;
+    margin-top: 8px;
+}
+
+.next-btn:hover {
+    background: #445c85;
+}
+
+>>>>>>> Stashed changes
 .arrow-btn {
     background: #ececec;
     border: none;
@@ -1950,6 +2075,9 @@ function handleSubmit(event) {
 }
 
 /* Success Message styles as before */
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 .success-overlay {
     position: fixed;
@@ -2040,6 +2168,7 @@ function handleSubmit(event) {
     }
 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 .form-group {
     display: flex;
@@ -2215,6 +2344,8 @@ function handleSubmit(event) {
 }
 </style>
 =======
+=======
+>>>>>>> Stashed changes
 @media (max-width: 900px) {
     .card-row {
         flex-direction: column;
@@ -2272,4 +2403,7 @@ button[type="submit"]:hover {
   background-color: #445c85;
 }
 </style>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

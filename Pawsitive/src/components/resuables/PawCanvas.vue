@@ -4,7 +4,7 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from 'vue'
-import p5 from 'p5'
+// import p5 from 'p5'
 
 const cursorOverlay = ref(null)
 let sketchInstance = null
