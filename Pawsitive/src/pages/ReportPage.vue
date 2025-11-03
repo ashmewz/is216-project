@@ -19,7 +19,7 @@ const auth = getAuth()
 const report = reactive({
   status: '',
   condition: '',
-  catName: '',
+  name: '',
   species: '',
   estimatedAge: '',
   gender: 'Unknown',
@@ -425,7 +425,7 @@ const submitReport = async () => {
     const { lat, lng } = report.coords;
     await addDoc(collection(db, "cats"), {
       age: report.estimatedAge || "Unknown",
-      catName: report.catName || "",
+      name: report.name || "",
       color: "",
       condition: report.condition || "",
       created_at: serverTimestamp(),
@@ -441,7 +441,7 @@ const submitReport = async () => {
     });
     // Reset form
     report.status = '';
-    report.catName = '';
+    report.name = '';
     report.species = '';
     report.location = '';
     report.description = '';
@@ -557,7 +557,7 @@ onMounted(() => {
     <!-- Cat Name -->
     <div class="mb-3">
       <label class="form-label">Cat Name (optional)</label>
-      <input type="text" class="form-control" v-model="report.catName"
+      <input type="text" class="form-control" v-model="report.name"
         placeholder="Enter cat name (if known)" />
     </div>
 
