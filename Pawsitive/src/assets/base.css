@@ -111,10 +111,6 @@ img {
   }
 }
 
-.pawsitive-background {
-    background-color: #f8e1e1;
-}
-
 /* For Chrome, Safari, Edge */
 ::-webkit-scrollbar {
   display: none;
@@ -130,3 +126,40 @@ html {
 html {
   overflow-y: scroll; /* always reserve space for scrollbar */
 }
+
+
+/* NEW CSS TO USE */
+
+
+.pawsitive-background {
+    background-color: #f8e1e1;
+}
+
+.pawsitive-btn{
+  border-radius: 25px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  cursor: pointer;
+}
+
+.pawsitive-btn {
+  background: #806e83;
+  border: 2px solid #806e83;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.pawsitive-btn:hover {
+  background: #6d5c70;
+  border-color: #6d5c70;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+}
+
+

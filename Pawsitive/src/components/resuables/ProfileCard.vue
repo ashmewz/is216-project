@@ -93,6 +93,7 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
         <div v-if="showActions" class="mt-auto d-flex justify-content-end">
           <button class="btn btn-danger rounded-pill px-4 py-2" @click="onLogout">Logout</button>
         </div>
+
       </div>
     </div>
   </div>
