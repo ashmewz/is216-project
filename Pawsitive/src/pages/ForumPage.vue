@@ -278,7 +278,7 @@ onMounted(fetchPosts)
     </div>
 
     <!-- ==================== COMMENTS MODAL ==================== -->
-    <div v-if="showCommentModal" class="modal fade show" style="display:block; margin-top: 10rem;" tabindex="-1"
+    <div v-if="showCommentModal" class="modal fade show" style="display:block;" tabindex="-1"
       aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content rounded-4 shadow-lg border-0">
@@ -452,9 +452,15 @@ onMounted(fetchPosts)
 }
 
 .controls-sidebar {
-  position: relative;
-  z-index: 3000;
+  position: sticky;
+  top: 100px;
+  padding: 1rem;
+  background: #f8e1e1;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
+  z-index: 1020; /* below modal-backdrop */
 }
+
 
 .dropdown-menu {
   position: absolute !important;
