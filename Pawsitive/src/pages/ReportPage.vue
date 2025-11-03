@@ -425,18 +425,17 @@ const submitReport = async () => {
     await addDoc(collection(db, "cats"), {
       age: report.estimatedAge || "Unknown",
       color: "",
+      condition: report.condition || "",
       created_at: serverTimestamp(),
       description: report.description || "",
       gender: report.gender || "",
       last_location: new GeoPoint(lat, lng),
       last_seen: serverTimestamp(),
-      name: report.catName || "",
       neutered: report.neutered || "",
       photos: report.imagePreview ? [report.imagePreview] : [],
+      severity: report.severity || 0,
       species: report.catName || "",
       status: report.status || ""
-      // NOTE(RAYNER): For Kevan, you've got several fields like severity that's not saved.
-      // Do you intend to update the firebase structure? Or are you going to remove the severity field.
     });
     // Reset form
     report.status = '';
