@@ -254,7 +254,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100">
+    <div class="d-flex flex-column min-vh-100 page-background">
         <!-- Navbar -->
         <Navbar>
             <template #navbar-title>Profile</template>
@@ -443,6 +443,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+
+.page-background{
+    background-color: #f8e1e1;
+}
 /* optional: center vertically on taller screens */
 main {
     min-height: calc(100vh - 120px);

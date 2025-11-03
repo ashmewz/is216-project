@@ -105,5 +105,9 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
 <style scoped>
 .card {
   all: revert;
+  background-color: white;
 }
+
+
+
 </style>
