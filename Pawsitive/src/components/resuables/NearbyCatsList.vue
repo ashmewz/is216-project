@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps, ref, watch, onMounted } from 'vue'
 
 const props = defineProps({
   cats: {
@@ -11,6 +11,88 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
+})
+
+// Store geocoded addresses
+const geocodedAddresses = ref({})
+const loadingAddresses = ref({})
+
+// Reverse geocode function
+async function reverseGeocode(lat, lon) {
+  if (lat == null || lon == null) return null;
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=16&addressdetails=1`;
+    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const data = await resp.json();
+    return data?.display_name ?? null;
+  } catch (err) {
+    console.warn('Reverse geocoding failed:', err);
+    return null;
+  }
+}
+
+// Get coordinates from cat location
+function getCoordinates(location) {
+  if (!location) return null;
+  
+  if (Array.isArray(location)) {
+    return { lat: location[0], lon: location[1] };
+  } else if (location._lat !== undefined && location._long !== undefined) {
+    return { lat: location._lat, lon: location._long };
+  } else if (location.latitude !== undefined && location.longitude !== undefined) {
+    return { lat: location.latitude, lon: location.longitude };
+  }
+  return null;
+}
+
+// Geocode all cat locations
+async function geocodeAllCats() {
+  for (const cat of props.cats) {
+    if (!cat.id) continue;
+    
+    // Skip if already loaded or loading
+    if (geocodedAddresses.value[cat.id] || loadingAddresses.value[cat.id]) continue;
+    
+    const coords = getCoordinates(cat.last_location);
+    if (coords) {
+      loadingAddresses.value[cat.id] = true; // Set loading state
+      const address = await reverseGeocode(coords.lat, coords.lon);
+      loadingAddresses.value[cat.id] = false; // Clear loading state
+      
+      if (address) {
+        geocodedAddresses.value[cat.id] = address;
+      } else {
+        geocodedAddresses.value[cat.id] = 'Unable to find location';
+      }
+    } else {
+      geocodedAddresses.value[cat.id] = 'Unable to find location';
+    }
+  }
+}
+
+// Get display address for a cat
+function getLocationDisplay(cat) {
+  // Show loading spinner if currently loading
+  if (loadingAddresses.value[cat.id]) {
+    return null; // Will trigger spinner in template
+  }
+  
+  // Return cached address if available
+  if (geocodedAddresses.value[cat.id]) {
+    return geocodedAddresses.value[cat.id];
+  }
+  
+  // Default loading state (before geocoding starts)
+  return null; // Will trigger spinner in template
+}
+
+// Watch for changes in cats array
+watch(() => props.cats, () => {
+  geocodeAllCats();
+}, { deep: true, immediate: true })
+
+onMounted(() => {
+  geocodeAllCats();
 })
 </script>
 
@@ -33,10 +115,11 @@ const props = defineProps({
           </p>
           <p class="mb-1 text-break">
             <strong>Last Location:</strong><br>
-            {{ Array.isArray(cat.last_location) 
-              ? cat.last_location.join(",\n") 
-              : cat.last_location._lat.toFixed(8) + ",\n" + cat.last_location._long.toFixed(8) 
-            }}
+            <span v-if="getLocationDisplay(cat) === null" class="text-muted">
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Loading location...
+            </span>
+            <span v-else>{{ getLocationDisplay(cat) }}</span>
           </p>
           <p class="mb-1">
             <strong>Created At:</strong> 
