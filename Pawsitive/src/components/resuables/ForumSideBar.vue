@@ -15,7 +15,7 @@
       <span class="ms-2">Create Post</span>
     </button>
 
-    <div class="btn-group position-relative sort-dropdown w-100" ref="dropdownRef">
+    <div class="position-relative sort-dropdown w-100" ref="dropdownRef">
       <button
         class="btn btn-outline-secondary sort-btn w-100"
         @click="dropdownOpen = !dropdownOpen"
@@ -139,6 +139,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(128, 110, 131, 0.3);
 }
+
+
 
 .sort-dropdown {
   width: 100%;
