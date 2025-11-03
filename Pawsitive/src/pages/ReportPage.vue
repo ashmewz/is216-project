@@ -20,6 +20,7 @@ const report = reactive({
   status: '',
   condition: '',
   catName: '',
+  species: '',
   estimatedAge: '',
   gender: 'Unknown',
   neutered: 'Unknown',
@@ -338,7 +339,7 @@ async function identifyBreed(imageBlob) {
     const breed = extractFirstBreed(breedText);
     firstBreed.value = breed;
     if (!breed) return;
-    report.catName = firstBreed.value;
+    report.species = firstBreed.value;
 
     const cats = await fetchCatsByBreed(breed);
     allPredictedCats.value = cats;
@@ -406,7 +407,7 @@ const fetchReports = async () => {
 const submitReport = async () => {
   const toValidate = {
     status: report.status,
-    name: report.catName,
+    name: report.species,
     location: report.location,
     description: report.description,
     image: report.imagePreview
@@ -424,6 +425,7 @@ const submitReport = async () => {
     const { lat, lng } = report.coords;
     await addDoc(collection(db, "cats"), {
       age: report.estimatedAge || "Unknown",
+      catName: report.catName || "",
       color: "",
       condition: report.condition || "",
       created_at: serverTimestamp(),
@@ -434,12 +436,13 @@ const submitReport = async () => {
       neutered: report.neutered || "",
       photos: report.imagePreview ? [report.imagePreview] : [],
       severity: report.severity || 0,
-      species: report.catName || "",
+      species: report.species || "",
       status: report.status || ""
     });
     // Reset form
     report.status = '';
     report.catName = '';
+    report.species = '';
     report.location = '';
     report.description = '';
     report.imageFile = null;
@@ -544,11 +547,18 @@ onMounted(() => {
     <!-- Cat Breed -->
     <div class="mb-3">
       <label class="form-label">Cat Breed</label>
-      <input type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.name }" v-model="report.catName"
+      <input type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.name }" v-model="report.species"
         placeholder="Enter cat breed" />
       <div v-if="fieldErrors.location" class="invalid-feedback d-block">
         {{ fieldErrors.name }}
       </div>
+    </div>
+
+    <!-- Cat Name -->
+    <div class="mb-3">
+      <label class="form-label">Cat Name (optional)</label>
+      <input type="text" class="form-control" v-model="report.catName"
+        placeholder="Enter cat name (if known)" />
     </div>
 
     <!-- Estimated Age -->
