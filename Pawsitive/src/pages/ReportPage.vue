@@ -452,7 +452,11 @@ const submitReport = async () => {
     report.gender = 'Unknown';
     report.neutered = 'Unknown';
     report.estimatedAge = '';
+    report.coords = null;
     fieldErrors.value = {};
+    breedResult.value = null;
+    firstBreed.value = null;
+    isLoading.value = false;
     if (fileInput.value) fileInput.value.value = null;
 
     fetchReports();
@@ -500,8 +504,8 @@ onMounted(() => {
     </div>
 
     <!-- 🐾 Breed Prediction Result -->
-    <div v-if="isLoading" class="text-muted mt-2">
-      Analyzing image for breed...
+    <div v-if="isLoading" class="mt-2 alert alert-info">
+      <strong>Analyzing image for breed...</strong>
     </div>
     <div v-else-if="breedResult" class="mt-2 alert alert-info">
       <strong>Detected Breed:</strong> {{ breedResult }}
