@@ -315,10 +315,11 @@ async function initMapWithRadius(cats = []) {
     shadowSize: [41, 41]
   });
 
-  cats.forEach(cat => {
+  // Process each cat asynchronously to get geocoded addresses
+  for (const cat of cats) {
     const loc = cat.last_location;
     const [catLat, catLon] = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
-    if (!catLat || !catLon) return;
+    if (!catLat || !catLon) continue;
     
     // Format the created_at timestamp
     const reportedAt = cat.created_at?.toDate 
@@ -331,8 +332,16 @@ async function initMapWithRadius(cats = []) {
         })
       : cat.created_at || 'Unknown';
     
-    // Get location display (coordinates as fallback)
-    const locationDisplay = `${catLat.toFixed(4)}, ${catLon.toFixed(4)}`;
+    // Get actual location address using reverse geocoding
+    let locationDisplay = `${catLat.toFixed(4)}, ${catLon.toFixed(4)}`; // Fallback to coordinates
+    try {
+      const address = await reverseGeocode(catLat, catLon);
+      if (address) {
+        locationDisplay = address;
+      }
+    } catch (err) {
+      console.warn('Failed to geocode cat location:', err);
+    }
     
     // Format distance
     const distanceDisplay = cat.distanceMeters 
@@ -374,21 +383,22 @@ async function initMapWithRadius(cats = []) {
       .addTo(map)
       .bindPopup(popupContent, {
         maxWidth: 350,
+        minWidth: 340,
         closeButton: true,
         autoClose: false,
         className: 'cat-marker-popup'
       });
     
-    marker.on("mouseover", function () {
-      if (curCatPopup != null) {
+    // Change to click event instead of mouseover
+    marker.on("click", function () {
+      if (curCatPopup != null && curCatPopup !== this) {
         curCatPopup.closePopup();
       }
       curCatPopup = this;
-      curCatPopup.openPopup();
     });
     
     catMarkers.push(marker);
-  });
+  }
 }
 
 // -------------------- Watchers --------------------
@@ -1115,6 +1125,8 @@ textarea.pawsitive-input {
 
 :deep(.cat-marker-popup .leaflet-popup-content) {
   width: 340px !important;
+  min-width: 340px !important;
+  max-width: 340px !important;
 }
 
 :deep(.cat-popup-card) {
@@ -1124,6 +1136,8 @@ textarea.pawsitive-input {
   border: 2px solid #ffc0cb;
   padding: 1rem;
   font-family: system-ui, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 :deep(.cat-popup-inner) {
@@ -1170,6 +1184,8 @@ textarea.pawsitive-input {
 :deep(.cat-popup-detail-item) {
   font-size: 0.8rem;
   line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 :deep(.cat-popup-detail-item strong) {
@@ -1179,8 +1195,11 @@ textarea.pawsitive-input {
 
 :deep(.cat-popup-detail-value) {
   color: #5a4a5e;
-  display: inline-block;
+  display: block;
   margin-top: 0.1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 :deep(.cat-popup-link) {
