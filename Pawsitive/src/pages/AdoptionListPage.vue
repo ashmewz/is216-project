@@ -30,174 +30,6 @@ const yesNoOptions = ['Yes', 'No'];
 const livingSituations = ['HDB Flat', 'Condo', 'Landed Property', 'Others'];
 const cats = ref([])
 
-// Firestore Cat Profile Data (For redundancy)
-// async function addCatProfile() {
-//   try {
-//     await addDoc(collection(db, "catAdoption"), 
-
-//     );
-//     console.log("Cat profile added successfully!");
-//   } catch (e) {
-//     console.error("Error adding document: ", e);
-//   }
-// }
-
-// addCatProfile();
-
-// const catss = ref([
-//     {
-//         name: "Peoni",
-//         age: 7,
-//         breed: "British Shorthair",
-//         gender: "Female",
-//         vaccinated: true,
-//         status: "Available",
-//         desc: "Peoni is cute and cuddly",
-//         images: ['/cat1.png', '/cat2.png', '/cat3.png'],
-//         favorite: false,
-//         rating: 4,
-//         notes: "Loves naps near windows.",
-//         microchipped: true,
-//         fee: 120
-//     },
-//     {
-//         name: "Keoni",
-//         age: 6,
-//         breed: "Tabby",
-//         gender: "Female",
-//         vaccinated: false,
-//         status: "Available",
-//         desc: "Keoni is Peoni's younger sister, even more cute and cuddly",
-//         images: ['/cat4.png', '/cat5.png', '/cat6.png'],
-//         favorite: false,
-//         rating: 5,
-//         notes: "Shy at first but affectionate with treats.",
-//         microchipped: false,
-//         fee: 100
-//     },
-//     {
-//         name: "Meoni",
-//         age: 5,
-//         breed: "Maine Coon",
-//         gender: "Male",
-//         vaccinated: true,
-//         status: "Pending",
-//         desc: "Meoni is the youngest brother, so full of cutsies and cuddles",
-//         images: ['/cat7.png', '/cat8.png', '/cat9.png'],
-//         favorite: false,
-//         rating: 3,
-//         notes: "Very playful. Needs space to climb.",
-//         microchipped: true,
-//         fee: 140
-//     },
-//     {
-//         name: "Luna",
-//         age: 4,
-//         breed: "Siamese",
-//         gender: "Female",
-//         vaccinated: true,
-//         status: "Available",
-//         desc: "Luna is playful and loves attention.",
-//         images: ['/cat10.png', '/cat11.png', '/cat12.png'],
-//         favorite: false,
-//         rating: 5,
-//         notes: "Enjoys sunbathing by the window.",
-//         microchipped: true,
-//         fee: 110
-//     },
-//     {
-//         name: "Max",
-//         age: 3,
-//         breed: "Bengal",
-//         gender: "Male",
-//         vaccinated: true,
-//         status: "Pending",
-//         desc: "Max is energetic and curious.",
-//         images: ['/cat13.png', '/cat14.png', '/cat15.png'],
-//         favorite: false,
-//         rating: 4,
-//         notes: "Needs space to run and climb.",
-//         microchipped: true,
-//         fee: 130
-//     },
-//     {
-//         name: "Mochi",
-//         age: 2,
-//         breed: "Ragdoll",
-//         gender: "Female",
-//         vaccinated: true,
-//         status: "Available",
-//         desc: "Mochi is calm, affectionate, and loves being carried around.",
-//         images: ['/cat16.png', '/cat17.png', '/cat18.png'],
-//         favorite: false,
-//         rating: 5,
-//         notes: "Enjoys quiet spaces and gentle petting.",
-//         microchipped: true,
-//         fee: 115
-//     },
-//     {
-//         name: "Oreo",
-//         age: 8,
-//         breed: "Tuxedo",
-//         gender: "Male",
-//         vaccinated: true,
-//         status: "Available",
-//         desc: "Oreo is a wise old gentleman who loves warm laps.",
-//         images: ['/cat19.png', '/cat20.png', '/cat21.png'],
-//         favorite: false,
-//         rating: 4,
-//         notes: "Prefers soft blankets and slow mornings.",
-//         microchipped: true,
-//         fee: 90
-//     },
-//     {
-//         name: "Nala",
-//         age: 1,
-//         breed: "Scottish Fold",
-//         gender: "Female",
-//         vaccinated: false,
-//         status: "Available",
-//         desc: "Nala is curious and loves chasing feather toys.",
-//         images: ['/cat22.png', '/cat23.png', '/cat24.png'],
-//         favorite: false,
-//         rating: 5,
-//         notes: "Loves attention and exploring new rooms.",
-//         microchipped: false,
-//         fee: 100
-//     },
-//     {
-//         name: "Simba",
-//         age: 3,
-//         breed: "Abyssinian",
-//         gender: "Male",
-//         vaccinated: true,
-//         status: "Available",
-//         desc: "Simba is adventurous and confident with a big heart.",
-//         images: ['/cat25.png', '/cat26.png', '/cat27.png'],
-//         favorite: false,
-//         rating: 4,
-//         notes: "Enjoys interactive play and scratching posts.",
-//         microchipped: true,
-//         fee: 125
-//     },
-//     {
-//         name: "Cleo",
-//         age: 5,
-//         breed: "Persian",
-//         gender: "Female",
-//         vaccinated: true,
-//         status: "Pending",
-//         desc: "Cleo is elegant, calm, and always photo-ready.",
-//         images: ['/cat28.png', '/cat29.png', '/cat30.png'],
-//         favorite: false,
-//         rating: 5,
-//         notes: "Needs regular grooming and soft bedding.",
-//         microchipped: true,
-//         fee: 150
-//     }
-
-// ]);
-
 const timelineSteps = [
     { label: "Send Application", offsetDays: 0, time: "10:00 AM" },
     { label: "Application Processing", offsetDays: 2, time: "5-7 Days" },
@@ -448,39 +280,39 @@ watch(currentIndex, (v) => {
     <div ref="containerRef" :class="['scroll-bg-container', { 'background-changed': scrolledPast }]"
         style="min-height: 100vh; overflow-y: auto;">
         <!-- 1. Centered header -->
-        <div class="adoption-header full-center">Adopt Your Cats Here</div>
+        <div class="adoption-header full-center">Cats For Adoption</div>
 
         <!-- 2 & 3. Swapped & buttonified "Vaccinated Only", Sort moved right -->
         <div class="section-center">
             <div class="col-12 col-md-8 mx-auto controls-row full-width-row">
-                <input v-model="searchQuery" class="search-input col-sm-12" placeholder="Search by name or breed..."
+
+                <!-- LINE 1: Search bar (full width) -->
+                <input v-model="searchQuery" class="search-input" placeholder="Search by name or breed..."
                     aria-label="Search cats" />
 
-                <div class="row g-2 justify-content-center">
-                    <div class="col-4 col-md-auto">
-                        <select v-model="statusFilter" class="form-select w-100" aria-label="Filter by status">
-                            <option value="">Sort: Status</option>
-                            <option value="Available">Available</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Adopted">Adopted</option>
-                        </select>
-                    </div>
-                    <div class="col-4 col-md-auto">
-                        <select v-model="sortOption" class="form-select w-100" aria-label="Sort cats">
-                            <option value="default">Sort: Default</option>
-                            <option value="age-asc">Age ↑</option>
-                            <option value="age-desc">Age ↓</option>
-                            <option value="name-asc">Name A→Z</option>
-                            <option value="name-desc">Name Z→A</option>
-                        </select>
-                    </div>
-                    <div class="col-4 col-md-auto">
-                        <button type="button" class="btn btn-outline-primary w-100" :class="{ checked: vaccinatedOnly }"
-                            @click="vaccinatedOnly = !vaccinatedOnly">
-                            Vaccinated Only
-                        </button>
-                    </div>
+                <!-- LINE 2: Left-aligned controls -->
+                <div class="controls-line">
+                    <select v-model="statusFilter" class="form-select" aria-label="Filter by status">
+                        <option value="">Sort: Status</option>
+                        <option value="Available">Available</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Adopted">Adopted</option>
+                    </select>
+
+                    <select v-model="sortOption" class="form-select" aria-label="Sort cats">
+                        <option value="default">Sort: Default</option>
+                        <option value="age-asc">Age Up</option>
+                        <option value="age-desc">Age Down</option>
+                        <option value="name-asc">Name A to Z</option>
+                        <option value="name-desc">Name Z to A</option>
+                    </select>
+
+                    <button type="button" class="vaccinated-btn" :class="{ checked: vaccinatedOnly }"
+                        @click="vaccinatedOnly = !vaccinatedOnly">
+                        Vaccinated
+                    </button>
                 </div>
+
             </div>
         </div>
 
@@ -541,17 +373,17 @@ watch(currentIndex, (v) => {
                         <div><strong>Vaccinated:</strong> {{ currentCat.vaccinated ? 'Yes' : 'No' }}</div>
                     </div>
                     <div class="button-row">
-                        <button class="action-btn" @click="showDetails = !showDetails" :aria-expanded="showDetails">
+                        <button class="pawsitive-btn" @click="showDetails = !showDetails" :aria-expanded="showDetails">
                             {{ showDetails ? 'Hide Details' : 'Show Details' }}
                         </button>
 
-                        <button class="action-btn" @click="openScheduleVisit"
+                        <button class="pawsitive-btn" @click="openScheduleVisit"
                             :disabled="currentCat.status !== 'Available'">
                             Schedule Visit
                         </button>
-                        <button class="action-btn" @click="openContactCenter">Contact
+                        <button class="pawsitive-btn" @click="openContactCenter">Contact
                             Center</button>
-                        <button class="action-btn" @click="shareProfile">Share</button>
+                        <button class="pawsitive-btn" @click="shareProfile">Share</button>
                     </div>
                     <div class="notes-row">
                         <div class="rating" aria-hidden="true">
@@ -609,7 +441,7 @@ watch(currentIndex, (v) => {
                 <p>Phone: +65 6123 4567</p>
                 <p>Email: adopt@catshelter.sg</p>
 
-                <button class="main-btn outline" @click="openContactUs">Contact Us</button>
+                <button class="pawsitive-btn-outline" @click="openContactUs">Contact Us</button>
             </div>
         </div>
     </div>
@@ -620,8 +452,8 @@ watch(currentIndex, (v) => {
                 Are you ready to adopt {{ currentCat.name }}?
             </div>
             <div class="form-row center-buttons">
-                <button type="button" class="main-btn" @click="handleIndicateInterest">Indicate Interest</button>
-                <button type="button" class="main-btn outline" @click="openAskQuestion">Ask a Question</button>
+                <button type="button" class="pawsitive-btn" @click="handleIndicateInterest">Indicate Interest</button>
+                <button type="button" class="pawsitive-btn-outline" @click="openAskQuestion">Ask a Question</button>
             </div>
         </div>
     </div>
@@ -735,8 +567,8 @@ watch(currentIndex, (v) => {
             </div>
 
             <div class="form-row center-buttons">
-                <button type="submit" class="main-btn">Submit</button>
-                <button type="button" class="main-btn outline"
+                <button type="submit" class="pawsitive-btn">Submit</button>
+                <button type="button" class="pawsitive-btn-outline"
                     @click="showApplicationForm = false; scrolledPast = false;">
                     Cancel
                 </button>
@@ -770,12 +602,13 @@ watch(currentIndex, (v) => {
 .full-width-row {
     width: 100%;
     max-width: 990px;
+    padding: 20px;
     margin-left: auto;
     margin-right: auto;
 }
 
 .controls-row {
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 16px;
     width: 100%;
@@ -783,6 +616,14 @@ watch(currentIndex, (v) => {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 26px;
+    
+}
+
+@media (max-width: 768px) {
+  .controls-row {
+    padding: 0 16px;         
+    box-sizing: border-box;
+  }
 }
 
 /* Vaccinated only as button */
@@ -860,8 +701,7 @@ watch(currentIndex, (v) => {
 
     .profile-card-container,
     .profile-card-wide,
-    .profile-card-subrow,
-    .full-width-row {
+    .profile-card-subrow {
         max-width: 99vw;
     }
 
@@ -898,6 +738,9 @@ watch(currentIndex, (v) => {
 }
 
 .adoption-header {
+    color: #806e83;
+    font-weight: bold;
+    font-size: 2rem;
     margin-top: 32px;
     margin-bottom: 26px;
     text-align: center;
@@ -907,19 +750,6 @@ watch(currentIndex, (v) => {
 .adoption-form {
     max-width: 700px;
     margin: 22px auto 24px auto;
-}
-
-/* --- Controls --- */
-
-.search-input {
-    flex: 1;
-    padding: 14px 18px;
-    margin: 10px;
-    border-radius: 14px;
-    border: 1px solid #efeff2;
-    background: #fff;
-    font-size: 1.08rem;
-    box-shadow: 0 2px 20px rgba(230, 197, 218, 0.08);
 }
 
 /* --- Timeline --- */
@@ -1140,10 +970,19 @@ watch(currentIndex, (v) => {
 }
 
 .action-btn:disabled,
-.main-btn:disabled {
-    background: #f8f6fc;
-    color: #bcbcc8;
+.main-btn:disabled,
+.pawsitive-btn:disabled {
+    background: #f8f6fc !important;
+    color: #bcbcc8 !important;
     cursor: not-allowed;
+}
+
+.pawsitive-btn,
+.pawsitive-btn-outline {
+    width: auto !important;
+    min-width: 130px;
+    max-width: 200px;
+    padding: 0 20px !important;
 }
 
 /* Main action btn (primary) */
@@ -1685,5 +1524,63 @@ watch(currentIndex, (v) => {
     font-weight: 700;
     cursor: pointer;
     font-size: 1.08rem;
+}
+
+/* LINE 1: Search bar */
+.search-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 18px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px solid #efeff2;
+  background: #fff;
+  font-size: 1.08rem;
+  box-shadow: 0 2px 20px rgba(230, 197, 218, 0.08);
+}
+
+
+.controls-line {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start !important;  
+  flex-wrap: wrap;
+  width: 100%;                            
+  margin-left: 0 !important;              
+}
+/* All controls: same height, no full width */
+.form-select,
+.vaccinated-btn {
+  height: 48px !important;
+  width: auto !important;
+  min-width: 140px;
+}
+
+/* Vaccinated button – matches form-select size & style */
+.vaccinated-btn {
+  height: 48px !important;
+  min-width: 140px;
+  padding: 0 16px;
+  border-radius: 5px;
+  border: 1.5px solid #806e83;
+  background: #fcfcfc;
+  color: #806e83;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* CHECKED STATE: GREEN THEME */
+.vaccinated-btn.checked {
+  background: #d4edda !important;   /* Light green bg */
+  color: #155724 !important;        /* Dark green text */
+  border-color: #28a745 !important; /* Green border */
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 </style>
