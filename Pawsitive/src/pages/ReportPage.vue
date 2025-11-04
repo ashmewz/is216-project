@@ -474,10 +474,11 @@ onMounted(() => {
 
 
 <template>
-  <Navbar>
-    <template v-slot:navbar-title>Report</template>
-  </Navbar>
-  <h2 class="report-header">Report a Cat</h2>
+  <main class="pawsitive-background">
+    <Navbar>
+      <template v-slot:navbar-title>Report</template>
+    </Navbar>
+    <h2 class="report-header">Report a Cat</h2>
 
   <form class="report-form" @submit.prevent="submitReport">
 
@@ -485,7 +486,7 @@ onMounted(() => {
     <!-- Image Upload -->
     <div class="mb-3">
       <label class="form-label">Upload Image</label>
-      <input type="file" class="form-control" ref="fileInput" @change="handleFileUpload" accept="image/*" />
+      <input type="file" class="pawsitive-input" ref="fileInput" @change="handleFileUpload" accept="image/*" />
 
 
       <!-- Preview Section -->
@@ -511,7 +512,7 @@ onMounted(() => {
     <!-- Location (auto-detect) -->
     <div class="mb-3 position-relative">
       <label class="form-label">Location</label>
-      <input type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.location }" v-model="report.location"
+      <input type="text" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.location }" v-model="report.location"
         placeholder="Enter location..."
         @focus="showSuggestions = locationSuggestions.value && locationSuggestions.value.length > 0" />
       <div v-if="fieldErrors.location" class="invalid-feedback d-block">
@@ -533,7 +534,7 @@ onMounted(() => {
     <!-- Status Dropdown -->
     <div class="mb-3">
       <label class="form-label">Status</label>
-      <select v-model="report.status" class="form-select" :class="{ 'is-invalid': fieldErrors.status }">
+      <select v-model="report.status" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.status }">
         <option value="" disabled>Select status</option>
         <option value="Lost">Lost</option>
         <option value="Injured">Injured</option>
@@ -547,7 +548,7 @@ onMounted(() => {
     <!-- Cat Breed -->
     <div class="mb-3">
       <label class="form-label">Cat Breed</label>
-      <input type="text" class="form-control" :class="{ 'is-invalid': fieldErrors.name }" v-model="report.species"
+      <input type="text" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.name }" v-model="report.species"
         placeholder="Enter cat breed" />
       <div v-if="fieldErrors.location" class="invalid-feedback d-block">
         {{ fieldErrors.name }}
@@ -557,21 +558,21 @@ onMounted(() => {
     <!-- Cat Name -->
     <div class="mb-3">
       <label class="form-label">Cat Name (optional)</label>
-      <input type="text" class="form-control" v-model="report.name"
+      <input type="text" class="pawsitive-input" v-model="report.name"
         placeholder="Enter cat name (if known)" />
     </div>
 
     <!-- Estimated Age -->
     <div class="form-group">
       <label class="form-label">Estimated Age</label>
-      <input type="number" class="form-control input-field" v-model="report.estimatedAge"
+      <input type="number" class="pawsitive-input" v-model="report.estimatedAge"
         placeholder="e.g. 2 (years) leave empty if unknown" min="0" />
     </div>
 
     <!-- Gender -->
     <div class="form-group">
       <label class="form-label">Gender</label>
-      <select class="form-select input-field" v-model="report.gender">
+      <select class="pawsitive-input" v-model="report.gender">
         <option value="" disabled>Select gender</option>
         <option value="Male">Male</option>
         <option value="Female">Female</option>
@@ -582,7 +583,7 @@ onMounted(() => {
     <!-- Neutered -->
     <div class="form-group">
       <label class="form-label">Neutered</label>
-      <select class="form-select input-field" v-model="report.neutered">
+      <select class="pawsitive-input" v-model="report.neutered">
         <option value="" disabled>Select status</option>
         <option value="Yes">Yes</option>
         <option value="No">No</option>
@@ -596,7 +597,7 @@ onMounted(() => {
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
       <label class="form-label">Condition of the cat (optional)</label>
-      <select v-model="report.condition" class="form-select"
+      <select v-model="report.condition" class="pawsitive-input"
         :class="{ 'placeholder-selected': report.condition === '' }">
         <option value="">Select condition (if any)</option>
         <option value="Bleeding">Bleeding</option>
@@ -629,14 +630,14 @@ onMounted(() => {
     <!-- Description -->
     <div class="mb-3">
       <label class="form-label">Description</label>
-      <textarea class="form-control" :class="{ 'is-invalid': fieldErrors.description }" rows="3"
+      <textarea class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.description }" rows="3"
         v-model="report.description" placeholder="Describe the cat's condition..."></textarea>
       <div v-if="fieldErrors.location" class="invalid-feedback d-block">
         {{ fieldErrors.description }}
       </div>
     </div>
 
-    <button class="btn btn-dark w-100" type="submit">Submit Report</button>
+    <button class="pawsitive-btn w-100" type="submit">Submit Report</button>
   </form>
   <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
 
@@ -686,33 +687,57 @@ onMounted(() => {
   </div>
 
   <BottomFooter />
+  </main>
 </template>
 
 <style>
-/* ---- Background ---- */
-body {
-  background-color: var(--pink);
+/* ==============================
+   Form Input Styling
+   ============================== */
+.pawsitive-input {
+  border: 2px solid #e0d4e0;
+  border-radius: 25px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  width: 100%;
+  background-color: #fff;
+  color: #333;
+  transition: all 0.3s ease;
 }
 
-/* Make form have side spacing on mobile */
-/* ---- Container Layout ---- */
+.pawsitive-input:focus {
+  border-color: #806e83;
+  box-shadow: 0 0 0 0.2rem rgba(128, 110, 131, 0.15);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.pawsitive-input::placeholder {
+  color: #999;
+}
+
+.pawsitive-input[type="file"] {
+  padding: 0.5rem;
+}
+
+textarea.pawsitive-input {
+  resize: vertical;
+  border-radius: 15px;
+}
+
+/* ==============================
+   Container Layout
+   ============================== */
 .main-container {
   display: flex;
   justify-content: center;
   transition: all 0.3s ease;
   padding: 1rem;
-  background-color: var(--pink);
 }
 
-.main-content {
-  transition: margin-right 0.3s ease;
-  margin-right: 0;
-  max-width: 500px;
-  width: 100%;
-  padding-top: 30px;
-}
-
-/* ---- Sidebar ---- */
+/* ==============================
+   Sidebar
+   ============================== */
 .sidebar {
   width: 300px;
   position: fixed;
@@ -732,10 +757,6 @@ body {
 
 .sidebar-open .sidebar {
   transform: translateX(0);
-}
-
-.sidebar-open .main-content {
-  margin-right: 300px;
 }
 
 .sidebar-toggle {
@@ -769,17 +790,13 @@ body {
     transform: translateX(0);
   }
 
-  .sidebar-open .main-content {
-    margin-right: 0;
-  }
-
   .sidebar-open-btn {
     right: 0;
   }
 }
 
 /* ==============================
-   Report Form Styles - Forum Design
+   Report Form
    ============================== */
 .report-form {
   max-width: 500px;
@@ -789,44 +806,6 @@ body {
   background-color: #fff;
   border-radius: 20px;
   box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
-}
-
-.placeholder-selected {
-  color: #6c757d;
-}
-
-.report-form input[type="text"],
-.report-form input[type="number"],
-.report-form input[type="file"],
-.report-form textarea,
-.report-form select {
-  padding: 0.75rem 1rem;
-  border-radius: 25px;
-  border: 2px solid #e0d4e0;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
-  width: 100%;
-  background-color: #fff;
-}
-
-.report-form input[type="text"]:focus,
-.report-form input[type="number"]:focus,
-.report-form textarea:focus,
-.report-form select:focus {
-  border-color: #806e83;
-  box-shadow: 0 0 0 0.2rem rgba(128, 110, 131, 0.15);
-  transform: translateY(-1px);
-  outline: none;
-}
-
-.report-form input[type="file"] {
-  border-radius: 10px;
-  padding: 0.5rem;
-}
-
-.report-form textarea {
-  border-radius: 15px;
-  resize: vertical;
 }
 
 .report-header {
@@ -843,27 +822,8 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.report-form button[type="submit"] {
-  background: #806e83;
-  border: 2px solid #806e83;
-  border-radius: 25px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  color: white;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.report-form button[type="submit"]:hover {
-  background: #6d5c70;
-  border-color: #6d5c70;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+.placeholder-selected {
+  color: #6c757d;
 }
 
 /* ==============================
@@ -972,7 +932,9 @@ body {
   margin-top: 0.25rem;
 }
 
-/* Leaflet attribution style override fix */
+/* ==============================
+   Map Styling
+   ============================== */
 #map .leaflet-control-attribution.leaflet-control {
   display: inline-flex !important;
   align-items: center !important;
