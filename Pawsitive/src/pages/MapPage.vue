@@ -303,10 +303,10 @@ onMounted(async () => {
     transform: translate(-50%);
     width: 80%;
     z-index: 10000;
-    background: rgba(255, 255, 255, 0.9);
+    background: #f8e1e1;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    padding: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    padding: 0.75rem;
     margin: 0rem 1.6rem;
 }
 
