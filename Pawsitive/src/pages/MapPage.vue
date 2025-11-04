@@ -116,7 +116,7 @@ function updateMapDiv(catMapData) {
         <img src="${data.img}" alt="${data.name}" class="popup-img" />
       </div>
       <div class="popup-info flex-grow-1">
-        <h6 class="popup-title fw-bold mb-1 text-primary">${data.name}</h6>
+        <h6 class="popup-title fw-bold mb-1">${data.name}</h6>
         <div class="popup-meta small">
           <span><strong>Species:</strong> ${data.species}</span><br>
           <span><strong>Gender:</strong> ${data.gender}</span><br>
@@ -247,12 +247,12 @@ onMounted(async () => {
             <template #navbar-title>Map</template>
         </Navbar>
 
-        <div class="content">
+        <div class="content pawsitive-background">
             <div class="map-page-container">
                 <div class="search-overlay input-group">
                     <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..."
                         @keyup.enter="performSearch" />
-                    <button class="btn btn-primary" @click="performSearch">Search</button>
+                    <button class="btn btn-primary pawsitive-color" @click="performSearch">Search</button>
                 </div>
 
                 <div id="mapdiv" class="map-container"></div>
@@ -303,10 +303,10 @@ onMounted(async () => {
     transform: translate(-50%);
     width: 80%;
     z-index: 10000;
-    background: rgba(255, 255, 255, 0.9);
+    background: #f8e1e1;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    padding: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    padding: 0.75rem;
     margin: 0rem 1.6rem;
 }
 
@@ -329,7 +329,7 @@ onMounted(async () => {
 }
 
 :deep(.popup-card) {
-  background: #fff;
+  background-color: #f8e1e1;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #eee;
@@ -364,27 +364,36 @@ onMounted(async () => {
 
 :deep(.popup-title) {
   font-size: 0.95rem;
-  color: #0d6efd;
+  color: #806e83;
 }
 
 :deep(.popup-desc) {
   font-size: 0.8rem;
-  color: #6c757d;
+  color: #806e83 !important;
 }
 
 :deep(.popup-meta) {
   line-height: 1.1;
   font-size: 0.75rem;
-  color: #333;
+  color: #806e83;
 }
 
 :deep(.popup-link) {
   font-size: 0.75rem;
-  color: #0d6efd;
   text-decoration: none;
+
+  color: white !important;
+
+  border: 2px solid #806e83;
+  border-radius: 25px;
+  background: #806e83 !important;
+  margin: 0px;
+  padding: 0px 8px;
 }
 
 :deep(.popup-link:hover) {
-  text-decoration: underline;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
 }
 </style>
