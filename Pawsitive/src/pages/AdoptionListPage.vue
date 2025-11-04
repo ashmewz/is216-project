@@ -477,7 +477,7 @@ watch(currentIndex, (v) => {
                     <div class="col-4 col-md-auto">
                         <button type="button" class="btn btn-outline-primary w-100" :class="{ checked: vaccinatedOnly }"
                             @click="vaccinatedOnly = !vaccinatedOnly">
-                            Vaccinated Only
+                            Vaccinated
                         </button>
                     </div>
                 </div>
