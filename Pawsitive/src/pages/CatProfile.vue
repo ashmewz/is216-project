@@ -407,8 +407,7 @@ onMounted(() => {
 
 @media (max-width: 768px) {
     .carousel-main {
-        height: 300px;
-        /* slightly smaller on mobile */
+        height: 100vw;
     }
 
     .details th {
