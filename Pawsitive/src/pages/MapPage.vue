@@ -392,6 +392,8 @@ onMounted(async () => {
 }
 
 :deep(.popup-link:hover) {
-  text-decoration: underline;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
 }
 </style>

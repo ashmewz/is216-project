@@ -1,7 +1,7 @@
 <template>
-    <div class="page-wrapper">
+    <div class="page-wrapper pawsitive-background">
         <Navbar></Navbar>
-        <div class="cat-profile container p-4" v-if="loaded">
+        <div class="cat-profile container p-4 pawsitive-background" v-if="loaded">
             <div class="header">
                 <h1 class="title">{{ cat.name || 'Unnamed Cat' }}</h1>
                 <!-- Removed for now -->
@@ -22,8 +22,10 @@
                                 <img :src="currentImage" :alt="cat.name" v-if="currentImage" />
                                 <div class="no-image" v-else>No image</div>
 
-                                <button class="ctrl prev" @click="prevImage" aria-label="Previous image">‹</button>
-                                <button class="ctrl next" @click="nextImage" aria-label="Next image">›</button>
+                                <button class="ctrl prev" @click="prevImage" aria-label="Previous image"><span
+                                        id="left-arrow">‹</span></button>
+                                <button class="ctrl next" @click="nextImage" aria-label="Next image"><span
+                                        id="right-arrow">›</span></button>
                             </div>
 
                             <div class="thumbs" v-if="images.length > 0">
@@ -71,9 +73,9 @@
                                     <th>Last seen</th>
                                     <td v-if="cat.last_location">
                                         {{ latLngDisplay(cat.last_location) }}
-                                        <div class="small muted">
+                                        <div class="pawsitive-btn open-map-btn">
                                             <a :href="mapsLink(cat.last_location)" target="_blank"
-                                                rel="noreferrer">(Open in onemap)</a>
+                                                rel="noreferrer">Open in OneMap</a>
                                         </div>
                                     </td>
                                     <td v-else>—</td>
@@ -94,11 +96,11 @@
 
         </div>
 
-        <div v-else class="loading container p-4">
+        <div v-else class="loading container p-4 pawsitive-background">
             <!-- TODO: Loading spinner? -->
             Loading...
         </div>
-        <BottomFooter></BottomFooter>
+        <BottomFooter style="background-color: white;"></BottomFooter>
     </div>
 </template>
 
@@ -272,7 +274,7 @@ onMounted(() => {
     height: 400px;
     overflow: hidden;
     border-radius: 16px;
-    background: #000;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -281,9 +283,22 @@ onMounted(() => {
 .carousel-main img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     background-color: #fff;
     border-radius: 16px;
+}
+
+#left-arrow,
+#right-arrow {
+    padding-bottom: 0.175em;
+}
+
+#left-arrow {
+    padding-right: 0.1em;
+}
+
+#right-arrow {
+    padding-left: 0.1em;
 }
 
 .carousel .ctrl {
@@ -294,9 +309,9 @@ onMounted(() => {
     color: white;
     border: none;
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
     z-index: 5;
@@ -362,27 +377,28 @@ onMounted(() => {
     color: #222;
 }
 
-.small {
-    font-size: 12px;
-}
-
-.muted {
-    color: #777;
-}
-
 .actions {
     margin-top: 16px;
     display: flex;
     gap: 8px;
 }
 
-.btn {
-    background: #2563eb;
+.open-map-btn {
+    background: #6d5c70;
     color: #fff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
+    padding: 2px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    display: inline-flex;
+    height: unset;
+    width: unset;
+}
+.open-map-btn > a {
+    padding: 0px;
+    margin: 0px;
+}
+.open-map-btn > a:hover {
+    text-decoration: none;
 }
 
 .layout {
