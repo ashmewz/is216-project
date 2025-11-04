@@ -51,6 +51,7 @@ const allPredictedCats = ref([]); // 🆕 store predicted cats globally
 
 const locationSuggestions = ref([]);
 const showSuggestions = ref(false);
+const justSelectedSuggestion = ref(false);
 
 let map = null;
 let userMarker = null;
@@ -139,6 +140,12 @@ async function updateLocation() {
 
 // -------------------- Location Suggestions --------------------
 watch(() => report.location, async (newVal) => {
+  // Skip fetching suggestions if we just selected one
+  if (justSelectedSuggestion.value) {
+    justSelectedSuggestion.value = false;
+    return;
+  }
+  
   if (!newVal || newVal.length < 2) {
     locationSuggestions.value = [];
     showSuggestions.value = false;
@@ -168,6 +175,7 @@ watch(() => report.location, async (newVal) => {
 });
 
 function selectLocationSuggestion(suggestion) {
+  justSelectedSuggestion.value = true;
   report.location = suggestion.label;
   report.coords = suggestion.coords;
   showSuggestions.value = false;
@@ -551,7 +559,8 @@ onMounted(async () => {
       <label class="form-label">Location</label>
       <input type="text" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.location }" v-model="report.location"
         placeholder="Enter location..."
-        @focus="showSuggestions = locationSuggestions.value && locationSuggestions.value.length > 0" />
+        @focus="showSuggestions = locationSuggestions.length > 0"
+        @blur="setTimeout(() => showSuggestions = false, 200)" />
       <div v-if="fieldErrors.location" class="invalid-feedback d-block">
         {{ fieldErrors.location }}
       </div>
@@ -560,7 +569,8 @@ onMounted(async () => {
       <ul v-if="showSuggestions" class="list-group position-absolute w-100"
         style="z-index: 1000; max-height: 200px; overflow-y: auto;">
         <li v-for="(suggestion, index) in locationSuggestions" :key="index"
-          class="list-group-item list-group-item-action" @click="selectLocationSuggestion(suggestion)"
+          class="list-group-item list-group-item-action" 
+          @mousedown.prevent="selectLocationSuggestion(suggestion)"
           style="cursor: pointer;">
           {{ suggestion.label }}
         </li>
