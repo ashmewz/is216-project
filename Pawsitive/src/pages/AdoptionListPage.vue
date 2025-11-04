@@ -541,17 +541,17 @@ watch(currentIndex, (v) => {
                         <div><strong>Vaccinated:</strong> {{ currentCat.vaccinated ? 'Yes' : 'No' }}</div>
                     </div>
                     <div class="button-row">
-                        <button class="action-btn" @click="showDetails = !showDetails" :aria-expanded="showDetails">
+                        <button class="pawsitive-btn" @click="showDetails = !showDetails" :aria-expanded="showDetails">
                             {{ showDetails ? 'Hide Details' : 'Show Details' }}
                         </button>
 
-                        <button class="action-btn" @click="openScheduleVisit"
+                        <button class="pawsitive-btn" @click="openScheduleVisit"
                             :disabled="currentCat.status !== 'Available'">
                             Schedule Visit
                         </button>
-                        <button class="action-btn" @click="openContactCenter">Contact
+                        <button class="pawsitive-btn" @click="openContactCenter">Contact
                             Center</button>
-                        <button class="action-btn" @click="shareProfile">Share</button>
+                        <button class="pawsitive-btn" @click="shareProfile">Share</button>
                     </div>
                     <div class="notes-row">
                         <div class="rating" aria-hidden="true">
@@ -597,7 +597,7 @@ watch(currentIndex, (v) => {
                             <div class="list-right">
                                 <div class="list-status">{{ cat.status }}</div>
                                 <button class="mini-fav" @click.stop="toggleFavorite(cat)">{{ cat.favorite ? '♥' : '♡'
-                                }}</button>
+                                    }}</button>
                             </div>
                         </li>
                         <li v-if="filteredAndSorted.length === 0" class="no-results">No cats match your filters.</li>
@@ -609,7 +609,7 @@ watch(currentIndex, (v) => {
                 <p>Phone: +65 6123 4567</p>
                 <p>Email: adopt@catshelter.sg</p>
 
-                <button class="main-btn outline" @click="openContactUs">Contact Us</button>
+                <button class="pawsitive-btn-outline" @click="openContactUs">Contact Us</button>
             </div>
         </div>
     </div>
@@ -620,8 +620,8 @@ watch(currentIndex, (v) => {
                 Are you ready to adopt {{ currentCat.name }}?
             </div>
             <div class="form-row center-buttons">
-                <button type="button" class="main-btn" @click="handleIndicateInterest">Indicate Interest</button>
-                <button type="button" class="main-btn outline" @click="openAskQuestion">Ask a Question</button>
+                <button type="button" class="pawsitive-btn" @click="handleIndicateInterest">Indicate Interest</button>
+                <button type="button" class="pawsitive-btn-outline" @click="openAskQuestion">Ask a Question</button>
             </div>
         </div>
     </div>
@@ -735,8 +735,8 @@ watch(currentIndex, (v) => {
             </div>
 
             <div class="form-row center-buttons">
-                <button type="submit" class="main-btn">Submit</button>
-                <button type="button" class="main-btn outline"
+                <button type="submit" class="pawsitive-btn">Submit</button>
+                <button type="button" class="pawsitive-btn-outline"
                     @click="showApplicationForm = false; scrolledPast = false;">
                     Cancel
                 </button>
@@ -1140,10 +1140,18 @@ watch(currentIndex, (v) => {
 }
 
 .action-btn:disabled,
-.main-btn:disabled {
-    background: #f8f6fc;
-    color: #bcbcc8;
+.main-btn:disabled,
+.pawsitive-btn:disabled {
+    background: #f8f6fc !important;
+    color: #bcbcc8 !important;
     cursor: not-allowed;
+}
+
+.pawsitive-btn, .pawsitive-btn-outline {
+    width: auto !important;
+    min-width: 130px;
+    max-width: 200px;
+    padding: 0 20px !important;
 }
 
 /* Main action btn (primary) */
