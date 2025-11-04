@@ -10,7 +10,7 @@
       />
     </div>
 
-    <button @click="$emit('create-post')" class="create-btn text-nowrap w-100 mb-3">
+    <button @click="$emit('create-post')" class="pawsitive-btn text-nowrap w-100 mb-3">
       <i class="bi bi-plus-circle"></i>
       <span class="ms-2">Create Post</span>
     </button>
@@ -67,7 +67,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   padding: 1rem;
   background: #f8e1e1;
   border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
+  box-shadow: 0 0 10px rgba(128, 110, 131, 0.5) !important;
 }
 
 .search-wrapper {
@@ -99,7 +99,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   z-index: 10;
 }
 
-.create-btn,
+
 .sort-btn {
   border-radius: 25px;
   padding: 0.5rem 1.25rem;
@@ -113,19 +113,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   cursor: pointer;
 }
 
-.create-btn {
-  background: #806e83;
-  border: 2px solid #806e83;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.create-btn:hover {
-  background: #6d5c70;
-  border-color: #6d5c70;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
-}
 
 .sort-btn {
   border: 2px solid #806e83;
