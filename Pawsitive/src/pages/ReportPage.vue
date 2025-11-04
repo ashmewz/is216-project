@@ -474,10 +474,11 @@ onMounted(() => {
 
 
 <template>
+  <Navbar>
+    <template v-slot:navbar-title>Report</template>
+  </Navbar>
+  
   <main class="pawsitive-background">
-    <Navbar>
-      <template v-slot:navbar-title>Report</template>
-    </Navbar>
     <h2 class="report-header">Report a Cat</h2>
 
   <form class="report-form" @submit.prevent="submitReport">
@@ -686,8 +687,9 @@ onMounted(() => {
 
   </div>
 
-  <BottomFooter />
   </main>
+  
+  <BottomFooter />
 </template>
 
 <style>
