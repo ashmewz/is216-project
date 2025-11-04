@@ -437,5 +437,7 @@ const handleRegister = async () => {
     border-radius: 12px;
     max-width: 500px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 </style>
