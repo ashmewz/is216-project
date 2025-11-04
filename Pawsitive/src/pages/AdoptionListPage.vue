@@ -452,29 +452,34 @@ watch(currentIndex, (v) => {
 
         <!-- 2 & 3. Swapped & buttonified "Vaccinated Only", Sort moved right -->
         <div class="section-center">
-            <div class="controls-row full-width-row">
-                <input v-model="searchQuery" class="search-input" placeholder="Search by name or breed..."
+            <div class="col-12 col-md-8 mx-auto controls-row full-width-row">
+                <input v-model="searchQuery" class="search-input col-sm-12" placeholder="Search by name or breed..."
                     aria-label="Search cats" />
-                <div class="select-group">
-                    <select v-model="statusFilter" aria-label="Filter by status">
-                        <option value="">Sort: Status</option>
-                        <option value="Available">Available</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Adopted">Adopted</option>
-                    </select>
-                    <!-- Sort -->
-                    <select v-model="sortOption" aria-label="Sort cats">
-                        <option value="default">Sort: Default</option>
-                        <option value="age-asc">Age ↑</option>
-                        <option value="age-desc">Age ↓</option>
-                        <option value="name-asc">Name A→Z</option>
-                        <option value="name-desc">Name Z→A</option>
-                    </select>
-                    <!-- Vaccinated Only UI as toggle button -->
-                    <button type="button" class="filter-btn" :class="{ checked: vaccinatedOnly }"
-                        @click="vaccinatedOnly = !vaccinatedOnly">
-                        Vaccinated Only
-                    </button>
+
+                <div class="row g-2 justify-content-center">
+                    <div class="col-4 col-md-auto">
+                        <select v-model="statusFilter" class="form-select w-100" aria-label="Filter by status">
+                            <option value="">Sort: Status</option>
+                            <option value="Available">Available</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Adopted">Adopted</option>
+                        </select>
+                    </div>
+                    <div class="col-4 col-md-auto">
+                        <select v-model="sortOption" class="form-select w-100" aria-label="Sort cats">
+                            <option value="default">Sort: Default</option>
+                            <option value="age-asc">Age ↑</option>
+                            <option value="age-desc">Age ↓</option>
+                            <option value="name-asc">Name A→Z</option>
+                            <option value="name-desc">Name Z→A</option>
+                        </select>
+                    </div>
+                    <div class="col-4 col-md-auto">
+                        <button type="button" class="btn btn-outline-primary w-100" :class="{ checked: vaccinatedOnly }"
+                            @click="vaccinatedOnly = !vaccinatedOnly">
+                            Vaccinated Only
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -484,13 +489,10 @@ watch(currentIndex, (v) => {
             <div class="timeline-bg">
                 <div class="timeline-container full-width-row">
                     <ul class="timeline">
-                        <li v-for="(step, index) in adoptionTimeline"
-                            :key="index"
-                            class="timeline-step col-12"
-                            :class="{
-                                'col-sm-3': index < 4,
-                                'col-sm-6': index >= 4
-                            }">
+                        <li v-for="(step, index) in adoptionTimeline" :key="index" class="timeline-step col-12" :class="{
+                            'col-sm-3': index < 4,
+                            'col-sm-6': index >= 4
+                        }">
                             <div class="timeline-dot" :class="{ active: index === timelineProgress }"></div>
                             <strong>{{ step.label }}</strong>
                             <div>{{ step.date }}</div>
@@ -595,7 +597,7 @@ watch(currentIndex, (v) => {
                             <div class="list-right">
                                 <div class="list-status">{{ cat.status }}</div>
                                 <button class="mini-fav" @click.stop="toggleFavorite(cat)">{{ cat.favorite ? '♥' : '♡'
-                                    }}</button>
+                                }}</button>
                             </div>
                         </li>
                         <li v-if="filteredAndSorted.length === 0" class="no-results">No cats match your filters.</li>
@@ -619,7 +621,7 @@ watch(currentIndex, (v) => {
             </div>
             <div class="form-row center-buttons">
                 <button type="button" class="main-btn" @click="handleIndicateInterest">Indicate Interest</button>
-                <button type="button" class="main-btn outline" @click="openContactModal">Ask a Question</button>
+                <button type="button" class="main-btn outline" @click="openAskQuestion">Ask a Question</button>
             </div>
         </div>
     </div>
@@ -733,7 +735,7 @@ watch(currentIndex, (v) => {
             </div>
 
             <div class="form-row center-buttons">
-                <button type="submit" class="main-btn">Submit Application</button>
+                <button type="submit" class="main-btn">Submit</button>
                 <button type="button" class="main-btn outline"
                     @click="showApplicationForm = false; scrolledPast = false;">
                     Cancel
@@ -787,6 +789,7 @@ watch(currentIndex, (v) => {
 .filter-btn {
     padding: 11px 22px;
     margin-left: 7px;
+    margin-top: 7px;
     border-radius: 11px;
     background: #fcfcfc;
     border: 1.5px solid #7582cf;
@@ -811,6 +814,7 @@ watch(currentIndex, (v) => {
 .select-group select {
     padding: 11px;
     margin-left: 7px;
+    margin-top: 7px;
     border-radius: 11px;
     border: 1px solid #efeff2;
     background: #fcfcfc;
@@ -910,7 +914,7 @@ watch(currentIndex, (v) => {
 .search-input {
     flex: 1;
     padding: 14px 18px;
-    margin-right: -10px;
+    margin: 10px;
     border-radius: 14px;
     border: 1px solid #efeff2;
     background: #fff;
@@ -1207,6 +1211,7 @@ watch(currentIndex, (v) => {
 .form-row.center-buttons {
     display: flex;
     justify-content: center;
+    padding: 5px;
     gap: 14px;
     width: 100%;
     margin-top: 12px;
@@ -1463,6 +1468,7 @@ watch(currentIndex, (v) => {
     padding: 20px;
     margin-bottom: 36px;
 }
+
 .timeline {
     width: 100%;
 }
@@ -1482,6 +1488,7 @@ watch(currentIndex, (v) => {
 
 /* Responsive support */
 @media (max-width:1020px) {
+
     .adoption-form.profile-card-wide,
     .app-form.profile-card-wide {
         max-width: 95vw;
