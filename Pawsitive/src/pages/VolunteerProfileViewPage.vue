@@ -36,7 +36,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100 background-colour">
+    <div class="d-flex flex-column min-vh-100 pawsitive-background">
         <!-- Navbar -->
         <Navbar>
             <template #navbar-title>Volunteer Profile</template>
@@ -58,7 +58,4 @@ main {
     min-height: calc(100vh - 120px);
 }
 
-.background-colour{
-     background-color: #f8e1e1;
-}
 </style>

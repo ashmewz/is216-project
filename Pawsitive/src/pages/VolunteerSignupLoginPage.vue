@@ -51,7 +51,7 @@
                                         </div>
 
                                         <button type="submit"
-                                            class="btn btn-volunteer w-100 rounded-pill py-2 fw-medium mt-2">
+                                            class="pawsitive-btn">
                                             Login
                                         </button>
 
@@ -149,7 +149,7 @@
                                         </div>
 
                                         <button type="submit"
-                                            class="btn btn-volunteer w-100 rounded-pill py-2 fw-medium mt-2">
+                                            class="pawsitive-btn">
                                             Register
                                         </button>
 
@@ -198,7 +198,7 @@
             </div>
 
             <button type="submit" @click="showTnC = false"
-                class="btn btn-volunteer w-100 rounded-pill py-2 fw-medium mt-2">
+                class="pawsitive-btn mt-2">
                 Close
             </button>
 
@@ -400,23 +400,7 @@ const handleRegister = async () => {
     }
 }
 
-.btn-volunteer {
-    background-color: #806e83;  /* profile page accent color */
-    color: white;               /* text color */
-    border: none;
-    border-radius: 50px;        /* rounded-pill */
-    font-weight: 500;
-    padding: 0.5rem 1.5rem;
-    transition: all 0.3s ease;
-}
 
-.btn-volunteer:hover {
-    background-color: #6b5a6d;  /* slightly darker shade for hover */
-    transform: scale(1.05);
-}
-
-
-/* Mobile Form Padding (extra breathing room) */
 .mobile-form-padding {
     padding: 0 0.5rem;
 }
@@ -427,7 +411,6 @@ const handleRegister = async () => {
     }
 }
 
-/* Optional: Hide graphic on very small phones */
 @media (max-width: 480px) {
     .order-lg-1 {
         display: none;
