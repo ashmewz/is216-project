@@ -484,7 +484,13 @@ watch(currentIndex, (v) => {
             <div class="timeline-bg">
                 <div class="timeline-container full-width-row">
                     <ul class="timeline">
-                        <li v-for="(step, index) in adoptionTimeline" :key="index" class="timeline-step">
+                        <li v-for="(step, index) in adoptionTimeline"
+                            :key="index"
+                            class="timeline-step col-12"
+                            :class="{
+                                'col-sm-3': index < 4,
+                                'col-sm-6': index >= 4
+                            }">
                             <div class="timeline-dot" :class="{ active: index === timelineProgress }"></div>
                             <strong>{{ step.label }}</strong>
                             <div>{{ step.date }}</div>
@@ -926,10 +932,6 @@ watch(currentIndex, (v) => {
 }
 
 .timeline-step {
-    flex: 1 1 200px;
-    /* flexible width at least 200px */
-    min-width: 150px;
-    /* minimum width per item */
     padding: 10px;
     box-sizing: border-box;
     border: 1px solid #ccc;
@@ -1456,7 +1458,13 @@ watch(currentIndex, (v) => {
 }
 
 .timeline-bg {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
     margin-bottom: 36px;
+}
+.timeline {
+    width: 100%;
 }
 
 /* 2. Framed photo */
@@ -1472,25 +1480,16 @@ watch(currentIndex, (v) => {
     justify-content: center;
 }
 
-
-@media (max-width: 768px) {
-    .timeline-step {
-        flex: 1 1 100%;
-        /* full width on small screens */
-        font-size: 0.9rem;
-    }
-}
-
 /* Responsive support */
 @media (max-width:1020px) {
-
     .adoption-form.profile-card-wide,
-    .app-form.profile-card-wide .timeline-bg {
+    .app-form.profile-card-wide {
         max-width: 95vw;
     }
 
-    .timeline {
-        flex-direction: column;
+    .timeline-step {
+        min-height: 135px;
+        font-size: 0.9rem;
     }
 }
 
