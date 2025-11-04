@@ -122,7 +122,7 @@ onMounted(() => {
             <span v-else>{{ getLocationDisplay(cat) }}</span>
           </p>
           <p class="mb-1">
-            <strong>Created At:</strong> 
+            <strong>Reported At:</strong> 
             {{ cat.created_at?.toDate 
               ? cat.created_at.toDate().toLocaleString([], { 
                   year: 'numeric', 

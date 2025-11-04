@@ -57,6 +57,7 @@ let map = null;
 let userMarker = null;
 let userCircle = null;
 let catMarkers = [];
+let curCatPopup = null;
 const showMap = ref(false);
 
 const otherCatsOpen = ref(false);
@@ -271,7 +272,29 @@ async function initMapWithRadius(cats = []) {
   if (userMarker) {
     userMarker.setLatLng([lat, lon]);
   } else {
-    userMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 Selected Location");
+    const youAreHerePopup = `
+      <div style="text-align: center; padding: 0.5rem; font-family: system-ui, sans-serif;">
+        <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📍</div>
+        <strong style="color: #806e83; font-size: 0.95rem;">You are here</strong>
+      </div>
+    `;
+    
+    const redIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+    
+    userMarker = L.marker([lat, lon], { icon: redIcon })
+      .addTo(map)
+      .bindPopup(youAreHerePopup, {
+        closeButton: false,
+        autoClose: false,
+        className: 'you-are-here-popup'
+      });
   }
   if (userCircle) {
     userCircle.setLatLng([lat, lon]);
@@ -283,13 +306,87 @@ async function initMapWithRadius(cats = []) {
   // Ensure map recalculates layout in case container size changed
   setTimeout(() => map.invalidateSize(), 0);
 
+  const markerIcon = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
   cats.forEach(cat => {
     const loc = cat.last_location;
     const [catLat, catLon] = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
     if (!catLat || !catLon) return;
-    const marker = L.marker([catLat, catLon])
+    
+    // Format the created_at timestamp
+    const reportedAt = cat.created_at?.toDate 
+      ? cat.created_at.toDate().toLocaleString([], { 
+          year: 'numeric', 
+          month: 'numeric', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      : cat.created_at || 'Unknown';
+    
+    // Get location display (coordinates as fallback)
+    const locationDisplay = `${catLat.toFixed(4)}, ${catLon.toFixed(4)}`;
+    
+    // Format distance
+    const distanceDisplay = cat.distanceMeters 
+      ? `${cat.distanceMeters.toFixed(2)} m` 
+      : 'Unknown';
+    
+    // Create styled popup content
+    const popupContent = `
+      <div class="cat-popup-card">
+        <div class="cat-popup-inner">
+          <div class="cat-popup-img-container">
+            <img src="${cat.photos?.[0] || 'https://cataas.com/cat'}" alt="${cat.name || 'Unnamed Cat'}" class="cat-popup-img" />
+          </div>
+          <div class="cat-popup-info">
+            <h6 class="cat-popup-title">${cat.name || 'Unnamed Cat'}</h6>
+            <div class="cat-popup-details">
+              <div class="cat-popup-detail-item">
+                <strong>Last Location:</strong><br>
+                <span class="cat-popup-detail-value">${locationDisplay}</span>
+              </div>
+              <div class="cat-popup-detail-item">
+                <strong>Reported At:</strong><br>
+                <span class="cat-popup-detail-value">${reportedAt}</span>
+              </div>
+              <div class="cat-popup-detail-item">
+                <strong>Estimated Distance:</strong><br>
+                <span class="cat-popup-detail-value">${distanceDisplay}</span>
+              </div>
+            </div>
+            <a href="/cat/${cat.id}" 
+               onclick="window.open(this.href, '_blank'); return false;" 
+               class="cat-popup-link">View Full Profile →</a>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    const marker = L.marker([catLat, catLon], { icon: markerIcon })
       .addTo(map)
-      .bindPopup(`<strong>${cat.name || "Unnamed Cat"}</strong><br>Distance: ${cat.distanceMeters?.toFixed(2)} m<br>Condition: ${cat.condition || "Unknown"}`);
+      .bindPopup(popupContent, {
+        maxWidth: 350,
+        closeButton: true,
+        autoClose: false,
+        className: 'cat-marker-popup'
+      });
+    
+    marker.on("mouseover", function () {
+      if (curCatPopup != null) {
+        curCatPopup.closePopup();
+      }
+      curCatPopup = this;
+      curCatPopup.openPopup();
+    });
+    
     catMarkers.push(marker);
   });
 }
@@ -1001,6 +1098,192 @@ textarea.pawsitive-input {
 #map {
   border-radius: 15px;
   border: 2px solid #e0d4e0;
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+  padding: 0 !important;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.leaflet-popup-content) {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 280px !important;
+}
+
+:deep(.cat-marker-popup .leaflet-popup-content) {
+  width: 340px !important;
+}
+
+:deep(.cat-popup-card) {
+  background-color: #fadadd;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #ffc0cb;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+}
+
+:deep(.cat-popup-inner) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+:deep(.cat-popup-img-container) {
+  width: 100%;
+  height: 150px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+:deep(.cat-popup-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:deep(.cat-popup-info) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:deep(.cat-popup-title) {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #806e83;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #ffc0cb;
+}
+
+:deep(.cat-popup-details) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:deep(.cat-popup-detail-item) {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+:deep(.cat-popup-detail-item strong) {
+  color: #806e83;
+  font-weight: 600;
+}
+
+:deep(.cat-popup-detail-value) {
+  color: #5a4a5e;
+  display: inline-block;
+  margin-top: 0.1rem;
+}
+
+:deep(.cat-popup-link) {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.4rem 1rem;
+  background-color: #806e83;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid #806e83;
+}
+
+:deep(.cat-popup-link:hover) {
+  background-color: #6d5c70;
+  border-color: #6d5c70;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+}
+
+/* Old popup styles - keeping for compatibility */
+:deep(.popup-card) {
+  background-color: #f8e1e1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  padding: 0.5rem;
+}
+
+:deep(.popup-inner) {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+:deep(.popup-img-container) {
+  flex-shrink: 0;
+  width: 85px;
+  height: 85px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+:deep(.popup-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:deep(.popup-info) {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.popup-title) {
+  font-size: 0.95rem;
+  color: #806e83;
+}
+
+:deep(.popup-desc) {
+  font-size: 0.8rem;
+  color: #806e83 !important;
+}
+
+:deep(.popup-meta) {
+  line-height: 1.1;
+  font-size: 0.75rem;
+  color: #806e83;
+}
+
+:deep(.popup-link) {
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: white !important;
+  border: 2px solid #806e83;
+  border-radius: 25px;
+  background: #806e83 !important;
+  margin: 0px;
+  padding: 0px 8px;
+}
+
+:deep(.popup-link:hover) {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+}
+
+:deep(.you-are-here-popup .leaflet-popup-content-wrapper) {
+  background-color: #f8e1e1;
+  border: 2px solid #806e83;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(128, 110, 131, 0.3);
+}
+
+:deep(.you-are-here-popup .leaflet-popup-tip) {
+  background-color: #f8e1e1;
+  border-left: 2px solid #806e83;
+  border-bottom: 2px solid #806e83;
 }
 </style>
 
