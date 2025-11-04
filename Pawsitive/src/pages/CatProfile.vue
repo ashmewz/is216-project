@@ -73,6 +73,7 @@
                                     <th>Last seen</th>
                                     <td v-if="cat.last_location">
                                         {{ latLngDisplay(cat.last_location) }}
+                                        <br>
                                         <div class="pawsitive-btn open-map-btn">
                                             <a :href="mapsLink(cat.last_location)" target="_blank"
                                                 rel="noreferrer">Open in OneMap</a>
