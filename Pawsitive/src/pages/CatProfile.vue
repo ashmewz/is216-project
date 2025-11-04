@@ -219,9 +219,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.page-wrapper {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+}
+
 .container {
     max-width: 980px;
     margin: 0 auto;
+}
+
+.cat-profile {
+    flex-grow: 1;
+    min-height: 100%;
 }
 
 .btn-back {
