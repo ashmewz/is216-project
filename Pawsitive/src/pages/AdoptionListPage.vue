@@ -1588,6 +1588,7 @@ watch(currentIndex, (v) => {
     max-height: 34px;
     overflow: hidden;
     text-overflow: ellipsis;
+
 }
 
 .thumb-strip-horizontal {
