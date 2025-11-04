@@ -254,7 +254,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100 page-background">
+    <div class="d-flex flex-column min-vh-100 pawsitive-background">
         <!-- Navbar -->
         <Navbar>
             <template #navbar-title>Profile</template>
@@ -410,7 +410,7 @@ onMounted(() => {
                             <div class="modal-footer border-0">
                                 <button type="button" class="btn btn-secondary btn-sm rounded-pill"
                                     @click="showModal = false">Cancel</button>
-                                <button type="submit" class="btn btn-primary btn-sm rounded-pill">Save</button>
+                                <button type="submit" class="btn btn-primary btn-sm rounded-pill pawsitive-color">Save</button>
                             </div>
                         </form>
                     </div>
@@ -425,9 +425,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page-background {
-    background-color: #f8e1e1;
-}
+
 
 /* optional: center vertically on taller screens */
 main {

@@ -195,7 +195,7 @@ onMounted(fetchPosts)
 </script>
 
 <template>
-  <div class="forum-page">
+  <div class="pawsitive-background">
     <Navbar />
     <main class="container mt-4">
 
