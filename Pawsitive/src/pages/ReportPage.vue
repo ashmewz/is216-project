@@ -508,6 +508,21 @@ function removeImage() {
   report.imageFile = null;
   report.imagePreview = null;
   if (fileInput.value) fileInput.value.value = null;
+  
+  // Reset breed identification results
+  breedResult.value = null;
+  firstBreed.value = null;
+  report.species = '';
+  
+  // Clear nearby cats and hide map
+  nearbyCats.value = [];
+  allPredictedCats.value = [];
+  showMap.value = false;
+  
+  // Clear map markers if map exists
+  if (map) {
+    clearCatMarkers();
+  }
 }
 
 // -------------------- Sidebar & Severity --------------------
@@ -644,7 +659,7 @@ onMounted(async () => {
       <!-- Preview Section -->
       <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
         <img :src="report.imagePreview" class="img-preview rounded" />
-        <button type="button" class="btn btn-sm btn-danger remove-image-btn" @click="removeImage">
+        <button type="button" class="btn btn-sm btn-danger remove-image-btn" @click="removeImage" :disabled="isLoading">
           ✕
         </button>
       </div>
@@ -1045,9 +1060,16 @@ textarea.pawsitive-input {
   border-color: #806e83;
 }
 
-.remove-image-btn:hover {
+.remove-image-btn:hover:not(:disabled) {
   background-color: #6d5c70;
   border-color: #6d5c70;
+}
+
+.remove-image-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #999;
+  border-color: #999;
 }
 
 /* ==============================
