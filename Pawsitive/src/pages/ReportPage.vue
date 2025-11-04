@@ -171,6 +171,9 @@ function selectLocationSuggestion(suggestion) {
   report.location = suggestion.label;
   report.coords = suggestion.coords;
   showSuggestions.value = false;
+  
+  // Trigger map update with new coordinates
+  // The watcher will handle the map update automatically
 }
 
 // -------------------- Get User Location --------------------
@@ -272,16 +275,6 @@ async function initMapWithRadius(cats = []) {
   // Ensure map recalculates layout in case container size changed
   setTimeout(() => map.invalidateSize(), 0);
 
-  // Reverse-geocode and prefill the Location field when the map is drawn
-  try {
-    const addr = await reverseGeocode(lat, lon);
-    if (addr && !report.location) {
-      report.location = addr;
-    }
-  } catch (e) {
-    console.warn('Prefill via reverse geocode failed:', e);
-  }
-
   cats.forEach(cat => {
     const loc = cat.last_location;
     const [catLat, catLon] = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
@@ -294,14 +287,44 @@ async function initMapWithRadius(cats = []) {
 }
 
 // -------------------- Watchers --------------------
-// Update nearby cats when user selects a new location
+// Update nearby cats and map when user selects a new location
 watch(() => report.coords, (newCoords) => {
-  if (!newCoords || !firstBreed.value) return;
+  if (!newCoords) return;
   console.log("New location selected:", newCoords);
-  nearbyCats.value = filterCatsByProximity(allPredictedCats.value, newCoords, RADIUS_METERS);
-  showMap.value = nearbyCats.value.length > 0;
-  if (showMap.value) initMapWithRadius(nearbyCats.value);
+  
+  // If we have predicted cats from breed detection, filter them by proximity
+  if (firstBreed.value && allPredictedCats.value.length > 0) {
+    nearbyCats.value = filterCatsByProximity(allPredictedCats.value, newCoords, RADIUS_METERS);
+    showMap.value = nearbyCats.value.length > 0;
+    if (showMap.value) initMapWithRadius(nearbyCats.value);
+  } else {
+    // Hide map if no cats detected yet
+    showMap.value = false;
+  }
 }, { deep: true });
+
+// Watch for manual changes to cat breed input
+watch(() => report.species, async (newBreed) => {
+  if (!newBreed || !report.coords) {
+    showMap.value = false;
+    return;
+  }
+  
+  console.log("Breed changed to:", newBreed);
+  
+  // Fetch cats of the new breed
+  const cats = await fetchCatsByBreed(newBreed);
+  allPredictedCats.value = cats;
+  firstBreed.value = newBreed;
+  
+  // Filter by proximity to current location
+  nearbyCats.value = filterCatsByProximity(cats, report.coords, RADIUS_METERS);
+  showMap.value = nearbyCats.value.length > 0;
+  
+  if (showMap.value) {
+    initMapWithRadius(nearbyCats.value);
+  }
+});
 
 // -------------------- Breed Identification --------------------
 async function fetchCatsByBreed(breedName) {
@@ -469,9 +492,18 @@ const submitReport = async () => {
 }
 
 // -------------------- Mounted --------------------
-onMounted(() => {
+onMounted(async () => {
   fetchReports();
-  getLocation();
+  
+  // Get user's current location and autofill the location field
+  const [lat, lon] = await getLocation();
+  report.coords = { lat, lng: lon };
+  
+  // Reverse geocode to get address and autofill location field
+  const address = await reverseGeocode(lat, lon);
+  if (address) {
+    report.location = address;
+  }
 });
 </script>
 
