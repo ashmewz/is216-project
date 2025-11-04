@@ -192,4 +192,36 @@ html {
   border-color: #6d5c70 !important;
 }
 
+/* USE THIS FOR INPUT FIELDS */
+.pawsitive-input {
+  border: 2px solid #e0d4e0;
+  border-radius: 25px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  width: 100%;
+  background-color: #fff;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.pawsitive-input:focus {
+  border-color: #806e83;
+  box-shadow: 0 0 0 0.2rem rgba(128, 110, 131, 0.15);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.pawsitive-input::placeholder {
+  color: #999;
+}
+
+.pawsitive-input[type="file"] {
+  padding: 0.5rem;
+}
+
+textarea.pawsitive-input {
+  resize: vertical;
+  border-radius: 15px;
+}
+
 
