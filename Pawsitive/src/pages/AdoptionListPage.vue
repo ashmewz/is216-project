@@ -602,6 +602,7 @@ watch(currentIndex, (v) => {
 .full-width-row {
     width: 100%;
     max-width: 990px;
+    padding: 20px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -700,8 +701,7 @@ watch(currentIndex, (v) => {
 
     .profile-card-container,
     .profile-card-wide,
-    .profile-card-subrow,
-    .full-width-row {
+    .profile-card-subrow {
         max-width: 99vw;
     }
 
