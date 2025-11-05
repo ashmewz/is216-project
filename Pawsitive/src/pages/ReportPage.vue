@@ -653,7 +653,12 @@ onMounted(async () => {
     <!-- Image Upload -->
     <div class="mb-3">
       <label class="form-label">Upload Image</label>
-      <input type="file" class="pawsitive-input" ref="fileInput" @change="handleFileUpload" accept="image/*" />
+      <div class="file-upload-container">
+        <input type="file" class="file-input-hidden" ref="fileInput" @change="handleFileUpload" accept="image/*" id="fileUpload" />
+        <label for="fileUpload" class="pawsitive-btn file-upload-btn">
+          {{ report.imageFile ? report.imageFile.name : 'Choose File' }}
+        </label>
+      </div>
 
 
       <!-- Preview Section -->
@@ -966,6 +971,27 @@ onMounted(async () => {
     padding: 20px;
     margin: 1rem 20px;
   }
+}
+
+/* ==============================
+   File Upload Styling
+   ============================== */
+.file-upload-container {
+  margin-top: 0.5rem;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.file-upload-btn {
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  text-align: center;
 }
 
 /* ==============================
