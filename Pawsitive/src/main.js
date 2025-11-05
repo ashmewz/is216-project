@@ -8,7 +8,7 @@ import router from './route/routes.js'
 import App from './App.vue'
 import './firebase'
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { createPinia } from 'pinia'
+
 
 
 
@@ -21,7 +21,6 @@ onAuthStateChanged(auth, () => {
     if (!app) {
         app = createApp(App);
         app.use(router);
-        app.use(createPinia())
         app.mount('#app');
     }
 });

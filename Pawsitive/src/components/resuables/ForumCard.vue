@@ -27,9 +27,7 @@
           </div>
         </RouterLink>
 
-        <!-- <button class="btn btn-sm btn-light share-btn rounded-circle" @click="$emit('share', post.id)">
-          <i class="bi bi-share-fill"></i>
-        </button> -->
+ 
       </div>
 
       <div v-if="post.image" class="post-image-wrapper mb-3">
@@ -47,6 +45,7 @@
       <div class="d-flex gap-4 align-items-center interaction-bar pt-2 border-top">
         <button class="interaction-btn comment-btn" @click="$emit('open-comments', post.id)">
           <i class="bi bi-chat-dots"></i>
+          <span class="comment-text ms-2">{{ post.comments?.length || 0 }}</span>
         </button>
       </div>
     </div>
