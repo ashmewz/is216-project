@@ -163,13 +163,13 @@ function toggleAIDropdown() {
 
 /* Custom underline for active items */
 .nav-link.active {
-  border-bottom: 3px solid var(--dark-blue);
+  border-bottom: 3px solid #806e83;
   border-radius: 0;
 }
 
 /* Dropdown item active underline */
 .dropdown-item.active > span.underline {
-  border-bottom: 3px solid var(--dark-blue);
+  border-bottom: 3px solid #806e83;
   border-radius: 0;
   padding: 2px 4px;
 }
