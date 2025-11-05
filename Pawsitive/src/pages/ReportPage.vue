@@ -645,7 +645,7 @@ onMounted(async () => {
   </Navbar>
   
   <main class="pawsitive-background">
-    <h2 class="report-header">Report a Cat</h2>
+    <h2 class="report-header">Report a Lost/Injured Cat</h2>
 
   <form class="report-form" @submit.prevent="submitReport">
 
