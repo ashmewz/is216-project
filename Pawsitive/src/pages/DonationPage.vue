@@ -40,7 +40,7 @@ async function createPaymentIntent() {
   loading.value = true
 
   try {
-    const res = await fetch('http://localhost:4242/create-payment-intent', {
+    const res = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: amount.value }),
