@@ -1,48 +1,67 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { loadStripe } from '@stripe/stripe-js'
+import { ref, onMounted, watch } from 'vue';
+import { loadStripe } from '@stripe/stripe-js';
 
 const props = defineProps({
-  clientSecret: String,
-})
+  clientSecret: {
+    type: String,
+    required: true
+  }
+});
 
-// Public test key — safe for client
-const STRIPE_PUBLISHABLE_KEY = "pk_test_51SGctLA4UE4DKmEOYkurPuHwLOC7aZGSMLJ0SxgGWnjdIz0PyfrwohTpxD1paL9X5xhFoPbUTdQnV3oyUIHNgb7j00YEyGc6kv"
+// Publishable key – safe to embed on client
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SGctLA4UE4DKmEOYkurPuHwLOC7aZGSMLJ0SxgGWnjdIz0PyfrwohTpxD1paL9X5xhFoPbUTdQnV3oyUIHNgb7j00YEyGc6kv';
 
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY)
-const paymentElementRef = ref(null)
-const loading = ref(false)
-const message = ref('')
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+const paymentElementRef = ref(null);
+const loading = ref(false);
+const message = ref('');
 
-let stripe, elements
+let stripe = null;
+let elements = null;
 
-onMounted(async () => {
-  stripe = await stripePromise
-  elements = stripe.elements({ clientSecret: props.clientSecret })
-  const paymentElement = elements.create('payment')
-  paymentElement.mount(paymentElementRef.value)
-})
+watch(() => props.clientSecret, async (newSecret) => {
+  if (!newSecret) return;
+
+  stripe = await stripePromise;
+  elements = stripe.elements({ clientSecret: newSecret, appearance: { theme: 'flat' } });
+
+  const paymentElement = elements.create('payment', {
+    layout: { type: 'accordion' }
+  });
+
+  paymentElement.mount(paymentElementRef.value);
+}, { immediate: true });
 
 async function handleSubmit() {
-  loading.value = true
-  message.value = ''
+  loading.value = true;
+  message.value = '';
+
+  if (!stripe || !elements) {
+    message.value = 'Payment system not ready. Please refresh and try again.';
+    loading.value = false;
+    return;
+  }
 
   const { error, paymentIntent } = await stripe.confirmPayment({
     elements,
     redirect: 'if_required',
-  })
+    confirmParams: {
+      return_url: window.location.origin + '/donationsuccess'
+    }
+  });
 
   if (error) {
-    message.value = error.message
-    loading.value = false
-    return
+    message.value = error.message;
+    loading.value = false;
+    return;
   }
 
   if (paymentIntent && paymentIntent.status === 'succeeded') {
-    window.location.href = '/donationsuccess'
+    window.location.href = '/donationsuccess';
   } else {
-    message.value = 'Payment not completed. Please try again.'
-    loading.value = false
+    message.value = 'Your payment is processing — you’ll be redirected shortly.';
+    loading.value = false;
   }
 }
 </script>
