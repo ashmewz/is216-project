@@ -18,9 +18,6 @@ import VolunteerSignupLoginPage from "@/pages/VolunteerSignupLoginPage.vue";
 import VolunteerProfilePage from "@/pages/VolunteerProfilePage.vue";
 import AdoptionListPage from "@/pages/AdoptionListPage.vue";
 import DonationPage from "@/pages/DonationPage.vue";
-import ServicesPage from "@/pages/ServicesPage.vue";
-import AiRecogPage from "@/pages/AiRecogPage.vue";
-import AiGuidebookPage from "@/pages/AiGuidebookPage.vue";
 import VolunteerProfileViewPage from "@/pages/VolunteerProfileViewPage.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import DonationSuccessPage from "@/pages/DonationSuccessPage.vue";
@@ -98,17 +95,6 @@ const routes = [
         path: '/donationsuccess/',
         component: DonationSuccessPage,
         meta: { requiresAuth: true }
-    },
-    {
-        path: '/ai/recog/',
-        component: AiRecogPage,
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/ai/guidebook',
-        name: 'AiGuideBook',
-        component: AiGuidebookPage,
-        meta: { requiresAuth: true },
     },
 
     { // TEST ONLY

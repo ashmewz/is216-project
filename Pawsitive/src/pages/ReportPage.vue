@@ -2,7 +2,6 @@
 import { ref, reactive, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
-import CatReportCard from '@/components/resuables/CatReportCard.vue'
 import NearbyCatsList from '@/components/resuables/NearbyCatsList.vue'
 import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy, where, GeoPoint } from 'firebase/firestore'
 import { getAuth } from "firebase/auth"
