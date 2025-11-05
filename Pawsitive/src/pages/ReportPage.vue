@@ -3,9 +3,10 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import Navbar from '@/components/resuables/Navbar.vue'
 import BottomFooter from '@/components/resuables/BottomFooter.vue'
 import CatReportCard from '@/components/resuables/CatReportCard.vue'
+import NearbyCatsList from '@/components/resuables/NearbyCatsList.vue'
 import { getFirestore, collection, addDoc, getDoc, doc, getDocs, serverTimestamp, query, orderBy, where, GeoPoint } from 'firebase/firestore'
 import { getAuth } from "firebase/auth"
-import { validateCatReport } from '@/utils/validators' // your validation util
+import { validateCatReport } from '@/utils/validators'
 import { Client } from "@gradio/client"
 
 import L from "leaflet";
@@ -14,15 +15,16 @@ import "leaflet/dist/leaflet.css";
 const db = getFirestore()
 const auth = getAuth()
 
-// Reactive state for cat report form
+// -------------------- Reactive State --------------------
 const report = reactive({
   status: '',
   condition: '',
-  catName: '',
+  name: '',
+  species: '',
   estimatedAge: '',
-  gender: '',
-  neutered: '',
-  location: '', 
+  gender: 'Unknown',
+  neutered: 'Unknown',
+  location: '',
   coords: null,
   description: '',
   imageFile: null,
@@ -38,195 +40,51 @@ const showModal = ref(false)
 const sidebarOpen = ref(false)
 const fileInput = ref(null)
 
-const searchQuery = ref('SMU'); // default prefilled
+const searchQuery = ref('SMU');
 
-// --- New refs for prediction ---
 const isLoading = ref(false)
 const breedResult = ref(null)
 const firstBreed = ref(null)
 const nearbyCats = ref([])
 
-//for location field auto complete
+const allPredictedCats = ref([]); // 🆕 store predicted cats globally
+
 const locationSuggestions = ref([]);
 const showSuggestions = ref(false);
+const justSelectedSuggestion = ref(false);
 
-// 🆕 Leaflet map variables
 let map = null;
 let userMarker = null;
 let userCircle = null;
-let catMarkers = []; // 🆕 store cat markers
+let catMarkers = [];
+let curCatPopup = null;
 const showMap = ref(false);
 
-//
 const otherCatsOpen = ref(false);
 
+const RADIUS_METERS = 2000;
 
-if (map) {
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 100); // wait for DOM render
-}
-
-watch(nearbyCats, (newCats) => {
-  if (newCats.length > 0) {
-    showMap.value = true; // show container first
-    setTimeout(() => initMapWithRadius(newCats), 100); // slight delay for DOM
-  } else {
-    showMap.value = false;
-    clearCatMarkers();
-  }
-}, { deep: true });
-
-function selectLocationSuggestion(suggestion) {
-  report.location = suggestion.label;
-  report.coords = suggestion.coords;
-  showSuggestions.value = false;
-}
-
-watch(
-  () => report.location,
-  async (newVal) => {
-    if (!newVal || newVal.length < 2) {
-      locationSuggestions.value = [];
-      showSuggestions.value = false;
-      return;
-    }
-
-    try {
-      const resp = await fetch(
-        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(newVal)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`
-      );
-      const data = await resp.json();
-
-      if (data.found > 0) {
-        // pick first 5 results
-        locationSuggestions.value = data.results.slice(0, 5).map(r => ({
-          label: r.ADDRESS,
-          coords: { lat: parseFloat(r.LATITUDE), lng: parseFloat(r.LONGITUDE) }
-        }));
-        showSuggestions.value = true;
-      } else {
-        locationSuggestions.value = [];
-        showSuggestions.value = false;
-      }
-    } catch (err) {
-      console.error("Location suggestion error:", err);
-      locationSuggestions.value = [];
-      showSuggestions.value = false;
-    }
-  }
-);
-
-
-async function getCoordinatesFromQuery(query) {
-  if (!query) return null
+// -------------------- Reverse Geocoding (Nominatim) --------------------
+async function reverseGeocode(lat, lon) {
+  if (lat == null || lon == null) return null;
   try {
-    const resp = await fetch(`https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(query)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`)
-    const data = await resp.json()
-    if (data.found === 0 || !data.results?.length) return null
-    const result = data.results[0]
-    return { lat: parseFloat(result.LATITUDE), lng: parseFloat(result.LONGITUDE) }
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=16&addressdetails=1`;
+    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const data = await resp.json();
+    return data?.display_name ?? null;
   } catch (err) {
-    console.error("OneMap fetch error:", err)
-    return null
+    console.warn('Reverse geocoding failed:', err);
+    return null;
   }
 }
 
-async function updateLocation() {
-  if (!report.location) return alert("Please enter a location!")
-  const coords = await getCoordinatesFromQuery(report.location)
-  if (!coords) {
-    alert("Failed to resolve location. Check your input.")
-    report.coords = null
-    return
-  }
-  report.coords = coords
-  console.log("Updated coordinates:", coords) // lat/lng stored here
-}
-
-
-
-
-function clearCatMarkers() {
-  catMarkers.forEach(marker => map.removeLayer(marker));
-  catMarkers = [];
-}
-
-
-async function initMapWithRadius(cats = []) {
-  try {
-    const [lat, lon] = await getLocation(); // reuse your existing getLocation()
-
-    // Create or center map
-    if (!map) {
-      map = L.map("map").setView([lat, lon], 14);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(map);
-    }
-
-    // Clear previous layers
-    if (userMarker) map.removeLayer(userMarker);
-    if (userCircle) map.removeLayer(userCircle);
-    clearCatMarkers();
-
-    // Draw your location marker
-    userMarker = L.marker([lat, lon])
-      .addTo(map)
-      .bindPopup("📍 You are here")
-      .openPopup();
-
-    // Draw the detection radius
-    userCircle = L.circle([lat, lon], {
-      radius: RADIUS_METERS,
-      color: "blue",
-      fillColor: "#3b82f6",
-      fillOpacity: 0.2
-    }).addTo(map);
-
-    // 🐱 Draw markers for nearby cats
-    cats.forEach(cat => {
-      const loc = cat.last_location;
-      const [catLat, catLon] = Array.isArray(loc)
-        ? loc
-        : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
-
-      if (!catLat || !catLon) return;
-
-      // 🆕 create marker for each nearby cat
-      const marker = L.marker([catLat, catLon])
-        .addTo(map)
-        .bindPopup(
-          `<strong>${cat.name || "Unnamed Cat"}</strong><br>
-           Distance: ${cat.distanceMeters?.toFixed(2)} m<br>
-           Condition: ${cat.condition || "Unknown"}`
-        );
-
-      catMarkers.push(marker);
-    });
-
-    console.log(`✅ Drawn ${cats.length} cat markers on the map`);
-  } catch (error) {
-    console.error("❌ Failed to load map or draw markers:", error);
-  }
-}
-
-
-
-// Example: radius for nearby cats in meters
-// --- Constants ---
-const RADIUS_METERS = 1000;
-
-// --- Haversine / proximity functions ---
+// -------------------- Utility Functions --------------------
 function haversineMeters(lat1, lon1, lat2, lon2) {
   const toRad = d => d * Math.PI / 180;
-  const R = 6371000; // Earth radius in meters
+  const R = 6371000;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -239,8 +97,7 @@ function roughlySameArea(a, b, marginMeters, opts = {}) {
 
   const [lat1, lon1] = getCoords(a);
   const [lat2, lon2] = getCoords(b);
-
-  if ([lat1, lon1, lat2, lon2].some(v => v == null)) 
+  if ([lat1, lon1, lat2, lon2].some(v => v == null))
     return { within: false, meters: Infinity, threshold: marginMeters };
 
   const dist = haversineMeters(lat1, lon1, lat2, lon2);
@@ -249,7 +106,6 @@ function roughlySameArea(a, b, marginMeters, opts = {}) {
   return { within: dist <= threshold, meters: dist, threshold };
 }
 
-// --- Extract first breed safely ---
 function extractFirstBreed(breedResult) {
   if (!breedResult) return null;
   let text = Array.isArray(breedResult) ? breedResult[0] : breedResult;
@@ -257,305 +113,528 @@ function extractFirstBreed(breedResult) {
   return match ? match[1].trim() : null;
 }
 
-// --- Fetch cats by breed from Firebase ---
-async function fetchCatsByBreed(breedName) {
-  if (!breedName) return [];
-
-  console.log(breedName)
-
+async function getCoordinatesFromQuery(query) {
+  if (!query) return null;
   try {
-    // 🔹 1. Simple query — only by species
-    const q = query(collection(db, "cats"), where("species", "==", breedName));
-    const snapshot = await getDocs(q);
-
-    // 🔹 2. Filter client-side for last 24h
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-    const recentCats = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
-      .filter(cat => {
-        const createdAt = cat.created_at?.toDate ? cat.created_at.toDate() : null;
-        return createdAt && createdAt >= oneDayAgo;
-      });
-
-      console.log("Recent Cats: " + recentCats)
-
-    return recentCats;
+    const resp = await fetch(`https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(query)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`);
+    const data = await resp.json();
+    if (data.found === 0 || !data.results?.length) return null;
+    const result = data.results[0];
+    return { lat: parseFloat(result.LATITUDE), lng: parseFloat(result.LONGITUDE) };
   } catch (err) {
-    console.error("Client-side filter failed:", err);
-    return [];
+    console.error("OneMap fetch error:", err)
+    return null;
   }
 }
 
-// --- Filter cats by proximity with clear logging ---
-function filterCatsByProximity(cats, myLocation, radiusMeters = RADIUS_METERS) {
-  const nearby = cats
-    .map(cat => {
-      const loc = cat.last_location;
-      if (!loc) return null;
-
-      const catLocation = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
-      if (catLocation.some(v => v == null)) return null;
-
-
-      const proximity = roughlySameArea(myLocation, catLocation, radiusMeters);
-
-      // Logging each cat's distance
-      console.log(`Cat: ${cat.catName || cat.id}, Location: [${catLocation.join(", ")}], Distance: ${proximity.meters.toFixed(2)}m, Within radius: ${proximity.within}`);
-
-      return { ...cat, distanceMeters: proximity.meters, withinRadius: proximity.within };
-    })
-    .filter(cat => cat && cat.withinRadius);
-
-  console.log(`\n✅ Total nearby cats within ${radiusMeters} meters: ${nearby.length}`);
-  return nearby;
+async function updateLocation() {
+  if (!report.location) return alert("Please enter a location!");
+  const coords = await getCoordinatesFromQuery(report.location);
+  if (!coords) {
+    alert("Failed to resolve location. Check your input.");
+    report.coords = null;
+    return;
+  }
+  report.coords = coords;
+  console.log("Updated coordinates:", coords);
 }
 
-// --- Get current user location ---
+// -------------------- Location Suggestions --------------------
+watch(() => report.location, async (newVal) => {
+  // Skip fetching suggestions if we just selected one
+  if (justSelectedSuggestion.value) {
+    justSelectedSuggestion.value = false;
+    return;
+  }
+  
+  if (!newVal || newVal.length < 2) {
+    locationSuggestions.value = [];
+    showSuggestions.value = false;
+    return;
+  }
+
+  try {
+    const resp = await fetch(
+      `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(newVal)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`
+    );
+    const data = await resp.json();
+    if (data.found > 0) {
+      locationSuggestions.value = data.results.slice(0, 5).map(r => ({
+        label: r.ADDRESS,
+        coords: { lat: parseFloat(r.LATITUDE), lng: parseFloat(r.LONGITUDE) }
+      }));
+      showSuggestions.value = true;
+    } else {
+      locationSuggestions.value = [];
+      showSuggestions.value = false;
+    }
+  } catch (err) {
+    console.error("Location suggestion error:", err);
+    locationSuggestions.value = [];
+    showSuggestions.value = false;
+  }
+});
+
+function selectLocationSuggestion(suggestion) {
+  justSelectedSuggestion.value = true;
+  report.location = suggestion.label;
+  report.coords = suggestion.coords;
+  showSuggestions.value = false;
+  
+  // Trigger map update with new coordinates
+  // The watcher will handle the map update automatically
+}
+
+// -------------------- Get User Location --------------------
 function getLocation() {
   return new Promise(resolve => {
     if (!navigator.geolocation) {
       console.warn("Geolocation not supported, using fallback coordinates");
-      resolve([1.3659902777726316, 103.95350544240026]);
+      resolve([1.36599, 103.9535]);
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
-      position => resolve([position.coords.latitude, position.coords.longitude]),
+      pos => resolve([pos.coords.latitude, pos.coords.longitude]),
       err => {
         console.error("Geolocation failed:", err);
-        resolve([1.3659902777726316, 103.95350544240026]);
+        resolve([1.36599, 103.9535]);
       }
     );
   });
 }
 
-// --- Main workflow: predict breed and find nearby cats ---
+// -------------------- Filter Nearby Cats --------------------
+
+function filterCatsByProximity(cats, myLocation, radiusMeters = RADIUS_METERS) {
+  if (!myLocation) return [];
+
+  const myLat = Array.isArray(myLocation) ? myLocation[0] : myLocation.lat;
+  const myLng = Array.isArray(myLocation) ? myLocation[1] : myLocation.lng;
+
+  const nearby = cats
+    .map(cat => {
+      const loc = cat.last_location;
+      if (!loc) return null;
+
+      let catLat, catLng;
+
+      if (Array.isArray(loc)) {
+        [catLat, catLng] = loc;
+      } else if (loc.latitude !== undefined && loc.longitude !== undefined) {
+        catLat = loc.latitude;
+        catLng = loc.longitude;
+      } else if (loc._lat !== undefined && loc._long !== undefined) {
+        catLat = loc._lat;
+        catLng = loc._long;
+      } else {
+        return null;
+      }
+
+      const dist = haversineMeters(myLat, myLng, catLat, catLng);
+      return { ...cat, distanceMeters: dist, withinRadius: dist <= radiusMeters };
+    })
+    .filter(cat => cat && cat.withinRadius);
+
+  return nearby;
+}
+
+
+// -------------------- Map Functions --------------------
+function clearCatMarkers() {
+  catMarkers.forEach(marker => map.removeLayer(marker));
+  catMarkers = [];
+}
+
+async function initMapWithRadius(cats = []) {
+  const [lat, lon] = report.coords
+    ? [report.coords.lat, report.coords.lng]
+    : await getLocation();
+
+  // Persist current coords if not already set
+  if (!report.coords) {
+    report.coords = { lat, lng: lon };
+  }
+
+  if (!map) {
+    map = L.map("map").setView([lat, lon], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+  } else {
+    // Recenter map on subsequent calls to reflect new coordinates
+    const currentZoom = map.getZoom();
+    map.setView([lat, lon], currentZoom);
+  }
+
+  clearCatMarkers();
+
+  // Create or move the user marker and circle
+  if (userMarker) {
+    userMarker.setLatLng([lat, lon]);
+  } else {
+    const youAreHerePopup = `
+      <div style="text-align: center; padding: 0.5rem; font-family: system-ui, sans-serif;">
+        <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📍</div>
+        <strong style="color: #806e83; font-size: 0.95rem;">You are here</strong>
+      </div>
+    `;
+    
+    const redIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+    
+    userMarker = L.marker([lat, lon], { icon: redIcon })
+      .addTo(map)
+      .bindPopup(youAreHerePopup, {
+        closeButton: false,
+        autoClose: false,
+        className: 'you-are-here-popup'
+      });
+  }
+  if (userCircle) {
+    userCircle.setLatLng([lat, lon]);
+    userCircle.setRadius(RADIUS_METERS);
+  } else {
+    userCircle = L.circle([lat, lon], { radius: RADIUS_METERS, color: "blue", fillColor: "#3b82f6", fillOpacity: 0.2 }).addTo(map);
+  }
+
+  // Ensure map recalculates layout in case container size changed
+  setTimeout(() => map.invalidateSize(), 0);
+
+  const markerIcon = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  // Process each cat asynchronously to get geocoded addresses
+  for (const cat of cats) {
+    const loc = cat.last_location;
+    const [catLat, catLon] = Array.isArray(loc) ? loc : [loc.latitude ?? loc._lat, loc.longitude ?? loc._long];
+    if (!catLat || !catLon) continue;
+    
+    // Format the created_at timestamp
+    const reportedAt = cat.created_at?.toDate 
+      ? cat.created_at.toDate().toLocaleString([], { 
+          year: 'numeric', 
+          month: 'numeric', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      : cat.created_at || 'Unknown';
+    
+    // Get actual location address using reverse geocoding
+    let locationDisplay = `${catLat.toFixed(4)}, ${catLon.toFixed(4)}`; // Fallback to coordinates
+    try {
+      const address = await reverseGeocode(catLat, catLon);
+      if (address) {
+        locationDisplay = address;
+      }
+    } catch (err) {
+      console.warn('Failed to geocode cat location:', err);
+    }
+    
+    // Format distance
+    const distanceDisplay = cat.distanceMeters 
+      ? `${cat.distanceMeters.toFixed(2)} m` 
+      : 'Unknown';
+    
+    // Create styled popup content
+    const popupContent = `
+      <div class="cat-popup-card">
+        <div class="cat-popup-inner">
+          <div class="cat-popup-img-container">
+            <img src="${cat.photos?.[0] || 'https://cataas.com/cat'}" alt="${cat.name || 'Unnamed Cat'}" class="cat-popup-img" />
+          </div>
+          <div class="cat-popup-info">
+            <h6 class="cat-popup-title">${cat.name || 'Unnamed Cat'}</h6>
+            <div class="cat-popup-details">
+              <div class="cat-popup-detail-item">
+                <strong>Last Location:</strong><br>
+                <span class="cat-popup-detail-value">${locationDisplay}</span>
+              </div>
+              <div class="cat-popup-detail-item">
+                <strong>Reported At:</strong><br>
+                <span class="cat-popup-detail-value">${reportedAt}</span>
+              </div>
+              <div class="cat-popup-detail-item">
+                <strong>Estimated Distance:</strong><br>
+                <span class="cat-popup-detail-value">${distanceDisplay}</span>
+              </div>
+            </div>
+            <a href="/cat/${cat.id}" 
+               onclick="window.open(this.href, '_blank'); return false;" 
+               class="cat-popup-link">View Full Profile →</a>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    const marker = L.marker([catLat, catLon], { icon: markerIcon })
+      .addTo(map)
+      .bindPopup(popupContent, {
+        maxWidth: 350,
+        minWidth: 340,
+        closeButton: true,
+        autoClose: false,
+        className: 'cat-marker-popup'
+      });
+    
+    // Change to click event instead of mouseover
+    marker.on("click", function () {
+      if (curCatPopup != null && curCatPopup !== this) {
+        curCatPopup.closePopup();
+      }
+      curCatPopup = this;
+    });
+    
+    catMarkers.push(marker);
+  }
+}
+
+// -------------------- Watchers --------------------
+// Update nearby cats and map when user selects a new location
+watch(() => report.coords, (newCoords) => {
+  if (!newCoords) return;
+  console.log("New location selected:", newCoords);
+  
+  // If we have predicted cats from breed detection, filter them by proximity
+  if (firstBreed.value && allPredictedCats.value.length > 0) {
+    nearbyCats.value = filterCatsByProximity(allPredictedCats.value, newCoords, RADIUS_METERS);
+    showMap.value = nearbyCats.value.length > 0;
+    if (showMap.value) initMapWithRadius(nearbyCats.value);
+  } else {
+    // Hide map if no cats detected yet
+    showMap.value = false;
+  }
+}, { deep: true });
+
+// Watch for manual changes to cat breed input
+watch(() => report.species, async (newBreed) => {
+  if (!newBreed || !report.coords) {
+    showMap.value = false;
+    return;
+  }
+  
+  console.log("Breed changed to:", newBreed);
+  
+  // Fetch cats of the new breed
+  const cats = await fetchCatsByBreed(newBreed);
+  allPredictedCats.value = cats;
+  firstBreed.value = newBreed;
+  
+  // Filter by proximity to current location
+  nearbyCats.value = filterCatsByProximity(cats, report.coords, RADIUS_METERS);
+  showMap.value = nearbyCats.value.length > 0;
+  
+  if (showMap.value) {
+    initMapWithRadius(nearbyCats.value);
+  }
+});
+
+// -------------------- Breed Identification --------------------
+async function fetchCatsByBreed(breedName) {
+  if (!breedName) return [];
+  try {
+    const q = query(collection(db, "cats"), where("species", "==", breedName));
+    const snapshot = await getDocs(q);
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(cat => {
+        const createdAt = cat.created_at?.toDate ? cat.created_at.toDate() : null;
+        return createdAt && createdAt >= oneDayAgo;
+      });
+  } catch (err) {
+    console.error("Fetch cats failed:", err);
+    return [];
+  }
+}
+
 async function identifyBreed(imageBlob) {
   try {
     isLoading.value = true;
-
-    // 1️⃣ Get current location
     const myLocation = await getLocation();
-    console.log("📍 User location:", myLocation);
-
-    // 2️⃣ Predict breed via Gradio
     const client = await Client.connect("kevansoon/cat-breed-detector");
     const result = await client.predict("/predict", { image: imageBlob });
-
     if (!result.data) {
       breedResult.value = "Prediction returned no data.";
       return;
     }
-
     const breedText = Array.isArray(result.data) ? result.data[0] : result.data;
     breedResult.value = breedText;
 
-    // 3️⃣ Extract first breed
     const breed = extractFirstBreed(breedText);
     firstBreed.value = breed;
-    if (!breed) {
-      console.warn("No breed extracted from prediction.");
-      return;
-    }
+    if (!breed) return;
+    report.species = firstBreed.value;
 
-    report.catName = firstBreed.value;
-
-    // 4️⃣ Fetch cats by breed from Firebase
     const cats = await fetchCatsByBreed(breed);
-    console.log(`🐱 Total cats of breed "${breed}":`, cats.length);
-
-    // 5️⃣ Filter cats by proximity
+    allPredictedCats.value = cats;
     nearbyCats.value = filterCatsByProximity(cats, myLocation, RADIUS_METERS);
-    // 🆕 Only show map if there are nearby cats
     showMap.value = nearbyCats.value.length > 0;
-
-    // 🗺️ Draw the map only if we have nearby cats
     if (showMap.value) initMapWithRadius(nearbyCats.value);
-
   } catch (err) {
-    console.error("❌ Identify breed workflow failed:", err);
+    console.error("Identify breed failed:", err);
     breedResult.value = "Failed to process image or location.";
   } finally {
     isLoading.value = false;
   }
 }
-// --- File upload handler (modified) ---
-function handleFileUpload(event) {
-  const file = event.target.files[0]
-  if (file) {
-    report.imageFile = file
-    const reader = new FileReader()
-    reader.onload = e => {
-      report.imagePreview = e.target.result
-    }
-    reader.readAsDataURL(file)
 
-    // ✅ Immediately send image for breed detection
-    identifyBreed(file)
+// -------------------- File Upload --------------------
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (file) {
+    report.imageFile = file;
+    const reader = new FileReader();
+    reader.onload = e => report.imagePreview = e.target.result;
+    reader.readAsDataURL(file);
+    identifyBreed(file);
   }
 }
 
-
-// Functions from your original code
-function toggleSidebar() {
-  sidebarOpen.value = !sidebarOpen.value
-}
 function removeImage() {
-  report.imageFile = null
-  report.imagePreview = null
-  if (fileInput.value) fileInput.value.value = null
-}
-function setSeverity(level) {
-  report.severity = level
-}
-
-
-
-// Validate form fields reactively to clear errors on change
-watch(() => report.status, () => fieldErrors.value.status = '')
-watch(() => report.catName, () => fieldErrors.value.catName = '')
-watch(() => report.location, () => fieldErrors.value.location = '')
-watch(() => report.description, () => fieldErrors.value.description = '')
-watch(() => report.imagePreview, () => fieldErrors.value.image = '')
-
-// Convert File object to Base64 string
-const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = error => reject(error)
-  })
+  report.imageFile = null;
+  report.imagePreview = null;
+  if (fileInput.value) fileInput.value.value = null;
+  
+  // Reset breed identification results
+  breedResult.value = null;
+  firstBreed.value = null;
+  report.species = '';
+  
+  // Clear nearby cats and hide map
+  nearbyCats.value = [];
+  allPredictedCats.value = [];
+  showMap.value = false;
+  
+  // Clear map markers if map exists
+  if (map) {
+    clearCatMarkers();
+  }
 }
 
-// Firebase: fetch all reports ordered by creation date
+// -------------------- Sidebar & Severity --------------------
+function toggleSidebar() { sidebarOpen.value = !sidebarOpen.value }
+function setSeverity(level) { report.severity = level }
+
+// -------------------- Fetch Reports --------------------
 const fetchReports = async () => {
   reportsLoading.value = true;
   try {
-    // Fetch cats collection
     const q = query(collection(db, "cats"), orderBy("created_at", "desc"));
     const snapshot = await getDocs(q);
-
     const catsData = [];
     for (const docSnap of snapshot.docs) {
       const cat = { id: docSnap.id, ...docSnap.data() };
-
-      // Optional: fetch volunteer info if submittedBy exists
       if (cat.submittedBy) {
         const userDoc = await getDoc(doc(db, "volunteers", cat.submittedBy));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          cat.username = userData.username || "Unknown";
-          cat.avatar = userData.avatar || null;
-        } else {
-          cat.username = "Unknown";
-          cat.avatar = null;
-        }
+        cat.username = userDoc.exists() ? userDoc.data().username || "Unknown" : "Unknown";
+        cat.avatar = userDoc.exists() ? userDoc.data().avatar || null : null;
       } else {
         cat.username = "Unknown";
         cat.avatar = null;
       }
-
       catsData.push(cat);
     }
-
     reports.value = catsData;
-    console.log(`✅ Fetched ${catsData.length} cats`);
   } catch (err) {
     console.error("Failed to fetch cats", err);
   } finally {
     reportsLoading.value = false;
   }
-};
+}
 
-
-// Submit form to Firebase
+// -------------------- Submit Report --------------------
 const submitReport = async () => {
-  console.log("📨 Submit button clicked");
-
-  // 1️⃣ Validation
   const toValidate = {
     status: report.status,
-    name: report.catName,
+    name: report.species,
     location: report.location,
     description: report.description,
     image: report.imagePreview
   };
   const errors = validateCatReport(toValidate);
   if (Object.keys(errors).length > 0) {
-    console.warn("⚠️ Validation failed:", errors);
     fieldErrors.value = errors;
     return;
   }
-
   const currentUser = auth.currentUser;
-  if (!currentUser) {
-    console.warn("⚠️ User not logged in, cannot submit report.");
-    alert("You must be logged in to submit a report.");
-    return;
-  }
-
+  if (!currentUser) return alert("You must be logged in to submit a report.");
   try {
-      if (!report.coords) {
-      await updateLocation(); // try to fetch if not already fetched
-      if (!report.coords) return; // stop if invalid
-    }
-
+    if (!report.coords) await updateLocation();
+    if (!report.coords) return;
     const { lat, lng } = report.coords;
-
-    // 3️⃣ Add to `cats` collection
-    console.log("Saving report to 'cats' collection...");
-
-    const catRef = await addDoc(collection(db, "cats"), {
-      age: report.estimatedAge || "",
+    await addDoc(collection(db, "cats"), {
+      age: report.estimatedAge || "Unknown",
+      name: report.name || "",
       color: "",
+      condition: report.condition || "",
       created_at: serverTimestamp(),
       description: report.description || "",
       gender: report.gender || "",
       last_location: new GeoPoint(lat, lng),
       last_seen: serverTimestamp(),
-      name: report.catName || "",
       neutered: report.neutered || "",
       photos: report.imagePreview ? [report.imagePreview] : [],
-      species: report.catName || "",
+      severity: report.severity || 0,
+      species: report.species || "",
       status: report.status || ""
     });
-
-    console.log("✅ Cat added to 'cats' with ID:", catRef.id);
-
-    // 4️⃣ Reset form
+    // Reset form
     report.status = '';
-    report.catName = '';
+    report.name = '';
+    report.species = '';
     report.location = '';
     report.description = '';
     report.imageFile = null;
     report.imagePreview = null;
     report.condition = '';
     report.severity = 0;
-    report.gender = '';
-    report.neutered = '';
+    report.gender = 'Unknown';
+    report.neutered = 'Unknown';
     report.estimatedAge = '';
+    report.coords = null;
     fieldErrors.value = {};
+    breedResult.value = null;
+    firstBreed.value = null;
+    isLoading.value = false;
     if (fileInput.value) fileInput.value.value = null;
 
     fetchReports();
     showModal.value = false;
-
-    console.log("🎉 Form reset complete, reports refreshed!");
-    alert("✅ Report submitted and cat record added successfully!");
-
+    alert("✅ Report submitted successfully!");
   } catch (err) {
-    console.error("❌ Error submitting report:", err);
-    alert("Failed to submit report. Check console for details.");
+    console.error("Error submitting report:", err);
+    alert("Failed to submit report. Check console.");
   }
-};
+}
 
-onMounted(() => {
-  fetchReports()
-  getLocation() // optionally auto-fetch location on mount
-})
+// -------------------- Mounted --------------------
+onMounted(async () => {
+  fetchReports();
+  
+  // Get user's current location and autofill the location field
+  const [lat, lon] = await getLocation();
+  report.coords = { lat, lng: lon };
+  
+  // Reverse geocode to get address and autofill location field
+  const address = await reverseGeocode(lat, lon);
+  if (address) {
+    report.location = address;
+  }
+});
 </script>
 
 
@@ -564,131 +643,136 @@ onMounted(() => {
   <Navbar>
     <template v-slot:navbar-title>Report</template>
   </Navbar>
-  <h2 class="report-header">Report a Cat</h2>
+  
+  <main class="pawsitive-background">
+    <h2 class="report-header">Report a Lost/Injured Cat</h2>
 
   <form class="report-form" @submit.prevent="submitReport">
 
-  
-      <!-- Image Upload -->
-      <div class="mb-3">
-        <label class="form-label">Upload Image</label>
-        <input 
-          type="file" 
-          class="form-control" 
-          ref="fileInput"
-          @change="handleFileUpload" 
-          accept="image/*"
-        />
 
-
-        <!-- Preview Section -->
-        <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
-          <img :src="report.imagePreview" class="img-preview rounded" />
-          <button 
-            type="button" 
-            class="btn btn-sm btn-danger remove-image-btn" 
-            @click="removeImage"
-          >
-            ✕
-          </button>
-        </div>
+    <!-- Image Upload -->
+    <div class="mb-3">
+      <label class="form-label">Upload Image</label>
+      <div class="file-upload-container">
+        <input type="file" class="file-input-hidden" ref="fileInput" @change="handleFileUpload" accept="image/*" id="fileUpload" />
+        <label for="fileUpload" class="pawsitive-btn file-upload-btn">
+          {{ report.imageFile ? report.imageFile.name : 'Choose File' }}
+        </label>
       </div>
 
-      <!-- 🐾 Breed Prediction Result -->
-      <div v-if="isLoading" class="text-muted mt-2">
-        Analyzing image for breed...
+
+      <!-- Preview Section -->
+      <div v-if="report.imagePreview" class="image-preview-container mt-2 position-relative">
+        <img :src="report.imagePreview" class="img-preview rounded" />
+        <button type="button" class="btn btn-sm btn-danger remove-image-btn" @click="removeImage" :disabled="isLoading">
+          ✕
+        </button>
       </div>
-      <div v-else-if="breedResult" class="mt-2 alert alert-info">
-        <strong>Detected Breed:</strong> {{ breedResult }}
+    </div>
+
+    <!-- 🐾 Breed Prediction Result -->
+    <div v-if="isLoading" class="mt-2 alert alert-info">
+      <strong>Analyzing image for breed...</strong>
+    </div>
+    <div v-else-if="breedResult" class="mt-2 alert alert-info">
+      <strong>Detected Breed:</strong> {{ breedResult }}
+    </div>
+
+    <div v-show="showMap" id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
+
+
+    <!-- Location (auto-detect) -->
+    <div class="mb-3 position-relative">
+      <label class="form-label">Location</label>
+      <input type="text" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.location }" v-model="report.location"
+        placeholder="Enter location..."
+        @focus="showSuggestions = locationSuggestions.length > 0"
+        @blur="setTimeout(() => showSuggestions = false, 200)" />
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.location }}
       </div>
-    
-      <div v-show="showMap" id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
+
+      <!-- Dropdown Suggestions -->
+      <ul v-if="showSuggestions" class="list-group position-absolute w-100"
+        style="z-index: 1000; max-height: 200px; overflow-y: auto;">
+        <li v-for="(suggestion, index) in locationSuggestions" :key="index"
+          class="list-group-item list-group-item-action" 
+          @mousedown.prevent="selectLocationSuggestion(suggestion)"
+          style="cursor: pointer;">
+          {{ suggestion.label }}
+        </li>
+      </ul>
+    </div>
+
 
     <!-- Status Dropdown -->
     <div class="mb-3">
       <label class="form-label">Status</label>
-      <select v-model="report.status" class="form-select">
+      <select v-model="report.status" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.status }">
         <option value="" disabled>Select status</option>
         <option value="Lost">Lost</option>
         <option value="Injured">Injured</option>
       </select>
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.status }}
+      </div>
     </div>
 
     <!-- Cat Breed -->
     <div class="mb-3">
       <label class="form-label">Cat Breed</label>
-      <input type="text" class="form-control" v-model="report.catName" placeholder="Enter cat breed" />
+      <input type="text" class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.name }" v-model="report.species"
+        placeholder="Enter cat breed" />
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.name }}
+      </div>
     </div>
 
-   <!-- Estimated Age -->
-<div class="form-group">
-  <label class="form-label">Estimated Age</label>
-  <input 
-    type="number" 
-    class="form-control input-field" 
-    v-model="report.estimatedAge" 
-    placeholder="e.g. 2 (years)" 
-    min="0"
-  />
-</div>
+    <!-- Cat Name -->
+    <div class="mb-3">
+      <label class="form-label">Cat Name (optional)</label>
+      <input type="text" class="pawsitive-input" v-model="report.name"
+        placeholder="Enter cat name (if known)" />
+    </div>
 
-<!-- Gender -->
-<div class="form-group">
-  <label class="form-label">Gender</label>
-  <select class="form-select input-field" v-model="report.gender">
-    <option value="" disabled>Select gender</option>
-    <option value="Male">Male</option>
-    <option value="Female">Female</option>
-    <option value="Unknown">Unknown</option>
-  </select>
-</div>
+    <!-- Estimated Age -->
+    <div class="form-group">
+      <label class="form-label">Estimated Age</label>
+      <input type="number" class="pawsitive-input" v-model="report.estimatedAge"
+        placeholder="e.g. 2 (years) leave empty if unknown" min="0" />
+    </div>
 
-<!-- Neutered -->
-<div class="form-group">
-  <label class="form-label">Neutered</label>
-  <select class="form-select input-field" v-model="report.neutered">
-    <option value="" disabled>Select status</option>
-    <option value="Yes">Yes</option>
-    <option value="No">No</option>
-    <option value="Unknown">Unknown</option>
-  </select>
-</div>
-     
+    <!-- Gender -->
+    <div class="form-group">
+      <label class="form-label">Gender</label>
+      <select class="pawsitive-input" v-model="report.gender">
+        <option value="" disabled>Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Unknown">Unknown</option>
+      </select>
+    </div>
+
+    <!-- Neutered -->
+    <div class="form-group">
+      <label class="form-label">Neutered</label>
+      <select class="pawsitive-input" v-model="report.neutered">
+        <option value="" disabled>Select status</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+        <option value="Unknown">Unknown</option>
+      </select>
+    </div>
 
 
-    <!-- Location (auto-detect) -->
-  <div class="mb-3 position-relative">
-  <label class="form-label">Location</label>
-  <input 
-    type="text" 
-    class="form-control" 
-    v-model="report.location" 
-    placeholder="Enter location..."
-    @focus="showSuggestions.value = locationSuggestions.value.length > 0"
-  />
-  
-  <!-- Dropdown Suggestions -->
-  <ul 
-    v-if="showSuggestions" 
-    class="list-group position-absolute w-100" 
-    style="z-index: 1000; max-height: 200px; overflow-y: auto;"
-  >
-    <li 
-      v-for="(suggestion, index) in locationSuggestions" 
-      :key="index" 
-      class="list-group-item list-group-item-action"
-      @click="selectLocationSuggestion(suggestion)"
-      style="cursor: pointer;"
-    >
-      {{ suggestion.label }}
-    </li>
-  </ul>
-</div>
+
+
     <!-- Condition Dropdown (always shown) -->
     <div class="mb-3">
       <label class="form-label">Condition of the cat (optional)</label>
-      <select v-model="report.condition" class="form-select">
-        <option value="" disabled>Select condition</option>
+      <select v-model="report.condition" class="pawsitive-input"
+        :class="{ 'placeholder-selected': report.condition === '' }">
+        <option value="">Select condition (if any)</option>
         <option value="Bleeding">Bleeding</option>
         <option value="Limping">Limping</option>
         <option value="Vomiting / Diarrhea">Vomiting / Diarrhea</option>
@@ -707,13 +791,8 @@ onMounted(() => {
     <div class="mb-3">
       <label class="form-label">Severity of Condition</label>
       <div class="severity-container">
-        <div 
-          v-for="level in 5" 
-          :key="level"
-          class="severity-box"
-          :class="{ selected: report.severity >= level }"
-          @click="setSeverity(level)"
-        >
+        <div v-for="level in 5" :key="level" class="severity-box" :class="{ selected: report.severity >= level }"
+          @click="setSeverity(level)">
           {{ level }}
         </div>
       </div>
@@ -724,136 +803,81 @@ onMounted(() => {
     <!-- Description -->
     <div class="mb-3">
       <label class="form-label">Description</label>
-      <textarea class="form-control" rows="3" v-model="report.description" placeholder="Describe the cat's condition..."></textarea>
+      <textarea class="pawsitive-input" :class="{ 'is-invalid': fieldErrors.description }" rows="3"
+        v-model="report.description" placeholder="Describe the cat's condition..."></textarea>
+      <div v-if="fieldErrors.location" class="invalid-feedback d-block">
+        {{ fieldErrors.description }}
+      </div>
     </div>
 
-    <button class="btn btn-dark w-100" type="submit">Submit Report</button>
+    <button class="pawsitive-btn w-100" type="submit">Submit Report</button>
   </form>
   <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
-  
-  <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
-  
-  
-  <!-- Sidebar -->
-  <div class="sidebar" v-if="sidebarOpen">
+
+    <div class="d-flex main-container" :class="{ 'sidebar-open': sidebarOpen }">
+
+
+      <!-- Sidebar -->
+      <div class="sidebar" v-if="sidebarOpen">
 
 
 
-    <!-- Nearby Cats Section -->
-<h5 style="margin-top: 30px">Nearby Similar Reports (Past 24h, < 1 km ) </h5>
-<div v-if="nearbyCats.length === 0" class="text-muted">
-  No nearby cats found.
-</div>
-<div v-else class="nearby-cats-container">
-  <div 
-    v-for="cat in nearbyCats" 
-    :key="cat.id" 
-    class="nearby-cat-card card mb-3 p-2"
-  >
-    <div class="d-flex gap-2">
-      <img 
-        v-if="cat.photos && cat.photos.length" 
-        :src="cat.photos[0]" 
-        alt="cat photo" 
-        class="card-img" 
-        style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"
-      />
-      <div>
-        <h6 class="mb-1">{{ cat.name || 'Unnamed Cat' }}</h6>
-        <p class="mb-1"><strong>Description:</strong> {{ cat.description || 'No description' }}</p>
-        <p class="mb-1"><strong>Last Location:</strong> 
-          {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ", " + cat.last_location._long }}
-        </p>
-        <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ? cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
-        <p v-if="cat.distanceMeters" class="mb-0"><strong>Estimated Distance:</strong> {{ cat.distanceMeters.toFixed(2) }} m</p>
+        <!-- Nearby Cats Section -->
+        <h5 style="margin-top: 30px">Nearby Similar Reports (Past 24h, < 1 km ) </h5>
+            <div v-if="nearbyCats.length === 0" class="text-muted">
+              No nearby cats found.
+            </div>
+            <NearbyCatsList v-else :cats="nearbyCats" :show-distance="true" />
+
+            <hr />
+
+
+            <!-- Other Cats Section -->
+            <h5>Other Cat Reports</h5>
+            <!-- Other Cats Section with Accordion -->
+            <div>
+              <button class="btn btn-outline-secondary w-100 mb-2" type="button"
+                @click="otherCatsOpen = !otherCatsOpen">
+                Other Cats ({{ reports.length }})
+                <span>{{ otherCatsOpen ? '▲' : '▼' }}</span>
+              </button>
+
+              <NearbyCatsList v-show="otherCatsOpen" :cats="reports" :show-distance="false" />
+            </div>
+
       </div>
+
+
+
+      <!-- Toggle button -->
+      <button class="sidebar-toggle" :class="{ 'sidebar-open-btn': sidebarOpen }" @click="toggleSidebar">
+        {{ sidebarOpen ? '⮞' : '⮜' }}
+      </button>
+
     </div>
+
+
   </div>
-</div>
 
-    <hr />
-
+  </main>
   
-    <!-- Other Cats Section -->
-        <h5>Other Cat Reports</h5>
-      <!-- Other Cats Section with Accordion -->
-<div>
-  <button 
-    class="btn btn-outline-secondary w-100 mb-2"
-    type="button" 
-    @click="otherCatsOpen = !otherCatsOpen"
-  >
-    Other Cats ({{ reports.length }}) 
-    <span>{{ otherCatsOpen ? '▲' : '▼' }}</span>
-  </button>
-
-  <div v-show="otherCatsOpen" class="nearby-cats-container">
-    <div 
-      v-for="cat in reports" 
-      :key="cat.id" 
-      class="nearby-cat-card card mb-3 p-2"
-    >
-      <div class="d-flex gap-2">
-        <img 
-          v-if="cat.photos && cat.photos.length" 
-          :src="cat.photos[0]" 
-          alt="cat photo" 
-          class="card-img" 
-          style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"
-        />
-        <div>
-          <h6 class="mb-1">{{ cat.name || 'Unnamed Cat' }}</h6>
-          <p class="mb-1"><strong>Description:</strong> {{ cat.description || 'No description' }}</p>
-          <p class="mb-1"><strong>Last Location:</strong> 
-            {{ Array.isArray(cat.last_location) ? cat.last_location.join(", ") : cat.last_location._lat + ", " + cat.last_location._long }}
-          </p>
-          <p class="mb-1"><strong>Created At:</strong> {{ cat.created_at?.toDate ? cat.created_at.toDate().toLocaleString() : cat.created_at }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-  </div>
-
-
-
-  <!-- Toggle button -->
-    <button 
-      class="sidebar-toggle" 
-      :class="{ 'sidebar-open-btn': sidebarOpen }" 
-      @click="toggleSidebar"
-    >
-      {{ sidebarOpen ? '⮞' : '⮜' }}
-    </button>
-
-</div>
-
-
-</div>
-
   <BottomFooter />
 </template>
 
 <style>
-/* Make form have side spacing on mobile */
-/* ---- Container Layout ---- */
+/* ==============================
+   Container Layout
+   ============================== */
 .main-container {
   display: flex;
-  justify-content: center;  /* center form by default */
+  justify-content: center;
   transition: all 0.3s ease;
   padding: 1rem;
 }
 
-.main-content {
-  transition: margin-right 0.3s ease;
-  margin-right: 0; /* centered by default */
-  max-width: 500px; /* same width as your form */
-  width: 100%; /* responsive */
-  padding-top: 30px;
-}
-
-/* ---- Sidebar ---- */
+/* ==============================
+   Sidebar
+   ============================== */
 .sidebar {
   width: 300px;
   position: fixed;
@@ -864,23 +888,17 @@ onMounted(() => {
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   padding: 1rem;
-  padding-top: 70px; /* space for navbar */
+  padding-top: 70px;
   z-index: 1000;
   transform: translateX(100%);
   transition: transform 0.3s ease;
+  overflow-x: hidden;
 }
 
-/* Sidebar open state */
 .sidebar-open .sidebar {
   transform: translateX(0);
 }
 
-/* Push form left when sidebar open (desktop only) */
-.sidebar-open .main-content {
-  margin-right: 300px;
-}
-
-/* ---- Sidebar Toggle Button ---- */
 .sidebar-toggle {
   position: fixed;
   right: 0;
@@ -897,52 +915,83 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-/* When sidebar is open, move toggle left */
 .sidebar-open-btn {
-  right: 300px; /* matches sidebar width */
+  right: 300px;
   border-radius: 4px;
 }
 
-/* ---- Responsive Sidebar ---- */
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
     transform: translateX(100%);
   }
+
   .sidebar-open .sidebar {
     transform: translateX(0);
   }
-  .sidebar-open .main-content {
-    margin-right: 0; /* no shift on mobile */
-  }
+
   .sidebar-open-btn {
-    right: 0; /* stays visible */
+    right: 0;
   }
 }
 
 /* ==============================
-   Report Form Styles
+   Report Form
    ============================== */
 .report-form {
   max-width: 500px;
   margin: 2rem auto;
-  padding: 0 1rem; /* <-- add horizontal padding */
-  box-sizing: border-box; /* ensures padding doesn’t exceed max-width */
+  padding: 1.5rem;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
 }
 
-.report-form input,
-.report-form textarea,
-.report-form select {
-  font-size: 0.95rem;
-  border-radius: 8px;
-}
-
-/* ---- Header ---- */
 .report-header {
   text-align: center;
   padding-top: 20px;
   margin-bottom: 1.5rem;
   font-weight: 600;
+  color: #806e83;
+}
+
+.report-form .form-label {
+  font-weight: 600;
+  color: #806e83;
+  margin-bottom: 0.5rem;
+}
+
+.placeholder-selected {
+  color: #6c757d;
+}
+
+@media (max-width: 768px) {
+  .report-form {
+    padding: 20px;
+    margin: 1rem 20px;
+  }
+}
+
+/* ==============================
+   File Upload Styling
+   ============================== */
+.file-upload-container {
+  margin-top: 0.5rem;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.file-upload-btn {
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  text-align: center;
 }
 
 /* ==============================
@@ -958,25 +1007,27 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 2px solid #e0d4e0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  color: #806e83;
+  font-weight: 600;
 }
 
 .severity-box.selected {
-  background-color: #343a40;
+  background-color: #806e83;
   color: white;
-  border-color: #343a40;
+  border-color: #806e83;
 }
 
 .severity-box:hover {
-  background-color: #495057;
+  background-color: #6d5c70;
   color: white;
-  border-color: #495057;
+  border-color: #6d5c70;
 }
 
 /* ==============================
@@ -985,50 +1036,293 @@ onMounted(() => {
 .image-preview-container {
   position: relative;
   display: inline-block;
+  width: 100%;
 }
 
 .img-preview {
   max-width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 15px;
   display: block;
 }
 
 .remove-image-btn {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.8rem;
+  top: 10px;
+  right: 10px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
   border-radius: 50%;
   line-height: 1;
+  background-color: #806e83;
+  border-color: #806e83;
+}
+
+.remove-image-btn:hover:not(:disabled) {
+  background-color: #6d5c70;
+  border-color: #6d5c70;
+}
+
+.remove-image-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #999;
+  border-color: #999;
 }
 
 /* ==============================
-   Nearby Cats Section
+   Suggestion Dropdown
    ============================== */
-.nearby-cats-container {
+.list-group-item:hover {
+  background-color: #f8e1e1;
+  color: #806e83;
+}
+
+.list-group-item {
+  border: 1px solid #e0d4e0;
+  transition: all 0.2s ease;
+}
+
+/* ==============================
+   Alert Boxes
+   ============================== */
+.alert-info {
+  background-color: #f8e1e1;
+  border-color: #e0d4e0;
+  color: #806e83;
+  border-radius: 15px;
+}
+
+/* ==============================
+   Form Validation
+   ============================== */
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ==============================
+   Map Styling
+   ============================== */
+#map .leaflet-control-attribution.leaflet-control {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+#map .leaflet-control-attribution.leaflet-control>a {
+  margin: 2px;
+  padding: 0px;
+}
+
+#map .leaflet-control-attribution.leaflet-control>span {
+  margin: 2px;
+  padding-right: 1px;
+}
+
+#map {
+  border-radius: 15px;
+  border: 2px solid #e0d4e0;
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+  padding: 0 !important;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.leaflet-popup-content) {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 280px !important;
+}
+
+:deep(.cat-marker-popup .leaflet-popup-content) {
+  width: 340px !important;
+  min-width: 340px !important;
+  max-width: 340px !important;
+}
+
+:deep(.cat-popup-card) {
+  background-color: #fadadd;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #ffc0cb;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+:deep(.cat-popup-inner) {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-.nearby-cat-card {
-  background-color: #f8f9fa;
+:deep(.cat-popup-img-container) {
+  width: 100%;
+  height: 150px;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-
-/* ==============================
-   Suggestion
-   ============================== */
-
-.list-group-item:hover {
-  background-color: #f1f1f1;
+:deep(.cat-popup-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
+:deep(.cat-popup-info) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
+:deep(.cat-popup-title) {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #806e83;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #ffc0cb;
+}
 
+:deep(.cat-popup-details) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:deep(.cat-popup-detail-item) {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+:deep(.cat-popup-detail-item strong) {
+  color: #806e83;
+  font-weight: 600;
+}
+
+:deep(.cat-popup-detail-value) {
+  color: #5a4a5e;
+  display: block;
+  margin-top: 0.1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+:deep(.cat-popup-link) {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.4rem 1rem;
+  background-color: #806e83;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid #806e83;
+}
+
+:deep(.cat-popup-link:hover) {
+  background-color: #6d5c70;
+  border-color: #6d5c70;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+}
+
+/* Old popup styles - keeping for compatibility */
+:deep(.popup-card) {
+  background-color: #f8e1e1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  padding: 0.5rem;
+}
+
+:deep(.popup-inner) {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+:deep(.popup-img-container) {
+  flex-shrink: 0;
+  width: 85px;
+  height: 85px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+:deep(.popup-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:deep(.popup-info) {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.popup-title) {
+  font-size: 0.95rem;
+  color: #806e83;
+}
+
+:deep(.popup-desc) {
+  font-size: 0.8rem;
+  color: #806e83 !important;
+}
+
+:deep(.popup-meta) {
+  line-height: 1.1;
+  font-size: 0.75rem;
+  color: #806e83;
+}
+
+:deep(.popup-link) {
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: white !important;
+  border: 2px solid #806e83;
+  border-radius: 25px;
+  background: #806e83 !important;
+  margin: 0px;
+  padding: 0px 8px;
+}
+
+:deep(.popup-link:hover) {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+}
+
+:deep(.you-are-here-popup .leaflet-popup-content-wrapper) {
+  background-color: #f8e1e1;
+  border: 2px solid #806e83;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(128, 110, 131, 0.3);
+}
+
+:deep(.you-are-here-popup .leaflet-popup-tip) {
+  background-color: #f8e1e1;
+  border-left: 2px solid #806e83;
+  border-bottom: 2px solid #806e83;
+}
 </style>
+
