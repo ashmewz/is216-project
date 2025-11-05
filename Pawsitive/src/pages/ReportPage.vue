@@ -707,7 +707,6 @@ onMounted(async () => {
         <option value="" disabled>Select status</option>
         <option value="Lost">Lost</option>
         <option value="Injured">Injured</option>
-        <option value="Found">Found</option>
       </select>
       <div v-if="fieldErrors.location" class="invalid-feedback d-block">
         {{ fieldErrors.status }}
@@ -960,6 +959,13 @@ onMounted(async () => {
 
 .placeholder-selected {
   color: #6c757d;
+}
+
+@media (max-width: 768px) {
+  .report-form {
+    padding: 20px;
+    margin: 1rem 20px;
+  }
 }
 
 /* ==============================
