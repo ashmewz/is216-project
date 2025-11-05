@@ -408,7 +408,7 @@ watch(currentIndex, (v) => {
                 <p>Microchipped: {{ currentCat.microchipped ? 'Yes' : 'No' }}</p>
                 <p>Notes: {{ currentCat.notes }}</p>
                 <div class="close-row">
-                    <button class="close-btn" @click="showDetails = false">Close</button>
+                    <button class="pawsitive-btn-outline" @click="showDetails = false">Close</button>
                 </div>
             </div>
         </div>
