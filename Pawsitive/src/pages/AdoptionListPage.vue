@@ -287,7 +287,7 @@ watch(currentIndex, (v) => {
             <div class="col-12 col-md-8 mx-auto controls-row full-width-row">
 
                 <!-- LINE 1: Search bar (full width) -->
-                <input v-model="searchQuery" class="search-input" placeholder="Search by name or breed..."
+                <input v-model="searchQuery" class="pawsitive-input" placeholder="Search by name or breed..."
                     aria-label="Search cats" />
 
                 <!-- LINE 2: Left-aligned controls -->
