@@ -78,10 +78,6 @@
         </section> -->
 
 
-        <!-- Footer -->
-        <footer class="wrap">
-            Made with 🐾 and good energy. © {{ currentYear }} Pawsitive
-        </footer>
     </div>
 </template>
 
