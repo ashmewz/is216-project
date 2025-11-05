@@ -415,7 +415,7 @@ watch(currentIndex, (v) => {
 
         <div class="profile-card-subrow full-width-row">
             <div class="list-card subrow-half">
-                <h3>Cat Catalogue (Scroll)</h3>
+                <h3>Cat Catalogue</h3>
                 <div class="all-cats-card">
                     <ul class="cat-list">
                         <li v-for="(cat, idx) in filteredAndSorted" :key="cat.name + idx"
@@ -469,7 +469,7 @@ watch(currentIndex, (v) => {
             <!-- Question 1: Living Situation -->
             <div class="form-group">
                 <label><strong>1. What type of residence do you live in?</strong></label>
-                <select v-model="applicationData.livingSituation" required>
+                <select  v-model="applicationData.livingSituation" required>
                     <option value="" disabled>Select...</option>
                     <option v-for="opt in livingSituations" :key="opt">{{ opt }}</option>
                 </select>
@@ -929,7 +929,6 @@ watch(currentIndex, (v) => {
 .meta-row {
     display: flex;
     gap: 16px;
-    color: #5f55c1;
     font-weight: 600;
     margin-top: 12px;
     font-size: 1.03rem;
@@ -1086,7 +1085,7 @@ watch(currentIndex, (v) => {
     font-weight: 700;
     font-size: 1.08rem;
     margin-bottom: 8px;
-    color: #655691;
+    color: #6d5c70;
 }
 
 .reason-input {
