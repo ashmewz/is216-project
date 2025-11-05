@@ -250,7 +250,7 @@ onMounted(async () => {
         <div class="content pawsitive-background">
             <div class="map-page-container">
                 <div class="search-overlay input-group">
-                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search for a place..."
+                    <input type="text" v-model="searchQuery" class="pawsitive-input" placeholder="Search for a place..."
                         @keyup.enter="performSearch" />
                     <button class="btn btn-primary pawsitive-color" @click="performSearch">Search</button>
                 </div>
@@ -310,90 +310,102 @@ onMounted(async () => {
     margin: 0rem 1.6rem;
 }
 
+.search-overlay .pawsitive-input {
+    padding: 0.375rem 0.75rem;
+    line-height: 1.5;
+    height: auto;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    border-radius: 50rem !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
 :deep(.leaflet-control-attribution) {
     display: inline-flex !important;
     align-items: center !important;
 }
 
 :deep(.leaflet-popup-content-wrapper) {
-  padding: 0 !important;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    padding: 0 !important;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 :deep(.leaflet-popup-content) {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 280px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 280px !important;
 }
 
 :deep(.popup-card) {
-  background-color: #f8e1e1;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #eee;
-  padding: 0.5rem;
+    background-color: #f8e1e1;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    padding: 0.5rem;
 }
 
 :deep(.popup-inner) {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
 }
 
 :deep(.popup-img-container) {
-  flex-shrink: 0;
-  width: 85px;
-  height: 85px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+    width: 85px;
+    height: 85px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
 }
 
 :deep(.popup-img) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 :deep(.popup-info) {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 :deep(.popup-title) {
-  font-size: 0.95rem;
-  color: #806e83;
+    font-size: 0.95rem;
+    color: #806e83;
 }
 
 :deep(.popup-desc) {
-  font-size: 0.8rem;
-  color: #806e83 !important;
+    font-size: 0.8rem;
+    color: #806e83 !important;
 }
 
 :deep(.popup-meta) {
-  line-height: 1.1;
-  font-size: 0.75rem;
-  color: #806e83;
+    line-height: 1.1;
+    font-size: 0.75rem;
+    color: #806e83;
 }
 
 :deep(.popup-link) {
-  font-size: 0.75rem;
-  text-decoration: none;
+    font-size: 0.75rem;
+    text-decoration: none;
 
-  color: white !important;
+    color: white !important;
 
-  border: 2px solid #806e83;
-  border-radius: 25px;
-  background: #806e83 !important;
-  margin: 0px;
-  padding: 0px 8px;
+    border: 2px solid #806e83;
+    border-radius: 25px;
+    background: #806e83 !important;
+    margin: 0px;
+    padding: 0px 8px;
 }
 
 :deep(.popup-link:hover) {
-  text-decoration: none;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(128, 110, 131, 0.4);
 }
 </style>
