@@ -168,7 +168,7 @@ The project will run on [http://localhost:5173](http://localhost:5173) by defaul
 
 
 
-### 3) Testing the Stripe feature
+### 2) Running Stripe server
 This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. 
 
 Testing card numbers can be found from this stripe documentation: 
