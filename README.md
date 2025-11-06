@@ -151,33 +151,27 @@ npm run preview
 
 
 ### 2) Running Stripe server
-This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node.
+This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. Localhosting will not be possible since Express & Node.js will not be in use.
 
-All these needs to be run in the Pawsitive directory (so make sure you are in that folder, else cd to `Pawsitive/` directory)
-1. Check if Node & npm are installed on your machine. `node -v` and `npm -v` separately
-2. Node modules are required locally too. Run `npm install`
-3. In Pawsitive directory, run `node server/server.js` which will run in port 4242 
-4. Open another powershell/terminal using '+' and run `npm run dev` to run the frontend site in port 5173
+Testing card numbers can be found from this stripe documentation: 
 
-In the donations page, select the donation amount, then "Continue".
-Your 2nd server would have a log something like: `💰 Received donation amount: 12`
+`https://docs.stripe.com/testing`
 
-Testing card numbers can be found from this stripe documentation: `https://docs.stripe.com/testing`
 Card number: 4242 4242 4242 4242
+
 Card expiry: 12/34
+
 Card CVC: 567
 
-Upon "Donate Now" success, you will currently be directed to a blank page, with the following browser path pattern:
-`http://localhost:5173/donate/success?payment_intent=pi_3SI1WnA4UE4DKmEO0KHD04IZ&payment_intent_client_secret=pi_3SI1WnA4UE4DKmEO0KHD04IZ_secret_g26E0UQS8m7bJ1aUh70EQcleP&redirect_status=succeeded`
-In future this should redirect back to some other page. But this has yet to be implemented. (CAA 14 Oct 2025)
+Postal: any 5 digit num
 
+Wrong card info input will be detected by Stripe. Upon donation success, you will currently be directed to a success page.
 
 ## Testing AI Recognition Page
 You must have a VITE_GEMINI_API_KEY value in your .env file.
 ENV files are git ignored. Please get the gemini API key from Kevan.
-The key allows for up to 50 per day and resets.
+The key allows for up to 50 per day and resets. To test:
 
-To test:
 1. Load the page.
 2. Grab a random cat image from google and upload it.
 3. Click "Run cat prediction".
