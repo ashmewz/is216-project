@@ -822,7 +822,7 @@ onMounted(async () => {
 
 
         <!-- Nearby Cats Section -->
-        <h5 style="margin-top: 30px">Nearby Similar Reports (Past 24h, < 1 km ) </h5>
+        <h5 style="margin-top: 30px">Nearby Similar Reports (Past 24h, < 2 km ) </h5>
             <div v-if="nearbyCats.length === 0" class="text-muted">
               No nearby cats found.
             </div>
