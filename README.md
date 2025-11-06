@@ -86,7 +86,7 @@ Provide screenshots and captions showing how users interact with your app.
    - User Jouney: I am on my way to school, and i spot an injured cat, i want to report it to Pawsitive, so first i login
 
    - Features: Register/login
-   
+
 3. **Report**  
    <img src="documentation/use-case/report.png" width="600">  
    - User Jouney: Upon login, I am directed straight to the report page, i upload the image of the cat and it will analyzes the cat breed, then it auto checks whether there are similar reports (same breed, within 2km) reported in the past 24hr. There is no similar reports, so i proceed to submit my report.
@@ -169,19 +169,17 @@ The project will run on [http://localhost:5173](http://localhost:5173) by defaul
 
 
 ### 3) Testing the Stripe feature
-This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. Localhosting will not be possible since Express & Node.js will not be in use.
+This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. 
 
 Testing card numbers can be found from this stripe documentation: 
 
-`https://docs.stripe.com/testing`
+https://docs.stripe.com/testing
 
 Card number: 4242 4242 4242 4242
 
 Card expiry: 12/34
 
 Card CVC: 567
-
-Postal: any 5 digit num
 
 Wrong card info input will be detected by Stripe. Upon donation success, you will currently be directed to a success page.
 
@@ -236,7 +234,6 @@ If applicable:
 npm run test
 ```
 
----
 <!-- 
 ### 6) Common Issues & Fixes
 
