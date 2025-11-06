@@ -357,7 +357,7 @@ onMounted(() => {
                                         class="input-group input-group-skill mb-2">
                                         <input v-model="form.skills[index]" type="text" class="pawsitive-input"
                                             placeholder="Skill">
-                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill ms-2"
                                             @click="form.skills.splice(index, 1)">Remove</button>
                                     </div>
                                     <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1"
