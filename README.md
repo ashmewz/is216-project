@@ -91,14 +91,14 @@ Provide screenshots and captions showing how users interact with your app.
 
 3. **Report**  
    <img src="documentation/use-case/report.png" width="600">  
-   - User Jouney: Aftering logging in, I am directed straight to the report page. I upload a photo of the injured cat and sees the system analysing its breed. It also automatically checks for similar reports (same breed, within 2km that was reported in the past 24 hours). However, for my area, there is not any similar reports, so I proceed to submit my report.
+   - User Journey: Aftering logging in, I am directed straight to the report page. I upload a photo of the injured cat and sees the system analysing its breed. It also automatically checks for similar reports (same breed, within 2km that was reported in the past 24 hours). However, for my area, there is not any similar reports, so I proceed to submit my report.
 
    - Features: Submit missing/injured cat report. Form auto detects similar reports (same breed, within 2km) reported in the past 24hrs
 
 4. **Map and Cat Profile**  
    <img src="documentation/use-case/map.png" width="600">  
    <img src="documentation/use-case/cat-details.png" width="600">  
-   - User Jouney: I navigate to the map page to view the locations of reported cats. By hovering over the pins and clicking on the, I can access detailed information of each cat.
+   - User Journey: I navigate to the map page to view the locations of reported cats. By hovering over the pins and clicking on the, I can access detailed information of each cat.
 
    - Features: View the reported cats on a map view
 
