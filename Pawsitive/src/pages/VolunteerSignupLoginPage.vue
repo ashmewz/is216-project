@@ -3,9 +3,9 @@
         <div class="login-container">
             <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4 py-md-5">
                 <!-- Card: Full width on mobile, max 900px on large screens -->
-                <div class="card shadow card-entrance card-visible w-100 mx-3 mx-md-4 mx-lg-0"
+                <div class="card shadow card-entrance card-visible w-100 mx-3 mx-md-4 mx-lg-0 card-container"
                     style="max-width: 900px;">
-                    <div class="row g-0">
+                    <div class="row g-0 card-row">
 
                         <!-- ========== GRAPHIC PANEL (Top on mobile, Left on lg) ========== -->
                         <!-- GRAPHIC PANEL – now uses a soft pink that matches the page -->
@@ -19,8 +19,8 @@
 
                         <!-- ========== FORM PANEL ========== -->
                         <div
-                            class="col-12 col-lg-6 order-lg-2 bg-white d-flex justify-content-center align-items-center p-4 p-lg-5 rounded-bottom rounded-lg-end">
-                            <div class="w-100" style="max-width: 420px;">
+                            class="col-12 col-lg-6 order-lg-2 bg-white d-flex justify-content-center align-items-center p-4 p-lg-5 rounded-bottom rounded-lg-end form-panel">
+                            <div class="w-100 form-wrapper" style="max-width: 420px;">
                                 <h3 class="text-center mb-4 fw-semibold">
                                     {{ isLogin ? 'Volunteer Login' : 'Volunteer Registration' }}
                                 </h3>
@@ -321,6 +321,8 @@ const handleRegister = async () => {
 /* Background Animation */
 .main-container {
     min-height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -336,6 +338,39 @@ const handleRegister = async () => {
     animation: bgShift 14s ease-in-out infinite;
 }
 
+.login-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.login-container main {
+    overflow: hidden;
+    width: 100%;
+}
+
+/* Mobile: Allow natural scrolling */
+@media (max-width: 991px) {
+    .main-container {
+        max-height: none;
+        overflow: auto;
+        min-height: 100vh;
+    }
+
+    .login-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .login-container main {
+        overflow: visible;
+    }
+}
+
 @keyframes bgShift {
 
     0%,
@@ -348,9 +383,92 @@ const handleRegister = async () => {
     }
 }
 
+/* Card Container - Limit height to viewport */
+.card-container {
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+.card-row {
+    height: 100%;
+}
+
 .graphic-panel {
   background: #f9bec7;
-  color: black /* keep text white */
+  color: black;
+  max-height: 85vh;
+  overflow: hidden;
+}
+
+/* Form Panel Scrollable */
+.form-panel {
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex !important;
+    align-items: stretch !important;
+}
+
+.form-wrapper {
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.5rem;
+    scrollbar-gutter: stable;
+}
+
+.form-wrapper h3 {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding-bottom: 1rem;
+}
+
+/* Mobile: Disable internal scrolling */
+@media (max-width: 991px) {
+    .card-container {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .graphic-panel {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .form-panel {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .form-wrapper {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    .form-wrapper h3 {
+        position: static;
+    }
+}
+
+/* Custom scrollbar for form */
+.form-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.form-wrapper::-webkit-scrollbar-thumb {
+    background: #f9bec7;
+    border-radius: 10px;
+}
+
+.form-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #f8a5c2;
 }
 
 /* Card Entrance */
