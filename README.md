@@ -14,8 +14,8 @@ G3 Group 5
 | <img src="documentation/members/ash.jpeg" width="80"> | Muhammad Ashraf Bin Mustafa | Project Lead, CSS/JS Animation, Donation Page |   
 | <img src="documentation/members/rosh.png" width="80"> | Rosh Chan | UI/UX,  Adoption (Listing + Form) Page |
 | <img src="documentation/members/charmaine.jpeg" width="80"> | Charmaine Lim Min Xuan |  Forum Page, Report Page|
-| <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map/Cat Tracking Page |
-| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang | Database & Auth, Volunteer Profile Page  |
+| <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map/Cat Tracking Page, Cat Profile Page |
+| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang | Database &Auth, Login & Register, Volunteer Profile Page  |
 | <img src="documentation/members/kevan.jpeg" width="80"> | Soon Shi Heng, Kevan | Report Page AI & Map features |
 <!-- > Place all headshot thumbnails in the `/photos` folder (JPEG or PNG). -->
 ---
@@ -34,6 +34,7 @@ Our project addresses this issue by introducing a unified, easy-to-use platform 
 
 ## Web Solution Overview
 
+[Deployed App Link](https://pawsitive-sg.vercel.app/)
 ### 🎯 Intended Users
 - Community Cat Volunteers
 - Cat Lovers
@@ -65,7 +66,7 @@ Explain the core features and the benefit each provides.
 | <img src="https://vitejs.dev/logo.svg" width="40"> | **Vite** | Development server and build tool |
 | <img src="https://vuejs.org/images/logo.png" width="40"> | **Vue.js 3** | Component-based frontend framework |
 | <img src="https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png" width="40"> | **Firebase** | Authentication and Firestore database services |
-| <img src="https://avatars.githubusercontent.com/u/9950313?s=48&v=4" width="40"> | **Node.JS + Express.JS** | For Stripe Server Only|
+| <img src="https://avatars.githubusercontent.com/u/9950313?s=48&v=4" width="40"> | **Node.JS + Express.JS** | For Stripe (Only works in vercel)|
 
 <!-- > Add or remove technologies depending on your project stack (e.g., Express.js, Supabase, MongoDB Atlas, AWS S3). -->
 
@@ -84,7 +85,7 @@ Provide screenshots and captions showing how users interact with your app.
    <img src="documentation/use-case/register.png" width="600">  
    - User Jouney: I am on my way to school, and i spot an injured cat, i want to report it to Pawsitive, so first i login
 
-   - Features: Register as an volunteer to access the features
+   - Features: Register/login
 
 3. **Report**  
    <img src="documentation/use-case/report.png" width="600">  
@@ -110,17 +111,19 @@ Provide screenshots and captions showing how users interact with your app.
 
 5. **Donation Page**  
    <img  alt="Adoption Page" src="documentation/use-case/donation.png" />
-   - User Journey: 
-   - Volunteers can apply to adopt cats of their choosing
+   - User Journey: I am also feeling very generous today, and I feel like donating to the cats community, so i go ahead to make a donation on the page
+
+   - Features: Make a donation to the welfare community using their credit card
 
 5. **Adoption Page**  
    <img  alt="Adoption Page" src="documentation/use-case/adoption.png" />
-   - Displays cat listings available for adoption
-   - Volunteers can apply to adopt cats of their choosing
+   - User Journey: I am also feeling extra generous today, and I feel like adopting a cat, so I looked through the adoption listing and submit an interest form.
+
+   - Features: View adoption cats listing, submit interest form
    
 6. **My Profile Page**  
    <img src="documentation/use-case/myprofile.png" width="600">  
-   - Ability to edit profile (e.g change contact, add services etc)
+   - Edit profile (e.g change contact, add services etc)
 
 
 7. **Volunteer Page**  
@@ -165,12 +168,12 @@ The project will run on [http://localhost:5173](http://localhost:5173) by defaul
 
 
 
-### 3) Testing the Stripe feature
-This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. Localhosting will not be possible since Express & Node.js will not be in use.
+### 2) Running Stripe server
+This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. 
 
 Testing card numbers can be found from this stripe documentation: 
 
-`https://docs.stripe.com/testing`
+https://docs.stripe.com/testing
 
 Card number: 4242 4242 4242 4242
 
@@ -178,12 +181,7 @@ Card expiry: 12/34
 
 Card CVC: 567
 
-Postal: any 5 digit num
-
 Wrong card info input will be detected by Stripe. Upon donation success, you will currently be directed to a success page.
-
-
----
 
 <!-- ### 2) Configure Environment Variables
 Create a `.env` file in the root directory with the following structure:
@@ -203,7 +201,7 @@ VITE_FIREBASE_APP_ID=<your_app_id>
 
 ---
 
-### 3) Backend / Cloud Service Setup
+### 4) Backend / Cloud Service Setup
 
 #### Firebase
 1. Go to [Firebase Console](https://console.firebase.google.com/)
@@ -216,7 +214,6 @@ VITE_FIREBASE_APP_ID=<your_app_id>
 
 ---
 
-
 ### 5) Testing the Application
 
 #### Manual Testing
@@ -224,20 +221,42 @@ Perform the following checks before submission:
 
 | Area | Test Description | Expected Outcome |
 |:--|:--|:--|
-| Authentication | Register, Login, Logout | User successfully signs in/out |
-| CRUD Operations | Add, Edit, Delete data | Database updates correctly |
-| Responsiveness | Test on mobile & desktop | Layout adjusts without distortion |
-| Navigation | All menu links functional | Pages route correctly |
-| Error Handling | Invalid inputs or missing data | User-friendly error messages displayed |
+| VolunteerSignupLoginPage - Form Validation | Enter invalid email, leave fields empty, enter mismatched passwords | Error messages display for invalid email format, required fields, and password mismatch |
+| VolunteerSignupLoginPage - Registration | Fill all fields correctly and submit registration | User account created successfully, redirected to Report page |
+| VolunteerSignupLoginPage - Login | Enter correct credentials and submit | User successfully logs in, redirected to Report page |
+| VolunteerSignupLoginPage - Login | Enter incorrect credentials | Error message displays: "Invalid email or password" |
+| ReportPage - Form Validation | Submit form with empty required fields | Error messages display for location, status, breed, and description |
+| ReportPage - Cat Breed Identification | Upload cat image | AI identifies cat breed and displays result |
+| ReportPage - Image Upload | Select an image file | Image preview displays with remove button |
+| ReportPage - Image Upload | Click remove button during breed identification | Remove button is disabled while AI is processing |
+| ReportPage - Image Upload | Click remove button after breed identified | Image preview and breed results are cleared |
+| ReportPage - Map Display | Enter location with nearby cats (< 2km, past 24h, same breed) | Map displays showing user location and nearby matching cats |
+| ReportPage - Map Display | Enter location with no nearby matching cats | Map does not display |
+| ReportPage - Map Display | Click on cat marker on map | Popup shows cat details (name, location, distance, reported time) |
+| ReportPage - Side Drawer | Open side drawer after breed identification | "Nearby Similar Reports" section shows cat report cards for matches |
+| ReportPage - Side Drawer | Expand "Other Cat Reports" section | All submitted cat reports display regardless of location or breed |
+| ReportPage - Form Submission | Fill all required fields and submit | Cat report saved to database, form resets, success message displays |
+| MapPage - Search Location | Enter postal code or location name in search | Map centers on searched location |
+| MapPage - Cat Markers | Load map page | Cat markers display on map for all reported cats |
+| MapPage - Marker Popup | Click on a cat marker | Popup card displays with cat details (name, photo, last seen, location) |
+| MapPage - View Profile | Click "View Full Profile" in popup card | Redirects to full cat profile page (CatProfile.vue) |
+| ForumPage - Search Posts | Enter username or post description in search | Posts filtered to match search query |
+| ForumPage - Filter Posts | Select "Newest First" or "Oldest First" | Posts reordered by selected filter |
+| ForumPage - Create Post | Click create post button, fill form, and submit | New post created and displays in feed |
+| ForumPage - Add Comment | Click comment button, enter text, and submit | Comment added to post and displays in comment modal |
+| ForumPage - View Author Profile | Click on post author's profile picture or username | Redirects to VolunteerProfileViewPage for that user |
+| VolunteerProfileViewPage - User Information | Navigate to volunteer profile view page | Displays user information (name, bio, avatar, skills, region) |
+| VolunteerProfilePage - User Information | Navigate to own profile page | Displays current user's information (name, bio, avatar, skills, services) |
+| VolunteerProfilePage - Edit Profile | Click "Edit Profile" button | Popup modal displays with editable profile fields |
+| VolunteerProfilePage - Edit Profile | Update profile information and save | Profile updates successfully, modal closes |
+| VolunteerProfilePage - Logout | Click logout button | User logged out and redirected to landing page |
+| DonationPage - Form Validation | Leave amount field empty or enter invalid amount | Error message displays for required/invalid amount | | DonationPage - Stripe Payment | Enter credit card details (4242 4242 4242 4242, 12/34, 567) | Stripe validates card information |
+| DonationPage - Donation Success | Complete payment with valid card | Redirects to DonationSuccessPage |
+| DonationPage - Invalid Card | Enter invalid card information | Stripe displays error message |
+| DonationSuccessPage - Success Message | Complete donation process | Success message displays confirming donation |
 
-#### Automated Testing (Optional)
-If applicable:
-```bash
-npm run test
-```
 
----
-
+<!-- 
 ### 6) Common Issues & Fixes
 
 | Issue | Cause | Fix |
@@ -246,9 +265,9 @@ npm run test
 | `Firebase: permission-denied` | Firestore security rules not set | Check rules under Firestore → Rules |
 | `CORS policy error` | Backend not allowing requests | Enable your domain in CORS settings |
 | `.env` variables undefined | Missing `VITE_` prefix | Rename variables to start with `VITE_` |
-| `npm run dev` fails | Node version mismatch | Check Node version (`node -v` ≥ 18) |
+| `npm run dev` fails | Node version mismatch | Check Node version (`node -v` ≥ 18) | -->
 
--->
+
 ---
 
 ## Group Reflection
@@ -265,5 +284,5 @@ npm run test
 
  - *Kevan:* Understood how Firebase Authentication and Firestore integrate with modern SPAs.  
 
- - *Jing Xiang:* Understood how Firebase Authentication and Firestore integrate with modern SPAs.  
+ - *Jing Xiang:* I learnt how to use github collaboratively, branching, pull requests etc. And the general usage of vue.js and firebase
 

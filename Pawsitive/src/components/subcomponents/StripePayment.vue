@@ -19,9 +19,7 @@ onMounted(async () => {
   const response = await fetch('/api/create-payment-intent', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      amount: 50,
-    }),
+    body: JSON.stringify({ amount: 50 }),
   })
 
   const data = await response.json()
@@ -30,8 +28,9 @@ onMounted(async () => {
   stripe = await stripePromise
   elements = stripe.elements()
 
-  // Create the Card Element (plain form fields)
+  // Create the Card Element
   card = elements.create('card', {
+    hidePostalCode: true, 
     style: {
       base: {
         fontSize: '16px',
@@ -54,11 +53,7 @@ async function handleSubmit() {
 
   if (error) {
     message.value = error.message
-    loading.value = false
-    return
-  }
-
-  if (paymentIntent && paymentIntent.status === 'succeeded') {
+  } else if (paymentIntent && paymentIntent.status === 'succeeded') {
     window.location.href = '/donationsuccess'
   } else {
     message.value = 'Processing payment...'

@@ -15,7 +15,6 @@ function handleBackHome() {
     <NavBar />
 
     <div class="success-container">
-      <!-- Hero Section -->
       <div class="success-hero">
         <div class="success-icon">
           <svg
@@ -53,22 +52,30 @@ function handleBackHome() {
         </button>
       </div>
     </div>
+    <BottomFooter />
   </div>
-  <BottomFooter />
 </template>
 
 <style scoped>
 .success-page {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .success-container {
-  max-width: 900px;
-  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 4rem 1rem;
   text-align: center;
+}
+
+.success-hero {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .success-icon {
@@ -111,6 +118,7 @@ function handleBackHome() {
   padding: 2rem;
   margin: 2rem auto;
   max-width: 36rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .impact-heading {
@@ -126,6 +134,10 @@ function handleBackHome() {
   font-size: 1rem;
 }
 
+.pawsitive-btn:hover {
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .success-title {
     font-size: 2rem;
@@ -133,6 +145,10 @@ function handleBackHome() {
 
   .impact-box {
     padding: 1.5rem;
+  }
+
+  .pawsitive-btn {
+    width: 100%;
   }
 }
 </style>
