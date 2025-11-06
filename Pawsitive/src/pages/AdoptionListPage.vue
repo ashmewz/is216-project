@@ -6,39 +6,15 @@ import BottomFooter from '@/components/resuables/BottomFooter.vue';
 import { db } from "@/firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 
+// Constants
 const containerRef = ref(null);
 const scrolledPast = ref(false);
 const showApplicationForm = ref(false);
 const applicationFormRef = ref(null);
-
-const SCROLL_THRESHOLD = 50;
-
-const applicationData = ref({
-    livingSituation: '',
-    hasOtherPets: '',
-    hasKids: '',
-    allergies: '',
-    hoursAlone: '',
-    financialCommit: '',
-    routinePlan: '',
-    movingSoon: '',
-    agreeHomeVisit: false,
-    references: ''
-});
-
 const yesNoOptions = ['Yes', 'No'];
 const livingSituations = ['HDB Flat', 'Condo', 'Landed Property', 'Others'];
 const cats = ref([])
-
-const timelineSteps = [
-    { label: "Send Application", offsetDays: 0, time: "10:00 AM" },
-    { label: "Application Processing", offsetDays: 2, time: "5-7 Days" },
-    { label: "Meet and Greet", offsetDays: 8, time: "2:00 PM" },
-    { label: "Cat Vaccinations", offsetDays: 9, time: "10:30 AM" },
-    { label: "Monitoring Period", offsetDays: 11, time: "5-7 Days" },
-    { label: "Cat Pickup", offsetDays: 16, time: "11:00 AM" }
-];
-
+const SCROLL_THRESHOLD = 50;
 const currentIndex = ref(0);
 const carouselIndex = ref(0);
 const showDetails = ref(false);
@@ -56,109 +32,28 @@ const successMessage = ref('');
 const timelineProgress = ref(0);
 const FAVORITES_KEY = 'cat_favorites_v1';
 
-function onScroll() {
-    if (!containerRef.value || !applicationFormRef.value) return;
-    const containerScrollTop = containerRef.value.scrollTop;
-    const applicationOffset = applicationFormRef.value.offsetTop - 120;
-    if (containerScrollTop >= applicationOffset && showApplicationForm.value) {
-        scrolledPast.value = true;
-    } else {
-        scrolledPast.value = false;
-    }
-}
-
-
-// Fetch all cat profiles from Firestore
-onMounted(async () => {
-    try {
-        const querySnapshot = await getDocs(collection(db, 'catAdoption'))
-        cats.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    } catch (e) {
-        console.error('Error fetching cats:', e)
-    }
-})
-
-// Firestore Application Form Data (For redundancy)
-async function submitApplication() {
-
-    try {
-        await addDoc(collection(db, 'catApplication'), applicationData.value)
-        console.log('Application submitted successfully')
-        // Optionally, reset form or show success message
-    } catch (error) {
-        console.error('Error submitting application: ', error)
-    }
-    showSuccessPopup('Application Submitted', 'Thank you for your interest! Our team will review your application.');
-    showApplicationForm.value = false;
-    scrolledPast.value = false;
-}
-
-function getTimelineWithDates() {
-    const today = new Date()
-    return timelineSteps.map(step => {
-        const eventDate = new Date(today)
-        eventDate.setDate(today.getDate() + step.offsetDays)
-        return {
-            label: step.label,
-            date: eventDate.toLocaleDateString('en-GB'), // Date format: DD/MM/YYYY
-            time: step.time
-        }
-    });
-}
-const adoptionTimeline = ref(getTimelineWithDates())
-
-function openScheduleVisit() {
-    window.open("https://spca.org.sg/services/adoption", "_blank", "noopener");
-}
-
-function openContactCenter() {
-    window.open("https://www.catwelfare.org/adoptions", "_blank", "noopener");
-}
-
-function openContactUs() {
-    window.open("https://www.catwelfare.org/get-help", "_blank", "noopener");
-}
-
-function openAskQuestion() {
-    window.open("https://spca.org.sg/services/adoption", "_blank", "noopener");
-}
-
-
-// Adoption Timeline
-onMounted(() => {
-    adoptionTimeline.value = getTimelineWithDates()
-})
-
-onMounted(() => {
-    if (containerRef.value) {
-        containerRef.value.addEventListener('scroll', onScroll);
-    }
-
-    try {
-        const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
-        if (Array.isArray(stored)) {
-            cats.value.forEach(cat => {
-                cat.favorite = stored.includes(cat.name);
-            });
-        }
-    } catch (e) { }
-
-    const idx = cats.value.findIndex(c => c.status === 'Available');
-    timelineProgress.value = idx !== -1 ? 0 : 0;
+// Input Fields
+const applicationData = ref({
+    livingSituation: '',
+    hasOtherPets: '',
+    hasKids: '',
+    allergies: '',
+    hoursAlone: '',
+    financialCommit: '',
+    routinePlan: '',
+    movingSoon: '',
+    agreeHomeVisit: false,
+    references: ''
 });
 
-onUnmounted(() => {
-    if (containerRef.value) {
-        containerRef.value.removeEventListener('scroll', onScroll);
-    }
-});
-
-watch(cats, (newCats) => {
-    try {
-        const favs = newCats.filter(c => c.favorite).map(c => c.name);
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
-    } catch (e) { }
-}, { deep: true });
+const timelineSteps = [
+    { label: "Send Application", offsetDays: 0, time: "10:00 AM" },
+    { label: "Application Processing", offsetDays: 2, time: "5-7 Days" },
+    { label: "Meet and Greet", offsetDays: 8, time: "2:00 PM" },
+    { label: "Cat Vaccinations", offsetDays: 9, time: "10:30 AM" },
+    { label: "Monitoring Period", offsetDays: 11, time: "5-7 Days" },
+    { label: "Cat Pickup", offsetDays: 16, time: "11:00 AM" }
+];
 
 const filtered = computed(() => {
     const q = searchQuery.value.trim().toLowerCase();
@@ -208,6 +103,113 @@ const statusClass = computed(() => {
 
 const favoriteTitle = computed(() => currentCat.value.favorite ? 'Remove from favorites' : 'Add to favorites');
 
+// Scroll Function
+function onScroll() {
+    if (!containerRef.value || !applicationFormRef.value) return;
+    const containerScrollTop = containerRef.value.scrollTop;
+    const applicationOffset = applicationFormRef.value.offsetTop - 120;
+    if (containerScrollTop >= applicationOffset && showApplicationForm.value) {
+        scrolledPast.value = true;
+    } else {
+        scrolledPast.value = false;
+    }
+}
+
+onMounted(async () => {
+
+    // Fetch Timeline Data
+    adoptionTimeline.value = getTimelineWithDates()
+
+    // Fetch Cat Profile Data
+    try {
+        const querySnapshot = await getDocs(collection(db, 'catAdoption'))
+        cats.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    } catch (e) {
+        console.error('Error fetching cats:', e)
+    }
+
+    if (containerRef.value) {
+        containerRef.value.addEventListener('scroll', onScroll);
+    }
+
+    try {
+        const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+        if (Array.isArray(stored)) {
+            cats.value.forEach(cat => {
+                cat.favorite = stored.includes(cat.name);
+            });
+        }
+    } catch (e) { }
+
+    const idx = cats.value.findIndex(c => c.status === 'Available');
+    timelineProgress.value = idx !== -1 ? 0 : 0;
+
+})
+
+onUnmounted(() => {
+    if (containerRef.value) {
+        containerRef.value.removeEventListener('scroll', onScroll);
+    }
+});
+
+// Firestore Application Form Data 
+async function submitApplication() {
+    try {
+        await addDoc(collection(db, 'catApplication'), applicationData.value)
+        console.log('Application submitted successfully')
+        // Optionally, reset form or show success message
+    } catch (error) {
+        console.error('Error submitting application: ', error)
+    }
+    showSuccessPopup('Application Submitted', 'Thank you for your interest! Our team will review your application.');
+    showApplicationForm.value = false;
+    scrolledPast.value = false;
+}
+
+function getTimelineWithDates() {
+    const today = new Date()
+    return timelineSteps.map(step => {
+        const eventDate = new Date(today)
+        eventDate.setDate(today.getDate() + step.offsetDays)
+        return {
+            label: step.label,
+            date: eventDate.toLocaleDateString('en-GB'),
+            time: step.time
+        }
+    });
+}
+const adoptionTimeline = ref(getTimelineWithDates())
+
+// Buttons
+function openContactUs() {
+    window.open("https://www.catwelfare.org/get-help", "_blank", "noopener");
+}
+
+function openAskQuestion() {
+    window.open("https://spca.org.sg/services/adoption", "_blank", "noopener");
+}
+
+function openContactCenter(center) {
+    const centerLinks = {
+        SPCA: "https://spca.org.sg/services/adoption/",
+        catwelfaresoc: "https://www.catwelfare.org/adoptions/",
+        purelyadoptions: "https://www.purelyadoptions.com/",
+    };
+    const link = centerLinks[center];
+    if (link) {
+        window.open(link, "_blank", "noopener");
+    } else {
+        alert("No center link found for this cat.");
+    }
+}
+
+watch(cats, (newCats) => {
+    try {
+        const favs = newCats.filter(c => c.favorite).map(c => c.name);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+    } catch (e) { }
+}, { deep: true });
+
 function toggleFavorite(cat) { cat.favorite = !cat.favorite; }
 
 function showSuccessPopup(title, message, timeout = 2500) {
@@ -224,38 +226,6 @@ function handleIndicateInterest() {
     });
 }
 
-function openBookingModal() {
-    booking.value = { date: '', time: '', attendees: 1, notes: '' };
-    showBooking.value = true;
-}
-
-function closeBooking() {
-    showBooking.value = false;
-}
-
-function submitBooking() {
-    closeBooking();
-    showSuccessPopup('Booking Confirmed', `Your visit for ${currentCat.value.name} has been scheduled on ${booking.value.date} at ${booking.value.time}.`);
-}
-
-function openContactModal() {
-    contactForm.value = { name: '', email: '', message: '' };
-    showContact.value = true;
-}
-
-function shareProfile() {
-    const url = `${location.origin}${location.pathname}#${encodeURIComponent(currentCat.value.name)}`;
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-            showSuccessPopup('Link Copied', 'Profile link copied to clipboard.');
-        }).catch(() => {
-            showSuccessPopup('Share', 'Could not copy automatically. You can copy this URL: ' + url);
-        });
-    } else {
-        showSuccessPopup('Share', `Profile URL: ${url}`);
-    }
-}
-
 function selectCatByFilteredIndex(idxInFiltered) {
     currentIndex.value = idxInFiltered;
     carouselIndex.value = 0;
@@ -268,55 +238,58 @@ watch(currentIndex, (v) => {
 
 </script>
 
-
-
 <template>
     <Navbar>
         <template v-slot:navbar-title>Adoption</template>
     </Navbar>
 
-    <!-- <button @click="addCat">Add Cat to Firestore</button> -->
-
     <div ref="containerRef" :class="['scroll-bg-container', { 'background-changed': scrolledPast }]"
         style="min-height: 100vh; overflow-y: auto;">
-        <!-- 1. Centered header -->
+        <!-- Header -->
         <div class="adoption-header full-center">Cats For Adoption</div>
 
-        <!-- 2 & 3. Swapped & buttonified "Vaccinated Only", Sort moved right -->
+        <!-- Center Section -->
         <div class="section-center">
             <div class="col-12 col-md-8 mx-auto controls-row full-width-row">
 
-                <!-- LINE 1: Search bar (full width) -->
+                <!-- Search Bar -->
                 <input v-model="searchQuery" class="pawsitive-input" placeholder="Search by name or breed..."
                     aria-label="Search cats" />
 
-                <!-- LINE 2: Left-aligned controls -->
-                <div class="controls-line">
-                    <select v-model="statusFilter" class="form-select" aria-label="Filter by status">
-                        <option value="">Sort: Status</option>
-                        <option value="Available">Available</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Adopted">Adopted</option>
-                    </select>
+                <!-- Filter Status Button -->
+                <div class="row g-2 justify-content-center">
+                    <div class="col-4 col-md-auto">
+                        <select v-model="statusFilter" class="form-select w-100" aria-label="Filter by status">
+                            <option value="">Sort: Status</option>
+                            <option value="Available">Available</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Adopted">Adopted</option>
+                        </select>
+                    </div>
 
-                    <select v-model="sortOption" class="form-select" aria-label="Sort cats">
-                        <option value="default">Sort: Default</option>
-                        <option value="age-asc">Age Up</option>
-                        <option value="age-desc">Age Down</option>
-                        <option value="name-asc">Name A to Z</option>
-                        <option value="name-desc">Name Z to A</option>
-                    </select>
+                    <!-- Filter Age / Name Button -->
+                    <div class="col-4 col-md-auto">
+                        <select v-model="sortOption" class="form-select w-100" aria-label="Sort cats">
+                            <option value="default">Sort: Default</option>
+                            <option value="age-asc">Age ↑</option>
+                            <option value="age-desc">Age ↓</option>
+                            <option value="name-asc">Name A→Z</option>
+                            <option value="name-desc">Name Z→A</option>
+                        </select>
+                    </div>
 
-                    <button type="button" class="vaccinated-btn" :class="{ checked: vaccinatedOnly }"
-                        @click="vaccinatedOnly = !vaccinatedOnly">
-                        Vaccinated
-                    </button>
+                    <!-- Filter Vaccination Button -->
+                    <div class="col-4 col-md-auto">
+                        <button type="button" class="vaccinated-btn" :class="{ checked: vaccinatedOnly }"
+                            @click="vaccinatedOnly = !vaccinatedOnly">
+                            Vaccinated
+                        </button>
+                    </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- Timeline, now with encapsulating background -->
+        <!-- Timeline -->
         <div class="section-center">
             <div class="timeline-bg">
                 <div class="timeline-container full-width-row">
@@ -335,17 +308,19 @@ watch(currentIndex, (v) => {
             </div>
         </div>
 
-        <!-- Profile Card, image with frame -->
+        <!-- Profile Card -->
         <div class="section-center">
             <div class="profile-card-container full-width-row">
                 <div class="adoption-card profile-card-wide" role="region"
                     :aria-label="`Profile of ${currentCat.name}`">
 
+                    <!-- Profile Card Image -->
                     <div class="framed-image">
                         <img :src="currentImage" class="cat-image"
                             :alt="`${currentCat.name} photo ${carouselIndex + 1}`" />
                     </div>
 
+                    <!-- Profile Card Desc -->
                     <div class="cat-header-row">
                         <div class="cat-main-id">
                             <h2 class="cat-name">{{ currentCat.name }}, {{ currentCat.age }}</h2>
@@ -357,6 +332,8 @@ watch(currentIndex, (v) => {
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Profile Card Status + Favourites Button -->
                         <div class="cat-header-actions">
                             <div class="status-pill" :class="statusClass">{{ currentCat.status }}</div>
                             <button class="fav-badge" @click="toggleFavorite(currentCat)"
@@ -367,24 +344,21 @@ watch(currentIndex, (v) => {
                         </div>
                     </div>
 
+                    <!-- Profile Details -->
                     <div class="meta-row">
                         <div><strong>Breed:</strong> {{ currentCat.breed }}</div>
                         <div><strong>Gender:</strong> {{ currentCat.gender }}</div>
                         <div><strong>Vaccinated:</strong> {{ currentCat.vaccinated ? 'Yes' : 'No' }}</div>
                     </div>
+
+                    <!-- Further Details Button -->
                     <div class="button-row">
                         <button class="pawsitive-btn" @click="showDetails = !showDetails" :aria-expanded="showDetails">
                             {{ showDetails ? 'Hide Details' : 'Show Details' }}
                         </button>
-
-                        <button class="pawsitive-btn" @click="openScheduleVisit"
-                            :disabled="currentCat.status !== 'Available'">
-                            Schedule Visit
-                        </button>
-                        <button class="pawsitive-btn" @click="openContactCenter">Contact
-                            Center</button>
-                        <button class="pawsitive-btn" @click="shareProfile">Share</button>
                     </div>
+
+                    <!-- Bottom Message -->
                     <div class="notes-row">
                         <div class="rating" aria-hidden="true">
                             <span v-for="n in 5" :key="n" class="star"
@@ -397,22 +371,27 @@ watch(currentIndex, (v) => {
                 </div>
             </div>
 
+            <!-- Cat Details Card -->
             <div class="cat-details" v-if="showDetails">
-                <h2>{{ currentCat.name }}</h2>
+                <h2>{{ currentCat.name }}
+                    <img :src="currentCat.images[0]" :alt="currentCat.name" width="60" height="40" />
+                </h2>
                 <p>{{ currentCat.desc }}</p>
                 <p>Breed: {{ currentCat.breed }}</p>
                 <p>Age: {{ currentCat.age }}</p>
                 <p>Gender: {{ currentCat.gender }}</p>
-                <img :src="currentCat.images[0]" :alt="currentCat.name" width="64" height="48" />
                 <p>Fee: {{ currentCat.fee }}</p>
                 <p>Microchipped: {{ currentCat.microchipped ? 'Yes' : 'No' }}</p>
                 <p>Notes: {{ currentCat.notes }}</p>
+                <p>Center: {{ currentCat.center }}</p>
+                <button class="pawsitive-btn-outline" @click="openContactCenter(currentCat.center)">Contact Center</button>
                 <div class="close-row">
-                    <button class="pawsitive-btn-outline" @click="showDetails = false">Close</button>
+                    <button class="pawsitive-btn" @click="showDetails = false">Close</button>
                 </div>
             </div>
         </div>
 
+        <!-- Cat Catalogue -->
         <div class="profile-card-subrow full-width-row">
             <div class="list-card subrow-half">
                 <h3>Cat Catalogue</h3>
@@ -436,16 +415,21 @@ watch(currentIndex, (v) => {
                     </ul>
                 </div>
             </div>
+
+            <!-- Quick Help Card -->
             <div class="list-card subrow-half">
                 <h4>Quick Help</h4>
                 <p>Phone: +65 6123 4567</p>
-                <p>Email: adopt@catshelter.sg</p>
-
+                <h3>Important Links:</h3>
+                <p>Cat Welfare Society: https://www.catwelfare.org/adoptions/</p>
+                <p>Purely Adoptions: https://www.purelyadoptions.com/adoptcat</p>
+                <p>SPCA Adoption: https://spca.org.sg/services/adoption/</p>
                 <button class="pawsitive-btn-outline" @click="openContactUs">Contact Us</button>
             </div>
         </div>
     </div>
-    <!-- Adoption form -->
+
+    <!-- Adoption Form Preview -->
     <div class="section-center">
         <div class="adoption-form profile-card-wide">
             <div class="form-label big center">
@@ -458,7 +442,7 @@ watch(currentIndex, (v) => {
         </div>
     </div>
 
-    <!-- New: Adoption Application Form Section, appears after click -->
+    <!-- Adoption Application Form -->
     <div v-if="showApplicationForm" ref="applicationFormRef" class="section-center">
         <form class="adoption-form profile-card-wide app-form" @submit.prevent="submitApplication">
 
@@ -509,7 +493,6 @@ watch(currentIndex, (v) => {
             </div>
 
             <!-- Question 5: Hours home alone -->
-            <!-- Q5: Place input below label -->
             <div class="form-group">
                 <label><strong>5. On average, how many hours will the cat be home alone each day?</strong></label>
                 <div>
@@ -566,6 +549,7 @@ watch(currentIndex, (v) => {
                     placeholder="Reference name and contact…"></textarea>
             </div>
 
+            <!-- Submit Button-->
             <div class="form-row center-buttons">
                 <button type="submit" class="pawsitive-btn">Submit</button>
                 <button type="button" class="pawsitive-btn-outline"
@@ -576,7 +560,7 @@ watch(currentIndex, (v) => {
         </form>
     </div>
 
-
+    <!-- Form Submission Confirmation -->
     <transition name="fade">
         <div v-if="showSuccess">
             <div class="success-overlay"></div>
@@ -590,7 +574,6 @@ watch(currentIndex, (v) => {
 </template>
 
 <style scoped>
-/* Header center fix */
 .full-center {
     text-align: center;
     display: flex;
@@ -598,7 +581,6 @@ watch(currentIndex, (v) => {
     align-items: center;
 }
 
-/* Controls row changed layout */
 .full-width-row {
     width: 100%;
     max-width: 990px;
@@ -616,17 +598,8 @@ watch(currentIndex, (v) => {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 26px;
-    
 }
 
-@media (max-width: 768px) {
-  .controls-row {
-    padding: 0 16px;         
-    box-sizing: border-box;
-  }
-}
-
-/* Vaccinated only as button */
 .filter-btn {
     padding: 11px 22px;
     margin-left: 7px;
@@ -662,10 +635,6 @@ watch(currentIndex, (v) => {
     font-size: 1.05rem;
 }
 
-/* Profile card and 5/6 sub-cards are wide, consistent width styling */
-
-
-
 .profile-card-container {
     display: flex;
     flex-direction: row;
@@ -679,7 +648,6 @@ watch(currentIndex, (v) => {
     margin: 0 auto 22px auto;
 }
 
-/* Two cards (all cats, quick help) below: share row, each half width */
 .profile-card-subrow {
     display: flex;
     flex-direction: row;
@@ -697,35 +665,6 @@ watch(currentIndex, (v) => {
     box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
-
-    .profile-card-container,
-    .profile-card-wide,
-    .profile-card-subrow {
-        max-width: 99vw;
-    }
-
-    .subrow-half {
-        min-width: 180px;
-        max-width: 99vw;
-    }
-
-    .timeline-container {
-        max-width: 100vw;
-    }
-}
-
-@media (max-width: 750px) {
-    .profile-card-subrow {
-        flex-direction: column;
-    }
-
-    .subrow-half {
-        width: 100%;
-    }
-}
-
-/* Center Section Helper */
 .section-center {
     display: flex;
     flex-direction: column;
@@ -746,13 +685,10 @@ watch(currentIndex, (v) => {
     text-align: center;
 }
 
-/* Adoption form center fix */
 .adoption-form {
     max-width: 700px;
     margin: 22px auto 24px auto;
 }
-
-/* --- Timeline --- */
 
 .timeline {
     display: flex;
@@ -763,6 +699,8 @@ watch(currentIndex, (v) => {
     padding: 10px;
     margin: 0;
     position: relative;
+    width: 100%;
+
 }
 
 .timeline-step {
@@ -788,7 +726,6 @@ watch(currentIndex, (v) => {
     transition: opacity 0.2s;
 }
 
-
 .timeline-label {
     font-weight: 700;
     font-size: 1.09rem;
@@ -812,8 +749,6 @@ watch(currentIndex, (v) => {
     display: block;
 }
 
-
-/* --- Card Standardisation --- */
 .adoption-card,
 .list-card,
 .timeline-container {
@@ -831,7 +766,6 @@ watch(currentIndex, (v) => {
     margin-bottom: 18px;
 }
 
-/* --- Carousel and Image --- */
 .carousel-container {
     width: 100%;
     aspect-ratio: 16/9;
@@ -847,7 +781,6 @@ watch(currentIndex, (v) => {
     box-shadow: 0 8px 32px rgba(233, 211, 229, 0.05);
 }
 
-/* --- Arrows --- */
 .arrow-btn,
 .carousel-arrow {
     min-width: 38px;
@@ -882,8 +815,6 @@ watch(currentIndex, (v) => {
     font-size: 1.55rem;
 }
 
-/* --- Thumbnails --- */
-
 .thumb {
     border-radius: 8px;
     overflow: hidden;
@@ -894,7 +825,6 @@ watch(currentIndex, (v) => {
     border: 2px solid transparent;
 }
 
-/* --- Cat Info --- */
 .cat-info {
     flex-grow: 1;
     overflow: hidden;
@@ -925,7 +855,6 @@ watch(currentIndex, (v) => {
     color: #868;
 }
 
-
 .meta-row {
     display: flex;
     gap: 16px;
@@ -935,7 +864,6 @@ watch(currentIndex, (v) => {
     letter-spacing: 0.02em;
 }
 
-/* --- Action Buttons --- */
 .button-row {
     display: flex;
     gap: 12px;
@@ -944,7 +872,6 @@ watch(currentIndex, (v) => {
     justify-content: flex-start;
 }
 
-/* --- Standard Action and Main Buttons --- */
 .action-btn,
 .main-btn {
     min-width: 130px;
@@ -984,15 +911,12 @@ watch(currentIndex, (v) => {
     padding: 0 20px !important;
 }
 
-/* Main action btn (primary) */
-
 .main-btn.outline {
     background: transparent;
     color: #7582cf;
     border: 2px solid #7582cf;
 }
 
-/* --- Rating & Notes --- */
 .notes-row {
     display: flex;
     justify-content: space-between;
@@ -1015,8 +939,6 @@ watch(currentIndex, (v) => {
     font-size: 0.96rem;
     color: #938fa3;
 }
-
-/* --- Adoption Form --- */
 
 .app-form {
     margin-top: 42px;
@@ -1055,7 +977,6 @@ watch(currentIndex, (v) => {
     margin-top: 12px;
 }
 
-/* Make sure select and textarea are full width */
 .app-form select,
 .app-form textarea,
 .app-form input[type="number"] {
@@ -1071,12 +992,6 @@ watch(currentIndex, (v) => {
 
 .app-form input[type="number"] {
     width: 120px;
-}
-
-@media (max-width: 700px) {
-    .app-form {
-        margin-bottom: 30px;
-    }
 }
 
 .form-label {
@@ -1105,12 +1020,9 @@ watch(currentIndex, (v) => {
     margin-top: 4px;
 }
 
-/* --- List Panel --- */
-
 .all-cats-card {
-    height: 150px;
+    height: 300px;
     overflow-y: auto;
-    /* vertical scroll if content overflows */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -1197,55 +1109,6 @@ watch(currentIndex, (v) => {
     cursor: pointer;
 }
 
-/* --- Modal --- */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(60, 60, 60, 0.46);
-    z-index: 2000;
-}
-
-.modal {
-    background: #fff;
-    border-radius: 18px;
-    padding: 28px;
-    min-width: 320px;
-    max-width: 560px;
-    box-shadow: 0 12px 48px rgba(30, 30, 30, 0.28);
-}
-
-.modal h3 {
-    margin-top: 0;
-    color: #655691;
-}
-
-.modal label {
-    display: block;
-    margin: 10px 0;
-    font-weight: 700;
-    color: #534585;
-}
-
-.modal input,
-.modal textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 9px;
-    border: 1px solid #ede1ef;
-    margin-top: 7px;
-    font-size: 1.03rem;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 18px;
-}
-
-/* --- Success Popup --- */
 .success-overlay {
     position: fixed;
     inset: 0;
@@ -1270,7 +1133,6 @@ watch(currentIndex, (v) => {
     color: #6e608c;
 }
 
-/* --- Transitions --- */
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.2s ease;
@@ -1281,7 +1143,6 @@ watch(currentIndex, (v) => {
     opacity: 0;
 }
 
-/* Scrolling Background */
 .scroll-bg-container {
     transition: background-color 0.5s ease;
     background-color: var(--pink);
@@ -1291,9 +1152,8 @@ watch(currentIndex, (v) => {
     background-color: var(--blue);
 }
 
-/* 1. Ensure these forms match profile card full width */
 .adoption-form.profile-card-wide,
-.app-form.profile-card-wide .timeline-bg {
+.app-form.profile-card-wide {
     width: 100%;
     max-width: 960px;
     margin-left: auto;
@@ -1307,11 +1167,6 @@ watch(currentIndex, (v) => {
     margin-bottom: 36px;
 }
 
-.timeline {
-    width: 100%;
-}
-
-/* 2. Framed photo */
 .framed-image {
     width: 100%;
     aspect-ratio: 3/2;
@@ -1324,19 +1179,6 @@ watch(currentIndex, (v) => {
     justify-content: center;
 }
 
-/* Responsive support */
-@media (max-width:1020px) {
-
-    .adoption-form.profile-card-wide,
-    .app-form.profile-card-wide {
-        max-width: 95vw;
-    }
-
-    .timeline-step {
-        min-height: 135px;
-        font-size: 0.9rem;
-    }
-}
 
 .form-group {
     display: flex;
@@ -1378,7 +1220,6 @@ watch(currentIndex, (v) => {
     display: block;
 }
 
-/* New: All main card content (name, desc, status) below preview row */
 .cat-text-content {
     width: 100%;
     margin: 14px 0 0 0;
@@ -1426,6 +1267,7 @@ watch(currentIndex, (v) => {
     max-height: 34px;
     overflow: hidden;
     text-overflow: ellipsis;
+
 }
 
 .thumb-strip-horizontal {
@@ -1525,7 +1367,6 @@ watch(currentIndex, (v) => {
     font-size: 1.08rem;
 }
 
-/* LINE 1: Search bar */
 .search-input {
   width: 100%;
   height: 48px;
@@ -1582,4 +1423,61 @@ watch(currentIndex, (v) => {
   border-color: #28a745 !important; /* Green border */
   box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
+
+@media (max-width:1020px) {
+
+.adoption-form.profile-card-wide,
+.app-form.profile-card-wide {
+    max-width: 95vw;
+}
+
+.timeline-step {
+    min-height: 135px;
+    font-size: 0.9rem;
+}
+}
+
+@media (max-width: 700px) {
+    .app-form {
+        margin-bottom: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+  .controls-row {
+    padding: 0 16px;         
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 1024px) {
+
+.profile-card-container,
+.profile-card-wide,
+.profile-card-subrow {
+    max-width: 99vw;
+}
+
+.subrow-half {
+    min-width: 180px;
+    max-width: 99vw;
+}
+
+.timeline-container {
+    max-width: 100vw;
+}
+}
+
+@media (max-width: 750px) {
+.profile-card-subrow {
+    flex-direction: column;
+}
+
+.subrow-half {
+    width: 100%;
+}
+}
+
 </style>
+
+
