@@ -120,7 +120,7 @@ function updateMapDiv(catMapData) {
         <div class="popup-meta small">
           <span><strong>Species:</strong> ${data.species}</span><br>
           <span><strong>Gender:</strong> ${data.gender}</span><br>
-          <span><strong>Age:</strong> ${data.age}</span><br>
+          <span><strong>Status:</strong> ${data.status}</span><br>
         </div>
         <a href="/cat/${data.id}" 
            onclick="window.open(this.href, '_blank'); return false;" 
