@@ -11,12 +11,12 @@ G3 Group 5
 
  Photo | Full Name | Role / Features Responsible For |
 |:--:|:--|:--|
-| <img src="documentation/members/ash.jpeg" width="80"> | Muhammad Ashraf Bin Mustafa | Project Lead, CSS/JS Animation, Donation Page |   
-| <img src="documentation/members/rosh.png" width="80"> | Rosh Chan | UI/UX,  Adoption (Listing + Form) Page |
-| <img src="documentation/members/charmaine.jpeg" width="80"> | Charmaine Lim Min Xuan |  Forum Page, Report Page|
-| <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map/Cat Tracking Page, Cat Profile Page |
-| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang | Database &Auth, Login & Register, Volunteer Profile Page  |
-| <img src="documentation/members/kevan.jpeg" width="80"> | Soon Shi Heng, Kevan | Report Page AI & Map features |
+| <img src="documentation/members/ash.jpeg" width="80"> | Muhammad Ashraf Bin Mustafa | Project Lead, CSS/JS Animation, Donation Page UI &  Backend |   
+| <img src="documentation/members/rosh.png" width="80"> | Rosh Chan Teck Woon | UI/UX,  Adoption Page UI & Firebase Integration |
+| <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map Page UI & Firebase Integration, Cat Profile Page UI & Firebase Integration |
+| <img src="documentation/members/charmaine.jpeg" width="80"> | Charmaine Lim Min Xuan | UI/UX, Forum Page UI, Report Page UI, Cat Profile Page UI|
+| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang |LoginRegister Page UI & Firebase Integration ,Volunteer Profile Page UI & Firebase Integration  |
+| <img src="documentation/members/kevan.jpeg" width="80"> | Soon Shi Heng, Kevan | Report Page AI, Backend & Firebase Integration, Forum Page Firebase Integration   |
 <!-- > Place all headshot thumbnails in the `/photos` folder (JPEG or PNG). -->
 ---
 
@@ -46,14 +46,16 @@ Explain the core features and the benefit each provides.
 
 | Feature | Description | User Benefit |
 |:--|:--|:--|
-| Volunteer Signup & Login | Signup/login| Secure access for volunteers to submit cat profiles |
-| Report Lost/Injured Cats | Report a lost/injured cat | Users can report a missing/injured cat, before they submit, it will check if there is any similar reports reported in the location in the past 24 hours|
+| Volunteer Signup & Login | Signup/login| Secure access for volunteers |
+| Report Lost/Injured Cats | Report a lost/injured cat | Users can report a missing/injured cat, before they submit, an automatic check of similar reports reported in the location in the past 24 hours will be performed|
 | Map Page | Identify reported lost/injured cats | Easily locate reported lost/injured cats and their details in a specific area |
-| Cat Profile | Contains cat information (name, breed, etc) | Users can view detailed information about each cat, and also the status |
-| Volunteer Profile | Contains volunteer information and services | Users can view detailed information about the volunteer and the services they may provide |
-| Forum Page | View list of discussions | Central hub for community engagement and information sharing |
+| Cat Profile | Contains cat information (name, breed, etc) | Users can view detailed information about each reported cat|
+| Volunteer Profile | Contains volunteer information and services | Users can view detailed information about the volunteer and the services and skills they may provide |
+| My Profile | Edit my own profile | Users can edit their own profile infomation, add new skills/services |
+| Forum Page | View list of discussions | Central hub for community engagement and information sharing, follow up for cat reports |
 | Adoption Page | List cat profile summaries on map | Helps potential adopters easily find cats for adoption |
-| Donation Page | Stripe popup/aside for donations | Simplifies contribution process for supporting cats |
+| Donation Page | Stripe popup for donations | Simplifies contribution process for supporting cats |
+
 ---
 
 ## Tech Stack
@@ -83,50 +85,50 @@ Provide screenshots and captions showing how users interact with your app.
 2. **Login/Register**  
    <img src="documentation/use-case/login.png" width="600">  
    <img src="documentation/use-case/register.png" width="600">  
-   - User Jouney: I am on my way to school, and i spot an injured cat, i want to report it to Pawsitive, so first i login
+   - User Journey: While walking to school, I notice an injured cat and decide to report it through Pawsitive. I opened the website and start to log in to my account.
 
    - Features: Register/login
 
 3. **Report**  
    <img src="documentation/use-case/report.png" width="600">  
-   - User Jouney: Upon login, I am directed straight to the report page, i upload the image of the cat and it will analyzes the cat breed, then it auto checks whether there are similar reports (same breed, within 2km) reported in the past 24hr. There is no similar reports, so i proceed to submit my report.
+   - User Jouney: Aftering logging in, I am directed straight to the report page. I upload a photo of the injured cat and sees the system analysing its breed. It also automatically checks for similar reports (same breed, within 2km that was reported in the past 24 hours). However, for my area, there is not any similar reports, so I proceed to submit my report.
 
    - Features: Submit missing/injured cat report. Form auto detects similar reports (same breed, within 2km) reported in the past 24hrs
 
 4. **Map and Cat Profile**  
    <img src="documentation/use-case/map.png" width="600">  
    <img src="documentation/use-case/cat-details.png" width="600">  
-   - User Jouney: I can go to the map page identify reported cats's last location, and i can hover over the pins and click on the full profile to get a detailed view of the cats.
+   - User Jouney: I navigate to the map page to view the locations of reported cats. By hovering over the pins and clicking on the, I can access detailed information of each cat.
 
    - Features: View the reported cats on a map view
 
 
-4. **Forum Page**  
-   <img src="documentation/use-case/forum.png" width="600">  
+5. **Forum Page**  
+   <img src="documentation/use-case/forum.jpeg" width="600">  
 
-   - User Journey: After submitting the report, I go to forum and create a new post about my new report, to call attention from other volunteers to take note. I also notice a post about a vet offering their services, so i can comment on his post to notify them about my report, or I can click to his profile and contact him directly via his email or phone.
+   - User Journey: After submitting the report and viewing the cat profiles, I click on "Forum" to create a post about the injured cat that I spotted on the way to school. As I am rushing for my class, I wanted to let the community know so that someone else can attend to it instead. Upon uploading my post, I scrolled through the posts and noticed a post from a vet that was offering their services. I could either comment on the post to reach out to them about the injured cat or contact the vet directly through the contact methods listed on their profile page.
 
    - Features: Create a new post, comment on a post
 
 
-5. **Donation Page**  
+6. **Donation Page**  
    <img  alt="Adoption Page" src="documentation/use-case/donation.png" />
-   - User Journey: I am also feeling very generous today, and I feel like donating to the cats community, so i go ahead to make a donation on the page
+   - User Journey: I come across Pawsitive and decide to contribute to the cat community. I visit the "Donations" page and make a donation to support local shelters and rescue efforts, believing that every contribution can make a meaningful difference.
 
    - Features: Make a donation to the welfare community using their credit card
 
-5. **Adoption Page**  
+7. **Adoption Page**  
    <img  alt="Adoption Page" src="documentation/use-case/adoption.png" />
-   - User Journey: I am also feeling extra generous today, and I feel like adopting a cat, so I looked through the adoption listing and submit an interest form.
+   - User Journey: After donating, I feel inspired to do even more for the community. I visit the “Adoption” page and browse through the listings. One cat catches my attention, and I excitedly submit an interest form, hoping to give it a loving home.
 
    - Features: View adoption cats listing, submit interest form
    
-6. **My Profile Page**  
+8. **My Profile Page**  
    <img src="documentation/use-case/myprofile.png" width="600">  
    - Edit profile (e.g change contact, add services etc)
 
 
-7. **Volunteer Page**  
+9. **Volunteer Page**  
    <img src="documentation/use-case/profile.png" width="600">  
    - Displays the public profile of a user
   
@@ -254,6 +256,15 @@ Perform the following checks before submission:
 | DonationPage - Donation Success | Complete payment with valid card | Redirects to DonationSuccessPage |
 | DonationPage - Invalid Card | Enter invalid card information | Stripe displays error message |
 | DonationSuccessPage - Success Message | Complete donation process | Success message displays confirming donation |
+| Adoption Page - Search/Sort Cats |Enter cat name or breed in search. Toggle "Sort Status", "Sort Default", "Vaccinated" buttons.| Displayed Cat Profile Changes. Cat Catalogue reordered according to sort feature.|
+| Adoption Page - Cycle Carousel | Click displayed image (set of 3) below the cat name and description. | Displayed cat picture will update. |
+| Adoption Page - Details Card | Click "Show Details" button. | Cat details card appears with cat information. "Show Details" updates to "Hide Details". |
+|Adoption Page - Scroll Catalogue | Put cursor inside the cat catalogue (purple gradient section). Scroll up and down.| Displayed list of cats changes. |
+|Adoption Page - Favourite Button|Click the heart button on the cat profile. Repeat for multiple. | Cat Catalogue heart icons updated for favourited cats.|
+|Adoption Page - Open Application Form | Click "Indicate Interest" button.|Page scrolls user down to the adoption application section |
+|Adoption Page - Form Validation | Click "Submit" button without any input. (Repeat after filling multiple questions)|User will be greeted with "Fill out this field" above the relevant questions. (Questions 1, 5, 7, 9, 10) |
+
+
 
 
 <!-- 
@@ -274,15 +285,21 @@ Perform the following checks before submission:
 
 
 
- - *Ashraf:* Learned to build reusable Vue components and manage state effectively.  
+ - Ashraf: I learn how to get creative with how we want to design and build the user experience. I also learn how to set up server hosting via Vercel.
 
- - *Rosh:* Gained experience connecting frontend and backend APIs.  
+ - Rosh: Learned to use Figma to design UI/UX workflow and fetch/send data between firebase and frontend. Learned the importance of communicating regularly with the team, empathise with the user every step of the development process, and seeking consistent feedback from mentors.
 
- - *Charmaine:* Improved UI/UX design workflow and collaboration using Figma.  
+ - Charmaine: After creating the initial wireframe, I learned how to transform it into a fully functional website that is both dynamic and responsive. Throughout the process, I considered the interface from both a user’s and a developer’s perspective to ensure the website is intuitive and easy to navigate. I also became more familiar with using GitHub for version control and learned how to collaborate effectively with my teammates throughout the development process.
 
- - *Rayner:* I learnt how to guide people who are new to web development, and adjust tasks appropriate to their current learnings. Learnt to better break down tasks into more followable steps that help faccilitate learning.
+ - Rayner: I learnt how to guide people who are new to web development, and adjust tasks appropriate to their current learnings. Learnt to better break down tasks into more followable steps that help faccilitate learning.
 
- - *Kevan:* Understood how Firebase Authentication and Firestore integrate with modern SPAs.  
+ - Kevan: I learned more about Git branching and pull requests, integrating Firebase with the frontend, using the Vue framework, and working with geolocation in OpenStreetMap.
 
- - *Jing Xiang:* I learnt how to use github collaboratively, branching, pull requests etc. And the general usage of vue.js and firebase
+ - Jing Xiang: I learnt how to use github collaboratively, branching, pull requests etc. And the general usage of vue.js and firebase
 
+**Team Reflection**
+- Working with frameworks such as Vue.js, Firebase, and Vercel gave us hands-on experience in developing a modern web application. We learned how to integrate frontend and backend (firebase) code, from setting up authentication and databases to designing intuitive user experiences. Tools like Figma and Git/GitHub helped us bridge the gap between design and development while improving our workflow and version control practices. We also developed a deeper appreciation for how these frameworks streamline development, allowing us to focus more on solving user needs rather than building everything from vanilla HTML/CSS
+
+- One of the challenges we faced was figuring out how to design our application to be practical for real-world use. Initially, our ideas seemed great, but they weren’t very feasible in reality. After consulting with our professor, we revamped our user story and application, and it now has a flow that makes much more sense.
+
+- Through this project, we learned that effective communication and collaboration is very important. Regular check-ins and updates helped us stay aligned and support one another’s learning curves. As a team, we grew more adaptable, dividing tasks based on individual strengths while ensuring everyone contributed meaningfully. This project strengthened our ability to tackle project collectively, and managing time effectively.
