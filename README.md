@@ -151,7 +151,7 @@ npm run preview
 
 
 ### 2) Running Stripe server
-This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. Localhosting will not be possible since Express & Node.js will not be in use.
+This project uses a 2nd server (backend) to run the Stripe embedding. We have to run a server using Node. Through Vercel, its backend server will automatically be run. 
 
 Testing card numbers can be found from this stripe documentation: 
 
@@ -162,8 +162,6 @@ Card number: 4242 4242 4242 4242
 Card expiry: 12/34
 
 Card CVC: 567
-
-Postal: any 5 digit num
 
 Wrong card info input will be detected by Stripe. Upon donation success, you will currently be directed to a success page.
 
