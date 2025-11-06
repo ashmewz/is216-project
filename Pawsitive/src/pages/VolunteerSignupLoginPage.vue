@@ -31,7 +31,7 @@
                                         class="mobile-form-padding">
                                         <div class="mb-3">
                                             <label class="form-label">Email</label>
-                                            <input v-model="loginForm.email" type="email" class="form-control"
+                                            <input v-model="loginForm.email" type="email" class="pawsitive-input"
                                                 :class="{ 'is-invalid': loginFieldErrors.email }"
                                                 placeholder="Enter email">
                                             <div class="invalid-feedback">{{ loginFieldErrors.email }}</div>
@@ -39,7 +39,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Password</label>
-                                            <input v-model="loginForm.password" type="password" class="form-control"
+                                            <input v-model="loginForm.password" type="password" class="pawsitive-input"
                                                 :class="{ 'is-invalid': loginFieldErrors.password }"
                                                 placeholder="Enter password">
                                             <div class="invalid-feedback">{{ loginFieldErrors.password }}</div>
@@ -70,14 +70,14 @@
                                         <div class="row mb-3">
                                             <div class="col-12 col-md-6 mb-3 mb-md-0">
                                                 <label class="form-label">First Name</label>
-                                                <input v-model="registerForm.firstName" type="text" class="form-control"
+                                                <input v-model="registerForm.firstName" type="text" class="pawsitive-input"
                                                     :class="{ 'is-invalid': registerFieldErrors.firstName }"
                                                     placeholder="John">
                                                 <div class="invalid-feedback">{{ registerFieldErrors.firstName }}</div>
                                             </div>
                                             <div class="col-12 col-md-6">
                                                 <label class="form-label">Last Name</label>
-                                                <input v-model="registerForm.lastName" type="text" class="form-control"
+                                                <input v-model="registerForm.lastName" type="text" class="pawsitive-input"
                                                     :class="{ 'is-invalid': registerFieldErrors.lastName }"
                                                     placeholder="Doe">
                                                 <div class="invalid-feedback">{{ registerFieldErrors.lastName }}</div>
@@ -86,7 +86,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Username</label>
-                                            <input v-model="registerForm.username" type="text" class="form-control"
+                                            <input v-model="registerForm.username" type="text" class="pawsitive-input"
                                                 :class="{ 'is-invalid': registerFieldErrors.username }"
                                                 placeholder="johndoe123">
                                             <div class="invalid-feedback">{{ registerFieldErrors.username }}</div>
@@ -94,7 +94,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Email address</label>
-                                            <input v-model="registerForm.email" type="email" class="form-control"
+                                            <input v-model="registerForm.email" type="email" class="pawsitive-input"
                                                 :class="{ 'is-invalid': registerFieldErrors.email }"
                                                 placeholder="john@example.com">
                                             <div class="invalid-feedback">{{ registerFieldErrors.email }}</div>
@@ -102,7 +102,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Contact Number</label>
-                                            <input v-model="registerForm.contactNumber" type="tel" class="form-control"
+                                            <input v-model="registerForm.contactNumber" type="tel" class="pawsitive-input"
                                                 :class="{ 'is-invalid': registerFieldErrors.contactNumber }"
                                                 placeholder="9123 4567">
                                             <div class="invalid-feedback">{{ registerFieldErrors.contactNumber }}</div>
@@ -110,7 +110,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Password</label>
-                                            <input v-model="registerForm.password" type="password" class="form-control"
+                                            <input v-model="registerForm.password" type="password" class="pawsitive-input"
                                                 :class="{ 'is-invalid': registerFieldErrors.password }"
                                                 placeholder="Enter password">
                                             <div class="invalid-feedback">{{ registerFieldErrors.password }}</div>
@@ -119,7 +119,7 @@
                                         <div class="mb-3">
                                             <label class="form-label">Confirm Password</label>
                                             <input v-model="registerForm.confirmPassword" type="password"
-                                                class="form-control"
+                                                class="pawsitive-input"
                                                 :class="{ 'is-invalid': registerFieldErrors.confirmPassword }"
                                                 placeholder="Confirm password">
                                             <div class="invalid-feedback">{{ registerFieldErrors.confirmPassword }}
@@ -437,5 +437,11 @@ const handleRegister = async () => {
     border-radius: 12px;
     max-width: 500px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+h1,h2,h3{
+    color: #806e83;
 }
 </style>

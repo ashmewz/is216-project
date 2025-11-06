@@ -67,7 +67,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   padding: 1rem;
   background: #f8e1e1;
   border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(128, 110, 131, 0.1);
+  box-shadow: 0 0 10px rgba(128, 110, 131, 0.5) !important;
 }
 
 .search-wrapper {

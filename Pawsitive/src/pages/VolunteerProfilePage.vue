@@ -310,13 +310,13 @@ onMounted(() => {
                                 <div class="row mb-3">
                                     <div class="col-12 col-md-6 mb-2 mb-md-0">
                                         <label class="form-label">First Name</label>
-                                        <input v-model="form.firstName" type="text" class="form-control rounded-pill"
+                                        <input v-model="form.firstName" type="text" class="pawsitive-input"
                                             :class="{ 'is-invalid': fieldErrors.firstName }" placeholder="First Name" />
                                         <div class="invalid-feedback">{{ fieldErrors.firstName }}</div>
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label">Last Name</label>
-                                        <input v-model="form.lastName" type="text" class="form-control rounded-pill"
+                                        <input v-model="form.lastName" type="text" class="pawsitive-input"
                                             :class="{ 'is-invalid': fieldErrors.lastName }" placeholder="Last Name" />
                                         <div class="invalid-feedback">{{ fieldErrors.lastName }}</div>
                                     </div>
@@ -325,7 +325,7 @@ onMounted(() => {
                                 <!-- Contact Number -->
                                 <div class="mb-3">
                                     <label class="form-label">Contact Number</label>
-                                    <input v-model="form.contactNumber" type="tel" class="form-control rounded-pill"
+                                    <input v-model="form.contactNumber" type="tel" class="pawsitive-input"
                                         :class="{ 'is-invalid': fieldErrors.contactNumber }"
                                         placeholder="Contact Number" />
                                     <div class="invalid-feedback">{{ fieldErrors.contactNumber }}</div>
@@ -334,14 +334,14 @@ onMounted(() => {
                                 <!-- Bio -->
                                 <div class="mb-3">
                                     <label class="form-label">Bio</label>
-                                    <textarea v-model="form.bio" class="form-control rounded-3" rows="3"
+                                    <textarea v-model="form.bio" class="pawsitive-input" rows="3"
                                         placeholder="Tell us about yourself"></textarea>
                                 </div>
 
                                 <!-- Region -->
                                 <div class="mb-3">
                                     <label class="form-label">Region</label>
-                                    <select v-model="form.region" class="form-select rounded-pill"
+                                    <select v-model="form.region" class="pawsitive-input"
                                         :class="{ 'is-invalid': fieldErrors.region }">
                                         <option value="" disabled>Select a region</option>
                                         <option value="">None</option>
@@ -353,9 +353,10 @@ onMounted(() => {
                                 <!-- Skills -->
                                 <div class="mb-3">
                                     <label class="form-label d-block">Skills</label>
-                                    <div v-for="(skill, index) in form.skills" :key="index" class="input-group mb-2">
-                                        <input v-model="form.skills[index]" type="text"
-                                            class="form-control rounded-pill" placeholder="Skill">
+                                    <div v-for="(skill, index) in form.skills" :key="index"
+                                        class="input-group input-group-skill mb-2">
+                                        <input v-model="form.skills[index]" type="text" class="pawsitive-input"
+                                            placeholder="Skill">
                                         <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
                                             @click="form.skills.splice(index, 1)">Remove</button>
                                     </div>
@@ -375,22 +376,22 @@ onMounted(() => {
                                         class="service-card p-3 mb-2 rounded-3 shadow-sm">
                                         <div class="mb-2">
                                             <label class="form-label">Service Type</label>
-                                            <select v-model="service.type" class="form-select rounded-pill">
+                                            <select v-model="service.type" class="pawsitive-input">
                                                 <option value="" disabled>Select a service</option>
                                                 <option v-for="type in serviceTypes" :key="type" :value="type">{{ type
-                                                    }}
+                                                }}
                                                 </option>
                                             </select>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Years of Experience</label>
                                             <input v-model.number="service.yearsOfExp" type="number"
-                                                class="form-control rounded-pill" placeholder="Years of Experience">
+                                                class="pawsitive-input" placeholder="Years of Experience">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Fee Rate ($/hr)</label>
                                             <input v-model.number="service.feeRate" type="number"
-                                                class="form-control rounded-pill" placeholder="Fee Rate">
+                                                class="pawsitive-input" placeholder="Fee Rate">
                                         </div>
                                         <button type="button" class="btn btn-outline-danger btn-sm rounded-pill"
                                             @click="form.services.splice(index, 1)">Remove Service</button>
@@ -410,7 +411,8 @@ onMounted(() => {
                             <div class="modal-footer border-0">
                                 <button type="button" class="btn btn-secondary btn-sm rounded-pill"
                                     @click="showModal = false">Cancel</button>
-                                <button type="submit" class="btn btn-primary btn-sm rounded-pill pawsitive-color">Save</button>
+                                <button type="submit"
+                                    class="btn btn-primary btn-sm rounded-pill pawsitive-color">Save</button>
                             </div>
                         </form>
                     </div>
@@ -425,8 +427,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
-
 /* optional: center vertically on taller screens */
 main {
     min-height: calc(100vh - 120px);
@@ -510,5 +510,22 @@ main {
 .service-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 14px rgba(128, 110, 131, 0.15);
+}
+
+.pawsitive-input {
+    padding: 0.375rem 0.75rem;
+    line-height: 1.5;
+    height: auto;
+}
+
+.input-group-skill .pawsitive-input {
+    border-radius: 50rem !important;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+}
+
+.input-group-skill .btn {
+    margin-left: 0.5rem;
 }
 </style>

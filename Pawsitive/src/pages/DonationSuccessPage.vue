@@ -48,13 +48,13 @@ function handleBackHome() {
           </p>
         </div>
 
-        <button @click="handleBackHome" class="back-button">
+        <button @click="handleBackHome" class="pawsitive-btn">
           Back to Home
         </button>
       </div>
     </div>
-    <BottomFooter />
   </div>
+  <BottomFooter />
 </template>
 
 <style scoped>
@@ -126,24 +126,6 @@ function handleBackHome() {
   font-size: 1rem;
 }
 
-.back-button {
-  background: var(--dark-blue);
-  color: #fff;
-  font-weight: 700;
-  padding: 1rem 2rem;
-  border-radius: 9999px;
-  border: 3px solid #ffffff;
-  cursor: pointer;
-  font-size: 1.125rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.back-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-}
-
 @media (max-width: 768px) {
   .success-title {
     font-size: 2rem;
@@ -151,11 +133,6 @@ function handleBackHome() {
 
   .impact-box {
     padding: 1.5rem;
-  }
-
-  .back-button {
-    font-size: 1rem;
-    padding: 0.875rem 1.75rem;
   }
 }
 </style>

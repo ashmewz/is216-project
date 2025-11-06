@@ -195,9 +195,9 @@ onMounted(fetchPosts)
 </script>
 
 <template>
-  <div class="pawsitive-background">
+  <div class="page-wrapper pawsitive-background">
     <Navbar />
-    <main class="container mt-4">
+    <main class="forum-wrapper container mt-4">
 
       <!-- welcome banner -->
       <div v-if="showWelcome" class="welcome-banner mb-4 p-4 rounded-4 shadow-sm position-relative overflow-hidden">
@@ -329,15 +329,33 @@ onMounted(fetchPosts)
       </div>
     </div>
 
-    <BottomFooter />
+    <BottomFooter style="background-color: white;" />
   </div>
 </template>
 
 <style scoped>
-/* Paste your previous scoped styles here unchanged */
-/* ... (as provided in your original style section) ... */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
 
-/* Example for some crucial modal and input states for validation */
+.page-wrapper {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.forum-wrapper {
+    flex-grow: 1;
+    min-height: 100%;
+}
+
 .is-invalid {
   border-color: #dc3545 !important;
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
@@ -351,7 +369,6 @@ onMounted(fetchPosts)
 </style>
 
 <style scoped>
-/* Welcome banner with gradient background */
 .welcome-banner {
   background: linear-gradient(135deg, #fef5f5 0%, #f8e1e1 100%);
   border: 2px solid #f0d4d4;

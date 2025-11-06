@@ -40,7 +40,7 @@ async function createPaymentIntent() {
   loading.value = true
 
   try {
-    const res = await fetch('http://localhost:4242/create-payment-intent', {
+    const res = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: amount.value }),
@@ -152,17 +152,15 @@ async function createPaymentIntent() {
             </div>
           </div>
 
-          <!-- Continue Button -->
           <button
             v-if="!showPayment"
             @click="createPaymentIntent"
             :disabled="loading || amount < 1"
-            class="donate-button"
+            class="pawsitive-btn"
           >
             {{ loading ? 'Processing...' : `Donate $${amount}` }}
           </button>
 
-          <!-- Stripe Payment Form -->
           <div v-if="showPayment && clientSecret" class="payment-section">
             <div class="payment-divider">
               <h3 class="payment-title">Complete Your Donation</h3>
@@ -202,7 +200,6 @@ async function createPaymentIntent() {
 </template>
 
 <style scoped>
-/* Updated all styles to match landing/login page aesthetic */
 .donation-page {
   min-height: 100vh;
 
@@ -438,36 +435,6 @@ async function createPaymentIntent() {
   color: #7c2d12;
   line-height: 1.5;
   font-size: 0.9375rem;
-}
-
-/* Donate Button */
-.donate-button {
-  width: 100%;
-  padding: 1.25rem 3rem;
-  font-size: 1.25rem;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  background: var(--dark-blue);
-  border: 3px solid #ffffff;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-}
-
-.donate-button:hover:not(:disabled) {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.donate-button:active:not(:disabled) {
-  transform: translateY(-2px) scale(1.01);
-}
-
-.donate-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Payment Section */
