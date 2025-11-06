@@ -184,9 +184,6 @@ Postal: any 5 digit num
 
 Wrong card info input will be detected by Stripe. Upon donation success, you will currently be directed to a success page.
 
-
----
-
 <!-- ### 2) Configure Environment Variables
 Create a `.env` file in the root directory with the following structure:
 
