@@ -73,9 +73,11 @@ const fetchPosts = async () => {
           const ud = u.data()
           post.author = ud.username || 'Unknown'
           post.avatar = ud.avatar || null
+          post.skills = ud.skills || []
         } else {
           post.author = 'Unknown'
           post.avatar = null
+          post.skills = []
         }
       }
 

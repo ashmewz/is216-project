@@ -144,9 +144,9 @@ const avatarUrl = computed(() => props.user.avatar || defaultAvatar)
   transition: all 0.2s ease;
 }
 
-.skill-badge:hover {
+/* .skill-badge:hover {
   transform: scale(1.05);
-}
+} */
 
 .service-card {
   border-radius: 1rem;
