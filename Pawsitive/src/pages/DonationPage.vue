@@ -67,7 +67,7 @@ async function createPaymentIntent() {
     <NavBar />
     <div class="donation-page background">
     <div class="donation-container ">
-      <!-- Hero Section -->
+      
       <div class="hero-section">
         <h1 class="hero-title">
           Make a Difference Today
@@ -78,7 +78,6 @@ async function createPaymentIntent() {
         </p>
       </div>
 
-      <!-- Stats Section -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value">1,247</div>
@@ -94,12 +93,10 @@ async function createPaymentIntent() {
         </div>
       </div>
 
-      <!-- Donation Form -->
       <div class="form-wrapper">
         <div class="donation-card">
           <h2 class="card-title">Choose Your Donation Amount</h2>
 
-          <!-- Preset Amounts -->
           <div class="preset-grid">
             <button
               v-for="preset in presetAmounts"
@@ -117,7 +114,6 @@ async function createPaymentIntent() {
             </button>
           </div>
 
-          <!-- Custom Amount -->
           <div class="custom-amount-section">
             <label class="custom-label">Or enter a custom amount</label>
             <div class="custom-input-wrapper">
@@ -134,7 +130,6 @@ async function createPaymentIntent() {
             </div>
           </div>
 
-          <!-- Impact Message -->
           <div class="impact-message">
             <div class="impact-content">
               <div class="impact-icon">
@@ -168,7 +163,6 @@ async function createPaymentIntent() {
             </div>
           </div>
 
-          <!-- Trust Indicators -->
           <div class="trust-section">
             <div class="trust-indicators">
               <div class="trust-item">
@@ -196,7 +190,6 @@ async function createPaymentIntent() {
     </div>
       </div>
     <BottomFooter />
-
 </template>
 
 <style scoped>
@@ -211,7 +204,6 @@ async function createPaymentIntent() {
   padding: 4rem 1rem;
 }
 
-/* Hero Section */
 .hero-section {
   text-align: center;
   margin-bottom: 4rem;
@@ -233,42 +225,62 @@ async function createPaymentIntent() {
   line-height: 1.6;
 }
 
-/* Stats Section */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 4rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
 }
 
 .stat-card {
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
   border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-}
-
 .stat-value {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--dark-blue);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .stat-label {
   color: #666;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
-/* Donation Form */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 0.5rem;
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: #444;
+  }
+}
+
 .form-wrapper {
   max-width: 48rem;
   margin: 0 auto;
@@ -289,7 +301,6 @@ async function createPaymentIntent() {
   color: #1a1a1a;
 }
 
-/* Preset Amounts */
 .preset-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -350,7 +361,6 @@ async function createPaymentIntent() {
   color: #ffffff;
 }
 
-/* Custom Amount */
 .custom-amount-section {
   margin-bottom: 2rem;
 }
@@ -392,7 +402,6 @@ async function createPaymentIntent() {
   background: #ffffff;
 }
 
-/* Impact Message */
 .impact-message {
   background: linear-gradient(135deg, #fef3c7 0%, #fecaca 100%);
   border: 2px solid rgba(252, 211, 77, 0.5);
@@ -437,7 +446,6 @@ async function createPaymentIntent() {
   font-size: 0.9375rem;
 }
 
-/* Payment Section */
 .payment-section {
   margin-top: 2rem;
 }
@@ -455,7 +463,6 @@ async function createPaymentIntent() {
   color: #1a1a1a;
 }
 
-/* Trust Indicators */
 .trust-section {
   margin-top: 2rem;
   padding-top: 2rem;
@@ -484,7 +491,6 @@ async function createPaymentIntent() {
   color: var(--dark-blue);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .hero-title {
     font-size: 2.5rem;
