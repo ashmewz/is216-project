@@ -420,10 +420,10 @@ onMounted(() => {
             </div>
 
         </main>
-
-        <!-- Footer -->
-        <BottomFooter />
     </div>
+
+    <!-- Footer -->
+    <BottomFooter />
 </template>
 
 <style scoped>
