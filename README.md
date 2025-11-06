@@ -23,9 +23,9 @@ DEPLOYED LINK: [https://pawsitive-sg.vercel.app](https://pawsitive-sg.vercel.app
 
 ## Business Problem
 
-In Singapore, reporting and locating lost or injured cats remains as a fragmented and inconvenient process. Residents often have to rely on different channels such as Facebook, WhatsApp groups or notices around their neighbourhood. This makes it difficult for others to locate the right information quicky and provide timely help. Without a centralised reporting system, many injured or missing cats go unnoticed, and coordination between volunteers and the public are inefficient. These disconnected efforts not only delays aid for cats in need but also make it hard for the community to stay informed.
+In Singapore, reporting and locating lost or injured cats remains a fragmented and inconvenient process. Residents often have to rely on different channels such as Facebook, WhatsApp groups or notices around their neighbourhood. This makes it difficult for others to locate the right information quicky and provide timely help. Without a centralised reporting system, many injured or missing cats go unnoticed, and coordination between volunteers and the public are inefficient. These disconnected efforts not only delays aid for cats in need but also make it hard for the community to stay informed.
 
-Our project addresses this issue by introducing a unified, easy-to-use platform where users can conveniently report lost or injured cats, track their profiles through our map feature, and communitcate with others more effectively. In addition, the donation and adoption page encourages community participation and support, turning cat welfare efforts into a more connected and sustainable ecosystem.
+Our project addresses this issue by introducing a unified, easy-to-use platform where users can conveniently report lost or injured cats, track their profiles through our map feature, and communicate with others more effectively. In addition, the donation and adoption page encourages community participation and support, turning cat welfare efforts into a more connected and sustainable ecosystem.
 <!-- 
 > *Example:*  
 > Small local businesses struggle to maintain an online presence, limiting visibility to customers.  
@@ -77,7 +77,7 @@ Explain the core features and the benefit each provides.
 
 ## Use Case & User Journey
 
-Provide screenshots and captions showing how users interact with your app.
+<!-- Provide screenshots and captions showing how users interact with your app. -->
 
 1. **Landing Page**  
    <img src="documentation/use-case/landing.jpeg" width="600">  
@@ -86,20 +86,24 @@ Provide screenshots and captions showing how users interact with your app.
 2. **Login/Register**  
    <img src="documentation/use-case/login.png" width="600">  
    <img src="documentation/use-case/register.png" width="600">  
-   - User Journey: While walking to school, I notice an injured cat and decide to report it through Pawsitive. I opened the website and start to log in to my account.
+   - User Journey: While walking to school, I notice an injured cat and decide to report it through Pawsitive. I opened the website and log in to my account.
 
    - Features: Register/login
 
 3. **Report**  
    <img src="documentation/use-case/report.png" width="600">  
-   - User Journey: Aftering logging in, I am directed straight to the report page. I upload a photo of the injured cat and sees the system analysing its breed. It also automatically checks for similar reports (same breed, within 2km that was reported in the past 24 hours). However, for my area, there is not any similar reports, so I proceed to submit my report.
+    <img src="documentation/use-case/report-with-similar.jpeg" width="600">  
+   - User Journey: After logging in, I am directed straight to the report page. I upload a photo of the injured cat and see that the system analysing its breed. It also automatically checks for similar reports (same breed, within 2km that was reported in the past 24 hours). However, for my area, there is no similar reports, so I proceed to submit my report.
 
    - Features: Submit missing/injured cat report. Form auto detects similar reports (same breed, within 2km) reported in the past 24hrs
+
+   - Note: second image shown is when similar report is detected
+
 
 4. **Map and Cat Profile**  
    <img src="documentation/use-case/map.png" width="600">  
    <img src="documentation/use-case/cat-details.png" width="600">  
-   - User Journey: I navigate to the map page to view the locations of reported cats. By hovering over the pins and clicking on the, I can access detailed information of each cat.
+   - User Journey: I navigate to the map page to view the locations of reported cats. By hovering over the pins and clicking on them, I can access detailed information of each cat.
 
    - Features: View the reported cats on a map view
 
@@ -110,6 +114,7 @@ Provide screenshots and captions showing how users interact with your app.
    - User Journey: After submitting the report and viewing the cat profiles, I click on "Forum" to create a post about the injured cat that I spotted on the way to school. As I am rushing for my class, I wanted to let the community know so that someone else can attend to it instead. Upon uploading my post, I scrolled through the posts and noticed a post from a vet that was offering their services. I could either comment on the post to reach out to them about the injured cat or contact the vet directly through the contact methods listed on their profile page.
 
    - Features: Create a new post, comment on a post
+
 
 
 6. **Donation Page**  
@@ -286,20 +291,20 @@ Perform the following checks before submission:
 
 
 
- - Ashraf: I learn how to get creative with how we want to design and build the user experience. I also learn how to set up server hosting via Vercel.
+ - Ashraf: I learnt how to get creative with how we want to design and build the user experience. I also learnt how to set up server hosting via Vercel.
 
  - Rosh: Learned to use Figma to design UI/UX workflow and fetch/send data between firebase and frontend. Learned the importance of communicating regularly with the team, empathise with the user every step of the development process, and seeking consistent feedback from mentors.
 
  - Charmaine: After creating the initial wireframe, I learned how to transform it into a fully functional website that is both dynamic and responsive. Throughout the process, I considered the interface from both a user’s and a developer’s perspective to ensure the website is intuitive and easy to navigate. I also became more familiar with using GitHub for version control and learned how to collaborate effectively with my teammates throughout the development process.
 
- - Rayner: I learnt how to guide people who are new to web development, and adjust tasks appropriate to their current learnings. Learnt to better break down tasks into more followable steps that help faccilitate learning.
+ - Rayner: I learnt how to guide people who are new to web development, and adjust tasks appropriate to their current learnings. Learnt to better break down tasks into more followable steps that help facilitate learning.
 
  - Kevan: I learned more about Git branching and pull requests, integrating Firebase with the frontend, using the Vue framework, and working with geolocation in OpenStreetMap.
 
  - Jing Xiang: I learnt how to use github collaboratively, branching, pull requests etc. And the general usage of vue.js and firebase
 
 **Team Reflection**
-- Working with frameworks such as Vue.js, Firebase, and Vercel gave us hands-on experience in developing a modern web application. We learned how to integrate frontend and backend (firebase) code, from setting up authentication and databases to designing intuitive user experiences. Tools like Figma and Git/GitHub helped us bridge the gap between design and development while improving our workflow and version control practices. We also developed a deeper appreciation for how these frameworks streamline development, allowing us to focus more on solving user needs rather than building everything from vanilla HTML/CSS
+- Working with frameworks such as Vue.js, Firebase, and Vercel gave us hands-on experience in developing a modern web application. We learned how to integrate frontend and backend (firebase) code, from setting up authentication and databases to designing intuitive user experiences. Tools like Figma and Git/GitHub helped us bridge the gap between design and development while improving our workflow and version control practices. We also developed a deeper appreciation for how these frameworks streamline development, allowing us to focus more on solving user needs rather than building everything from vanilla HTML/CSS.
 
 - One of the challenges we faced was figuring out how to design our application to be practical for real-world use. Initially, our ideas seemed great, but they weren’t very feasible in reality. After consulting with our professor, we revamped our user story and application, and it now has a flow that makes much more sense.
 
