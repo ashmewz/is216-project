@@ -52,6 +52,10 @@ const locationSuggestions = ref([]);
 const showSuggestions = ref(false);
 const justSelectedSuggestion = ref(false);
 
+const showSuccess = ref(false);
+const successTitle = ref('');
+const successMessage = ref('');
+
 let map = null;
 let userMarker = null;
 let userCircle = null;
@@ -182,6 +186,14 @@ function selectLocationSuggestion(suggestion) {
   
   // Trigger map update with new coordinates
   // The watcher will handle the map update automatically
+}
+
+// -------------------- Success Popup --------------------
+function showSuccessPopup(title, message, timeout = 2500) {
+  successTitle.value = title;
+  successMessage.value = message;
+  showSuccess.value = true;
+  setTimeout(() => showSuccess.value = false, timeout);
 }
 
 // -------------------- Get User Location --------------------
@@ -613,7 +625,7 @@ const submitReport = async () => {
 
     fetchReports();
     showModal.value = false;
-    alert("✅ Report submitted successfully!");
+    showSuccessPopup('Report Submitted', 'Your cat report has been submitted successfully!');
   } catch (err) {
     console.error("Error submitting report:", err);
     alert("Failed to submit report. Check console.");
@@ -859,6 +871,17 @@ onMounted(async () => {
   </div>
 
   </main>
+  
+  <!-- Success Popup -->
+  <transition name="fade">
+    <div v-if="showSuccess">
+      <div class="success-overlay"></div>
+      <div class="success-popup">
+        <h3>{{ successTitle }}</h3>
+        <p>{{ successMessage }}</p>
+      </div>
+    </div>
+  </transition>
   
   <BottomFooter />
 </template>
@@ -1329,5 +1352,55 @@ onMounted(async () => {
   border-left: 2px solid #806e83;
   border-bottom: 2px solid #806e83;
 }
+
+/* ==============================
+   Success Popup
+   ============================== */
+.success-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(60, 60, 60, 0.46);
+  z-index: 1001;
+}
+
+.success-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1002;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 44px rgba(60, 60, 60, 0.20);
+  padding: 30px;
+  min-width: 260px;
+  text-align: center;
+  color: #806e83;
+}
+
+.success-popup h3 {
+  margin: 0 0 10px 0;
+  color: #806e83;
+  font-size: 1.5rem;
+}
+
+.success-popup p {
+  margin: 0;
+  color: #6e608c;
+  font-size: 1rem;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
+
 

@@ -47,10 +47,10 @@ onMounted(async () => {
             <ProfileCard v-if="user" :user="user" :showActions="false" />
             <p v-else>User not found.</p>
         </main>
-
-        <!-- Footer -->
-        <BottomFooter />
     </div>
+
+    <!-- Footer -->
+    <BottomFooter />
 </template>
 
 <style scoped>
