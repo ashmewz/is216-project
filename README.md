@@ -14,8 +14,8 @@ G3 Group 5
 | <img src="documentation/members/ash.jpeg" width="80"> | Muhammad Ashraf Bin Mustafa | Project Lead, CSS/JS Animation, Donation Page |   
 | <img src="documentation/members/rosh.png" width="80"> | Rosh Chan | UI/UX,  Adoption (Listing + Form) Page |
 | <img src="documentation/members/charmaine.jpeg" width="80"> | Charmaine Lim Min Xuan |  Forum Page, Report Page|
-| <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map/Cat Tracking Page |
-| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang | Database & Auth, Volunteer Profile Page  |
+| <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map/Cat Tracking Page, Cat Profile Page |
+| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang | Database &Auth, Login & Register, Volunteer Profile Page  |
 | <img src="documentation/members/kevan.jpeg" width="80"> | Soon Shi Heng, Kevan | Report Page AI & Map features |
 <!-- > Place all headshot thumbnails in the `/photos` folder (JPEG or PNG). -->
 ---
@@ -34,6 +34,7 @@ Our project addresses this issue by introducing a unified, easy-to-use platform 
 
 ## Web Solution Overview
 
+[Deployed App Link](https://pawsitive-sg.vercel.app/)
 ### 🎯 Intended Users
 - Community Cat Volunteers
 - Cat Lovers
@@ -65,7 +66,7 @@ Explain the core features and the benefit each provides.
 | <img src="https://vitejs.dev/logo.svg" width="40"> | **Vite** | Development server and build tool |
 | <img src="https://vuejs.org/images/logo.png" width="40"> | **Vue.js 3** | Component-based frontend framework |
 | <img src="https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png" width="40"> | **Firebase** | Authentication and Firestore database services |
-| <img src="https://avatars.githubusercontent.com/u/9950313?s=48&v=4" width="40"> | **Node.JS + Express.JS** | For Stripe Server Only|
+| <img src="https://avatars.githubusercontent.com/u/9950313?s=48&v=4" width="40"> | **Node.JS + Express.JS** | For Stripe (Only works in vercel)|
 
 <!-- > Add or remove technologies depending on your project stack (e.g., Express.js, Supabase, MongoDB Atlas, AWS S3). -->
 
@@ -84,8 +85,8 @@ Provide screenshots and captions showing how users interact with your app.
    <img src="documentation/use-case/register.png" width="600">  
    - User Jouney: I am on my way to school, and i spot an injured cat, i want to report it to Pawsitive, so first i login
 
-   - Features: Register as an volunteer to access the features
-
+   - Features: Register/login
+   
 3. **Report**  
    <img src="documentation/use-case/report.png" width="600">  
    - User Jouney: Upon login, I am directed straight to the report page, i upload the image of the cat and it will analyzes the cat breed, then it auto checks whether there are similar reports (same breed, within 2km) reported in the past 24hr. There is no similar reports, so i proceed to submit my report.
