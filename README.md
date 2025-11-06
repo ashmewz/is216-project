@@ -51,7 +51,6 @@ Explain the core features and the benefit each provides.
 | Cat Profile | Contains cat information (name, breed, etc) | Users can view detailed information about each cat, and also the status |
 | Volunteer Profile | Contains volunteer information and services | Users can view detailed information about the volunteer and the services they may provide |
 | Forum Page | View list of discussions | Central hub for community engagement and information sharing |
-| Services | Provide Service Offerings from volunteers | Allow users to engage the services of volunteers e.g. pet sitting |
 | Adoption Page | List cat profile summaries on map | Helps potential adopters easily find cats for adoption |
 | Donation Page | Stripe popup/aside for donations | Simplifies contribution process for supporting cats |
 ---
