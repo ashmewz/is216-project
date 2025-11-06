@@ -15,7 +15,7 @@ G3 Group 5
 | <img src="documentation/members/rosh.png" width="80"> | Rosh Chan Teck Woon | UI/UX,  Adoption Page UI & Firebase Integration |
 | <img src="documentation/members/rayner.jpeg" width="80"> | Tan Xue Wen, Rayner |Map Page UI & Firebase Integration, Cat Profile Page UI & Firebase Integration |
 | <img src="documentation/members/charmaine.jpeg" width="80"> | Charmaine Lim Min Xuan | UI/UX, Forum Page UI, Report Page UI, Cat Profile Page UI|
-| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang |LoginRegister Page UI & Firebase Integration ,Volunteer Profile Page UI & Firebase Integration  |
+| <img src="documentation/members/jx.jpeg" width="80"> | Chan Jing Xiang |Landing Page UI, LoginRegister Page UI & Firebase Integration ,Volunteer Profile Page UI & Firebase Integration  |
 | <img src="documentation/members/kevan.jpeg" width="80"> | Soon Shi Heng, Kevan | Report Page AI, Backend & Firebase Integration, Forum Page Firebase Integration   |
 <!-- > Place all headshot thumbnails in the `/photos` folder (JPEG or PNG). -->
 ---
