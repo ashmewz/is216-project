@@ -653,8 +653,8 @@ onMounted(async () => {
     <div class="mb-3">
       <label class="form-label">Upload Image</label>
       <div class="file-upload-container">
-        <input type="file" class="file-input-hidden" ref="fileInput" @change="handleFileUpload" accept="image/*" id="fileUpload" />
-        <label for="fileUpload" class="pawsitive-btn file-upload-btn">
+        <input type="file" class="file-input-hidden" ref="fileInput" @change="handleFileUpload" accept="image/*" id="fileUpload" :disabled="isLoading" />
+        <label for="fileUpload" class="pawsitive-btn file-upload-btn" :class="{ 'disabled': isLoading }">
           {{ report.imageFile ? report.imageFile.name : 'Choose File' }}
         </label>
       </div>
@@ -991,6 +991,12 @@ onMounted(async () => {
   white-space: nowrap;
   display: block;
   text-align: center;
+}
+
+.file-upload-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ==============================
