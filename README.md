@@ -131,12 +131,12 @@ Explain the core features and the benefit each provides.
    - Features: View adoption cats listing, submit interest form
    
 8. **My Profile Page**  
-   <img src="documentation/use-case/myprofile.png" width="600">  
+   <img src="documentation/use-case/profile.png" width="600">  
    - Edit profile (e.g change contact, add services etc)
 
 
 9. **Volunteer Page**  
-   <img src="documentation/use-case/profile.png" width="600">  
+   <img src="documentation/use-case/myprofile.png" width="600">  
    - Displays the public profile of a user
   
 
