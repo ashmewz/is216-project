@@ -219,6 +219,8 @@ VITE_FIREBASE_APP_ID=<your_app_id>
    - **Firestore Database** 
 4. Create a new web app in project settings
 5. Copy the Firebase configuration into the firebase.js file
+6. For the adoption page, the cats data are manually populated, so we have to do that else there would be no adoption cats data in page. The collection and fields are named as such:\
+<img src="documentation/use-case/adoption-collection.png" width="600">  
 
 ---
 
