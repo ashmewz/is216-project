@@ -201,7 +201,7 @@ VITE_FIREBASE_APP_ID=<your_app_id>
 
 ---
 
-### 3) Backend / Cloud Service Setup
+### 4) Backend / Cloud Service Setup
 
 #### Firebase
 1. Go to [Firebase Console](https://console.firebase.google.com/)
