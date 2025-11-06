@@ -20,11 +20,21 @@
             />
           </div>
           <div class="ms-3">
-            <span class="fw-bold text-accent d-block">{{ post.author }}</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="fw-bold text-accent">{{ post.author }}</span>
+              <span
+                v-if="post.skills && post.skills.length > 0"
+                class="badge bg-accent text-white"
+              >
+                {{ post.skills[0] }}
+              </span>
+
+            </div>
             <small class="text-muted">
               <i class="bi bi-clock me-1"></i>{{ post.createdAt?.toDate ? post.createdAt.toDate().toLocaleString() : '' }}
             </small>
           </div>
+
         </RouterLink>
 
  
@@ -45,7 +55,10 @@
       <div class="d-flex gap-4 align-items-center interaction-bar pt-2 border-top">
         <button class="interaction-btn comment-btn" @click="$emit('open-comments', post.id)">
           <i class="bi bi-chat-dots"></i>
-          <span class="comment-text ms-2">{{ post.comments?.length || 0 }}</span>
+          <span class="comment-text ms-2">
+            {{ post.comments?.length || 0 }}&nbsp;
+            {{ (post.comments?.length || 0) === 1 ? 'comment' : 'comments' }} 
+          </span>
         </button>
       </div>
     </div>
@@ -67,6 +80,16 @@ const emit = defineEmits(['toggle-like', 'share', 'open-comments', 'toggle-expan
 </script>
 
 <style scoped>
+.badge {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+}
+
+.bg-accent {
+  background-color: #806e83; /* your accent color */
+}
+
 .posts-container {
   width: 90%;
   margin: 0;
