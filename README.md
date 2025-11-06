@@ -267,16 +267,15 @@ Perform the following checks before submission:
 
 
 
-<!-- 
+
 ### 6) Common Issues & Fixes
 
 | Issue | Cause | Fix |
 |:--|:--|:--|
 | `Module not found` | Missing dependencies | Run `npm install` again |
-| `Firebase: permission-denied` | Firestore security rules not set | Check rules under Firestore → Rules |
-| `CORS policy error` | Backend not allowing requests | Enable your domain in CORS settings |
-| `.env` variables undefined | Missing `VITE_` prefix | Rename variables to start with `VITE_` |
-| `npm run dev` fails | Node version mismatch | Check Node version (`node -v` ≥ 18) | -->
+| `Server error when making donation` | Donation feature won't work on localhost, only works the deployed Vercel app | Make the donation on the deployed website instead |
+
+
 
 
 ---
