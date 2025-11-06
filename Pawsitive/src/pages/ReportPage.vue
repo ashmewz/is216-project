@@ -621,6 +621,12 @@ const submitReport = async () => {
     breedResult.value = null;
     firstBreed.value = null;
     isLoading.value = false;
+    
+    // Clear nearby cats and map
+    nearbyCats.value = [];
+    allPredictedCats.value = [];
+    showMap.value = false;
+    
     if (fileInput.value) fileInput.value.value = null;
 
     fetchReports();
