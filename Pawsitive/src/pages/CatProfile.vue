@@ -2,19 +2,25 @@
     <div class="page-wrapper pawsitive-background">
         <Navbar></Navbar>
         <div class="cat-profile container p-4 pawsitive-background" v-if="loaded">
-            <div class="header">
-                <h1 class="title">{{ cat.name || 'Unnamed Cat' }}</h1>
-                <!-- Removed for now -->
-                <!-- <div class="meta">
-                <span class="badge">{{ cat.status || '—' }}</span>
-                <span class="muted">•</span>
-                <span class="muted">{{ cat.species || '—' }}</span>
-            </div> -->
-            </div>
+         <div class="cat-header-card mb-4 p-4 text-center rounded-4 shadow-sm">
+                <h1 class="fw-bold mb-2 text-accent">{{ cat.name || 'Unnamed Cat' }}</h1>
+                <span
+                class="status-badge"
+                :class="{
+                    'lost': cat.status?.toLowerCase() === 'lost',
+                    'injured': cat.status?.toLowerCase() === 'injured',
+                    'safe': cat.status?.toLowerCase() === 'safe'
+                }"
+                >
+                {{ cat.status || 'Status unknown' }}
+                </span>
+
+        </div>
+
 
             <div class="row layout justify-content-center align-items-start">
-                <!-- LEFT: Carousel -->
-                <div class="col-12 col-md-6 mb-4">
+                <!-- LEFT: Carousel (Image) -->
+                <div class="col-12 col-xl-6 order-1 order-xl-1 mb-4">
                     <section>
                         <div class="carousel" @keydown.left.prevent="prevImage" @keydown.right.prevent="nextImage"
                             tabindex="0">
@@ -37,8 +43,9 @@
                 </div>
 
                 <!-- RIGHT: Details -->
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-xl-6 order-2 order-xl-2">
                     <section>
+                        <h5 class="fw-bold mb-3 text-accent">Cat Details</h5>
                         <table class="details">
                             <tbody>
                                 <tr>
@@ -220,6 +227,74 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@media (max-width: 768px) {
+    .layout {
+        gap: 2rem; /* spacing between image and details when stacked */
+    }
+
+    .carousel-main {
+        height: auto;   /* let the image scale naturally */
+        max-height: 60vh;
+        width: 100%;
+    }
+}
+
+h1, h2, h3 {
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: #5f4b60;
+}
+
+.details th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #806e83;
+  font-size: 13px;
+}
+.details td {
+  font-weight: 500;
+  color: #3f3544;
+  font-size: 15px;
+}
+
+.cat-header-card {
+  background: linear-gradient(135deg, #f6eef7, #fdfbfb);
+  border: 1px solid #eee;
+}
+
+.text-accent {
+  color: #806e83;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 8px;
+  color: white;
+  text-transform: capitalize;
+}
+
+.status-badge.lost { background: #6982B5 ; }
+.status-badge.injured { background: #6982B5 ; }
+.status-badge.safe { background: #80cfa9; }
+
+.cat-header-card,
+.carousel-main,
+.details {
+  transition: all 0.3s ease;
+}
+
+.cat-header-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+
 html, body {
     height: 100%;
     margin: 0;
@@ -233,14 +308,28 @@ html, body {
 }
 
 .container {
-    max-width: 980px;
-    margin: 0 auto;
+  width: fit-content;
+  max-width: 90%; /* keeps it from overflowing on mobile */
+  margin: 0 auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
+
 
 .cat-profile {
     flex-grow: 1;
     min-height: 100%;
 }
+
+.cat-profile.container {
+  padding: 2rem;
+  background: #FFFDF7;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  width: fit-content;
+  max-width: 95vw; /* prevents overflow on smaller screens */
+}
+
 
 .btn-back {
     margin-bottom: 12px;
@@ -381,18 +470,13 @@ html, body {
     margin-top: 0;
 }
 
-.details th {
-    text-align: left;
-    padding: 6px 8px;
-    color: #444;
-    width: 140px;
-    vertical-align: top;
-    font-weight: 600;
+.details th, .details td {
+  border-bottom: 1px solid #f0e8f0;
+  padding: 10px 8px;
 }
-
-.details td {
-    padding: 6px 8px;
-    color: #222;
+.details tr:last-child th,
+.details tr:last-child td {
+  border-bottom: none;
 }
 
 .actions {
