@@ -4,6 +4,7 @@
 
 ## Section & Group Number
 G3 Group 5
+DEPLOYED LINK: [https://pawsitive-sg.vercel.app](https://pawsitive-sg.vercel.app)
 
 ---
 
@@ -217,6 +218,7 @@ VITE_FIREBASE_APP_ID=<your_app_id>
 ---
 
 ### 5) Testing the Application
+For Mobile sizes, we used "iPhone 14 Pro Max" (or any iPhone Pro Max should work)
 
 #### Manual Testing
 Perform the following checks before submission:
