@@ -110,17 +110,19 @@ Provide screenshots and captions showing how users interact with your app.
 
 5. **Donation Page**  
    <img  alt="Adoption Page" src="documentation/use-case/donation.png" />
-   - User Journey: 
-   - Volunteers can apply to adopt cats of their choosing
+   - User Journey: I am also feeling very generous today, and I feel like donating to the cats community, so i go ahead to make a donation on the page
+
+   - Features: Make a donation to the welfare community using their credit card
 
 5. **Adoption Page**  
    <img  alt="Adoption Page" src="documentation/use-case/adoption.png" />
-   - Displays cat listings available for adoption
-   - Volunteers can apply to adopt cats of their choosing
+   - User Journey: I am also feeling extra generous today, and I feel like adopting a cat, so I looked through the adoption listing and submit an interest form.
+
+   - Features: View adoption cats listing, submit interest form
    
 6. **My Profile Page**  
    <img src="documentation/use-case/myprofile.png" width="600">  
-   - Ability to edit profile (e.g change contact, add services etc)
+   - Edit profile (e.g change contact, add services etc)
 
 
 7. **Volunteer Page**  
@@ -237,7 +239,7 @@ npm run test
 ```
 
 ---
-
+<!-- 
 ### 6) Common Issues & Fixes
 
 | Issue | Cause | Fix |
@@ -246,9 +248,9 @@ npm run test
 | `Firebase: permission-denied` | Firestore security rules not set | Check rules under Firestore → Rules |
 | `CORS policy error` | Backend not allowing requests | Enable your domain in CORS settings |
 | `.env` variables undefined | Missing `VITE_` prefix | Rename variables to start with `VITE_` |
-| `npm run dev` fails | Node version mismatch | Check Node version (`node -v` ≥ 18) |
+| `npm run dev` fails | Node version mismatch | Check Node version (`node -v` ≥ 18) | -->
 
--->
+
 ---
 
 ## Group Reflection
@@ -265,5 +267,5 @@ npm run test
 
  - *Kevan:* Understood how Firebase Authentication and Firestore integrate with modern SPAs.  
 
- - *Jing Xiang:* Understood how Firebase Authentication and Firestore integrate with modern SPAs.  
+ - *Jing Xiang:* I learnt how to use github collaboratively, branching, pull requests etc. And the general usage of vue.js and firebase
 
