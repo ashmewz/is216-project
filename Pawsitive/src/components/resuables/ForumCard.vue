@@ -26,7 +26,7 @@
                 v-if="post.skills && post.skills.length > 0"
                 class="badge bg-accent text-white"
               >
-                Skills
+                {{ post.skills[0] }}
               </span>
 
             </div>
