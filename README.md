@@ -214,7 +214,6 @@ VITE_FIREBASE_APP_ID=<your_app_id>
 
 ---
 
-
 ### 5) Testing the Application
 
 #### Manual Testing
@@ -222,17 +221,40 @@ Perform the following checks before submission:
 
 | Area | Test Description | Expected Outcome |
 |:--|:--|:--|
-| Authentication | Register, Login, Logout | User successfully signs in/out |
-| CRUD Operations | Add, Edit, Delete data | Database updates correctly |
-| Responsiveness | Test on mobile & desktop | Layout adjusts without distortion |
-| Navigation | All menu links functional | Pages route correctly |
-| Error Handling | Invalid inputs or missing data | User-friendly error messages displayed |
+| VolunteerSignupLoginPage - Form Validation | Enter invalid email, leave fields empty, enter mismatched passwords | Error messages display for invalid email format, required fields, and password mismatch |
+| VolunteerSignupLoginPage - Registration | Fill all fields correctly and submit registration | User account created successfully, redirected to Report page |
+| VolunteerSignupLoginPage - Login | Enter correct credentials and submit | User successfully logs in, redirected to Report page |
+| VolunteerSignupLoginPage - Login | Enter incorrect credentials | Error message displays: "Invalid email or password" |
+| ReportPage - Form Validation | Submit form with empty required fields | Error messages display for location, status, breed, and description |
+| ReportPage - Cat Breed Identification | Upload cat image | AI identifies cat breed and displays result |
+| ReportPage - Image Upload | Select an image file | Image preview displays with remove button |
+| ReportPage - Image Upload | Click remove button during breed identification | Remove button is disabled while AI is processing |
+| ReportPage - Image Upload | Click remove button after breed identified | Image preview and breed results are cleared |
+| ReportPage - Map Display | Enter location with nearby cats (< 2km, past 24h, same breed) | Map displays showing user location and nearby matching cats |
+| ReportPage - Map Display | Enter location with no nearby matching cats | Map does not display |
+| ReportPage - Map Display | Click on cat marker on map | Popup shows cat details (name, location, distance, reported time) |
+| ReportPage - Side Drawer | Open side drawer after breed identification | "Nearby Similar Reports" section shows cat report cards for matches |
+| ReportPage - Side Drawer | Expand "Other Cat Reports" section | All submitted cat reports display regardless of location or breed |
+| ReportPage - Form Submission | Fill all required fields and submit | Cat report saved to database, form resets, success message displays |
+| MapPage - Search Location | Enter postal code or location name in search | Map centers on searched location |
+| MapPage - Cat Markers | Load map page | Cat markers display on map for all reported cats |
+| MapPage - Marker Popup | Click on a cat marker | Popup card displays with cat details (name, photo, last seen, location) |
+| MapPage - View Profile | Click "View Full Profile" in popup card | Redirects to full cat profile page (CatProfile.vue) |
+| ForumPage - Search Posts | Enter username or post description in search | Posts filtered to match search query |
+| ForumPage - Filter Posts | Select "Newest First" or "Oldest First" | Posts reordered by selected filter |
+| ForumPage - Create Post | Click create post button, fill form, and submit | New post created and displays in feed |
+| ForumPage - Add Comment | Click comment button, enter text, and submit | Comment added to post and displays in comment modal |
+| ForumPage - View Author Profile | Click on post author's profile picture or username | Redirects to VolunteerProfileViewPage for that user |
+| VolunteerProfileViewPage - User Information | Navigate to volunteer profile view page | Displays user information (name, bio, avatar, skills, region) |
+| VolunteerProfilePage - User Information | Navigate to own profile page | Displays current user's information (name, bio, avatar, skills, services) |
+| VolunteerProfilePage - Edit Profile | Click "Edit Profile" button | Popup modal displays with editable profile fields |
+| VolunteerProfilePage - Edit Profile | Update profile information and save | Profile updates successfully, modal closes |
+| VolunteerProfilePage - Logout | Click logout button | User logged out and redirected to landing page |
+| DonationPage - Form Validation | Leave amount field empty or enter invalid amount | Error message displays for required/invalid amount | | DonationPage - Stripe Payment | Enter credit card details (4242 4242 4242 4242, 12/34, 567) | Stripe validates card information |
+| DonationPage - Donation Success | Complete payment with valid card | Redirects to DonationSuccessPage |
+| DonationPage - Invalid Card | Enter invalid card information | Stripe displays error message |
+| DonationSuccessPage - Success Message | Complete donation process | Success message displays confirming donation |
 
-#### Automated Testing (Optional)
-If applicable:
-```bash
-npm run test
-```
 
 <!-- 
 ### 6) Common Issues & Fixes
