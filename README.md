@@ -285,9 +285,20 @@ Perform the following checks before submission:
 | `Module not found` | Missing dependencies | Run `npm install` again |
 | `Server error when making donation` | Donation feature won't work on localhost, only works the deployed Vercel app | Make the donation on the deployed website instead |
 
+---
+## Use of AI/LLMs
 
-
-
+| Area | Yes/No | Description 
+|:--|:--|:--|
+Information search | Yes | -
+Generating website concepts, layouts, or themes | Yes | For initial idea/feature brainstorming etc 
+Exploring UI/UX design inspirations | Yes | -
+Explaining coding errors / debugging hints | Yes | To assist debugging
+Boilerplate code generation (starter code, small code snippets) | Yes | To make workflow faster
+Generating unit tests, sample inputs, or mock data | Yes | -
+Core implementation tasks | No | -
+Major business logic, backend endpoints, or critical frontend interactivity | No | -
+Solving significant implementation issues | No | -
 ---
 
 ## Group Reflection
